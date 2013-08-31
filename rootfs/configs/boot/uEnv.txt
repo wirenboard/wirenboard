@@ -1,0 +1,6 @@
+#These are the default settings for some useful u-boot variables:
+fdt_file=/boot/dtbs/imx23-wirenboard28.dtb
+ 
+#optargs=
+#mmcroot=/dev/mmcblk0p2 ro
+#mmcrootfstype=ext4 rootwait fixrtc
