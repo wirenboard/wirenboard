@@ -7,7 +7,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 
-ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,isc-dhcp-client"
+ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,isc-dhcp-client,firmware-realtek,wpasupplicant"
 REPO="http://ftp.debian.org/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
@@ -40,8 +40,19 @@ echo "Update apt"
 sudo chroot ${OUTPUT}/ apt-get update
 
 echo "Setup locales"
-sudo chroot ${OUTPUT}/ apt-get -y install apt-utils dialog locales
+chroot ${OUTPUT}/ apt-get -y install apt-utils dialog locales
 
-sudo chroot ${OUTPUT}/ sed -i "s/^# en_US/en_US/" /etc/locale.gen
-sudo chroot ${OUTPUT}/ /usr/sbin/locale-gen
-sudo chroot ${OUTPUT}/ update-locale LANG=en_US.UTF-8
+chroot ${OUTPUT}/ sed -i "s/^# en_US/en_US/" /etc/locale.gen
+chroot ${OUTPUT}/ /usr/sbin/locale-gen
+LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
+
+
+echo "Add rtl8188 hostapd package"
+RTL8188_DEB=rtl8188_hostapd/hostapd_1.1-rtl8188_armel.deb
+cp ../contrib/${RTL8188_DEB} ${OUTPUT}/
+chroot ${OUTPUT}/ dpkg -i ${RTL8188_DEB}
+chroot ${OUTPUT}/ rm ${RTL8188_DEB}
+
+
+
+
