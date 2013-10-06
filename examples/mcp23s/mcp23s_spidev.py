@@ -71,9 +71,19 @@ print (readRegister(GPIO))
 print (readRegister(OLAT))
 
 
+writeRegister(IODIR, 0x00)
+
+while 1: 
+  time.sleep(0.2)
+  writeRegister(GPIO,0xaa)
+  time.sleep(0.2)
+  writeRegister(GPIO,0xff)
+
+
 
 writeRegister(IODIR, 0xff)
 writeRegister(GPPU, 0xff)
+
 
 while 1:
 	time.sleep(1)
