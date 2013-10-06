@@ -1,4 +1,4 @@
-OB#!/usr/bin/env python3
+#!/usr/bin/env python3
 import time, struct
 from quick2wire.spi import *
 from collections import namedtuple
