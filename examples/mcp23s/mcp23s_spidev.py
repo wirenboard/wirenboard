@@ -31,6 +31,7 @@ def readRegister(registerAddress):
 
 
 
+
 SPI_MAJOR = 1
 SPI_MINOR = int(sys.argv[1])
 
@@ -40,7 +41,7 @@ spi0 = SPIDevice(SPI_MINOR, SPI_MAJOR)
 
 start = spi0.speed_hz
 print ("current speed Hz: " + str(start))
-spi0.speed_hz = 10000
+spi0.speed_hz = 1000000
 print ("New speed Hz: " + str(spi0.speed_hz))
 #~ #~
 # Toggle the clock mode
