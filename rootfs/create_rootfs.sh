@@ -50,6 +50,12 @@ chroot ${OUTPUT}/ sed -i "s/^# en_US/en_US/" /etc/locale.gen
 chroot ${OUTPUT}/ /usr/sbin/locale-gen
 LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
 
+echo "Setup additional packages"
+chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom
+
+
+
+
 
 #echo "Add rtl8188 hostapd package"
 #RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
