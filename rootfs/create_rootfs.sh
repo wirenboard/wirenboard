@@ -55,8 +55,6 @@ chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom
 
 
 
-
-
 #echo "Add rtl8188 hostapd package"
 #RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
 #cp ../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
@@ -79,3 +77,9 @@ chroot ${OUTPUT}/ rm rtl_firmware.deb
 echo "Overwrite configs one more time"
 cp -r configs/* ${OUTPUT}/
 
+
+echo "Umount proc,dev,dev/pts in rootfs"
+umount ${OUTPUT}/proc
+umount ${OUTPUT}/dev/pts
+umount ${OUTPUT}/dev
+#umount ${OUTPUT}/sys
