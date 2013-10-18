@@ -51,7 +51,7 @@ chroot ${OUTPUT}/ /usr/sbin/locale-gen
 LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
 
 echo "Setup additional packages"
-chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom
+chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom gpsd iw
 
 
 
@@ -77,6 +77,19 @@ chroot ${OUTPUT}/ rm rtl_firmware.deb
 echo "Overwrite configs one more time"
 cp -r configs/* ${OUTPUT}/
 
+echo "Copy utils, examples to opt folder"
+cp -r ../utils ${OUTPUT}/opt/
+cp -r ../examples ${OUTPUT}/opt/
+
+
+echo "Install quick2wire"
+ORIG_DIR=`pwd`
+cd ${OUTPUT}/opt/
+wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip
+unzip master.zip
+cd ${ORIG_DIR}
+
+echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
 echo "Umount proc,dev,dev/pts in rootfs"
 umount ${OUTPUT}/proc
