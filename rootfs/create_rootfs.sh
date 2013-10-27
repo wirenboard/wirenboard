@@ -51,7 +51,7 @@ chroot ${OUTPUT}/ /usr/sbin/locale-gen
 LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
 
 echo "Setup additional packages"
-chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom gpsd iw
+chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom iw ppp
 
 
 
@@ -90,6 +90,12 @@ unzip master.zip
 cd ${ORIG_DIR}
 
 echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
+
+
+echo "Install cmux"
+wget https://github.com/contactless/cmux/releases/download/0.3/cmux -O ${OUTPUT}/opt/utils/gsm/cmux
+chmod a+x ${OUTPUT}/opt/utils/gsm/cmux
+
 
 echo "Umount proc,dev,dev/pts in rootfs"
 umount ${OUTPUT}/proc
