@@ -1,5 +1,7 @@
 
-/dev/ttyAPP0
+/dev/ttyGSM1
+
+#/dev/ttyAPP0
 
 115200
 
