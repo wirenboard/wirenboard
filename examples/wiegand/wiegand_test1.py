@@ -2,9 +2,12 @@
 
 #http://www.raspberrypi.org/forums/viewtopic.php?f=32&t=12632&sid=e55f5659c8e2006e69fb22862cbb4875&start=25
 
+# Using https://github.com/contactless/wb-io-python for GPIO access
 
 #green/data0 is gpio 5 (R4 at WB3.3)
 #white/data1 is gpio 6 (R3 at WB3.3)
+
+
 D0 = 5
 D1 = 6
 
