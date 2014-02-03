@@ -1,7 +1,14 @@
 //https://gist.github.com/jadonk/2587524
 
-//green/data0 is gpio 5 (R4 at WB3.3)
-//white/data1 is gpio 6 (R3 at WB3.3)
+// example:
+//    $ nice -n-19 ./wiegand_test_epoll 5 6
+//       here
+//     green/data0 is gpio 5 (R4 at WB3.3)
+//     white/data1 is gpio 6 (R3 at WB3.3)
+
+// to compile:
+//      arm-linux-gnueabi-gcc wiegand_test_epoll.c -o wiegand_test_epoll
+
 
 #define GPIO_DATA0 5
 #define GPIO_DATA1 6
@@ -36,17 +43,34 @@ int init_gpio(int gpio) {
 
 	sprintf(path, "/sys/class/gpio/gpio%d/value", gpio);
 	int fd = open(path, O_RDWR | O_NONBLOCK);
-	fprintf(stderr, "open of gpio %d returned %d: %s\n", gpio, fd, strerror(errno));
+	if (fd <= 0) {
+		fprintf(stderr, "open of gpio %d returned %d: %s\n", gpio, fd, strerror(errno));
+	}
 	return fd;
 
 }
 
 int main(int argc, char** argv) {
 	int n;
-	int epfd = epoll_create(1);
+	int epfd;
+	int fd_d0, fd_d1;
 
-	int fd_d0 = init_gpio(GPIO_DATA0);
-	int fd_d1 = init_gpio(GPIO_DATA1);
+	if (argc != 3) {
+		fprintf(stderr, "USAGE: %s <GPIO_D0> <GPIO_D1>\n", argv[0]);
+		return 2;
+	}
+
+	int gpio_d0 = atoi(argv[1]);
+	int gpio_d1 = atoi(argv[2]);
+	fprintf(stderr, "Using GPIO %d for D0 and GPIO %d for D1\n", gpio_d0, gpio_d1);
+
+
+	epfd = epoll_create(1);
+
+
+
+	fd_d0 = init_gpio(gpio_d0);
+	fd_d1 = init_gpio(gpio_d1);
 
 
 	if( !(fd_d0 > 0) || !(fd_d1 > 0)) {
@@ -66,7 +90,7 @@ int main(int argc, char** argv) {
 
     n = epoll_ctl(epfd, EPOLL_CTL_ADD, fd_d0, &ev_d0);
     if (n != 0) {
-		printf("epoll_ctl returned %d: %s\n", n, strerror(errno));
+		fprintf(stderr, "epoll_ctl returned %d: %s\n", n, strerror(errno));
 		return 1;
 	}
 
