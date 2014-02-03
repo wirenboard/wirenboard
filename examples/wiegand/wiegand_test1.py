@@ -7,14 +7,17 @@
 #green/data0 is gpio 5 (R4 at WB3.3)
 #white/data1 is gpio 6 (R3 at WB3.3)
 
-
+# GPIOs:
 D0 = 5
 D1 = 6
 
 import time
 import WB_IO.GPIO as GPIO
+# or
+#import WB_IO.GPIO as GPIO
 
-
+# or
+#import Adafruit_BBIO.GPIO as GPIO
 
 bits = ''
 t = 15
