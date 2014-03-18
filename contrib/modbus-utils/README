@@ -1,1 +1,3 @@
 https://github.com/Krzysztow/modbus-utils
+
+apt-get install libmodbus5
