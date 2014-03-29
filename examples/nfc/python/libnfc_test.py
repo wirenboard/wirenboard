@@ -15,31 +15,21 @@ def read_ultralight(n):
 
 	return hex_data
 
-def read_metro_classic(n):
+
+from mifare import *
+
+def read_metro_classic(n, card):
 	""" Read public data from russian "social cards" """
-	# TODO: use high level functions
 
-	# Authentificate block using keyA = a0a1a2a3a4a5
-	n.sendAPDU(['6034a0a1a2a3a4a5fb1d3656'])
+	keyA = '\xa0\xa1\xa2\xa3\xa4\xa5'
+	data =  mifare_read_block(nfc, card, 4 * 13, keyA)
+	data +=  mifare_read_block(nfc, card, 4 * 14, keyA)
 
-	# Read 3 sectors
-	data = ''
-	data+= n.sendAPDU(['3034'])[1]
-	data+= n.sendAPDU(['3035'])[1]
-	data+= n.sendAPDU(['3036'])[1]
-
-
-	# Another block
-	n.sendAPDU(['6038a0a1a2a3a4a5fb1d3656'])
-	data+= n.sendAPDU(['3038'])[1]
-	data+= n.sendAPDU(['3039'])[1]
-	data+= n.sendAPDU(['303a'])[1]
-
-
-	print data
+	#~ print data
 	# decode cp1251-coded holder's name
-	name1 =  binascii.unhexlify(data[2:70]).decode('cp1251')
-	name2 = binascii.unhexlify(data[98:]).decode('cp1251')
+	name1 =  data[1:34].decode('cp1251').strip()
+	name2 = data[49:-1].decode('cp1251').strip()
+
 
 	return name1, name2
 
@@ -68,11 +58,11 @@ if __name__ == '__main__':
 
 				print 'Moscow Metro UL number: ' + str(int(ul_data[37:45], 16))
 
-			elif c.atqa == '0002':
+			elif c.atqa == '0002' or c.atqa == '0004':
 				print "Found Mifare Classic card"
 
-				name1, name2 = read_metro_classic(nfc)
-				print ("Name: " + name1 + name2).encode('utf8')
+				name1, name2 = read_metro_classic(nfc, c)
+				print ("Name: " + name1 + ' ' + name2).encode('utf8')
 
 
 
@@ -80,5 +70,5 @@ if __name__ == '__main__':
 			print "No card present "
 
 
-		raw_input(">>>Press control-C to exit, any other key to repeat")
+		#~ raw_input(">>>Press control-C to exit, any other key to repeat")
 
