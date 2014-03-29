@@ -2,10 +2,12 @@
 # -*- coding: UTF-8 -*-
 
 import sys, os
+import binascii
+import datetime
 
 from pynfc import *
+from mifare import *
 
-import binascii
 def read_ultralight(n):
 	hex_data = ''
 
@@ -16,22 +18,37 @@ def read_ultralight(n):
 	return hex_data
 
 
-from mifare import *
+def decode_bcd(s, count=None):
+	result = ''
+	for b in s:
+		result += hex(ord(b))[2:].zfill(2)
+	return result[:count]
+
 
 def read_metro_classic(n, card):
 	""" Read public data from russian "social cards" """
 
 	keyA = '\xa0\xa1\xa2\xa3\xa4\xa5'
-	data =  mifare_read_block(nfc, card, 4 * 13, keyA)
-	data +=  mifare_read_block(nfc, card, 4 * 14, keyA)
+	sector =  mifare_read_block(nfc, card, 4 * 13, keyA)
+	sector +=  mifare_read_block(nfc, card, 4 * 14, keyA)
 
-	#~ print data
-	# decode cp1251-coded holder's name
-	name1 =  data[1:34].decode('cp1251').strip()
-	name2 = data[49:-1].decode('cp1251').strip()
+	sector15 =  mifare_read_block(nfc, card, 4 * 15, keyA)
 
 
-	return name1, name2
+	last_name = sector[1:34].decode('cp1251').strip()
+	sex = sector[36]
+
+	birthday_str = sector[39:39+8]
+	birthday = datetime.date( int(birthday_str[:4]),  int(birthday_str[4:6]),  int(birthday_str[6:8]))
+
+	first_name = sector[49:49+46].strip().decode('cp1251').strip()
+
+	card_number = decode_bcd(sector15[1:11],19)
+	card_series = decode_bcd(sector15[11:15],8)
+
+	return last_name, first_name, sex, birthday, card_number, card_series
+
+
 
 
 if __name__ == '__main__':
@@ -61,8 +78,9 @@ if __name__ == '__main__':
 			elif c.atqa == '0002' or c.atqa == '0004':
 				print "Found Mifare Classic card"
 
-				name1, name2 = read_metro_classic(nfc, c)
-				print ("Name: " + name1 + ' ' + name2).encode('utf8')
+				last_name, first_name, sex, birthday, card_number, card_series = read_metro_classic(nfc, c)
+				print ("Name: " + last_name + ' ' + first_name).encode('utf8')
+				print (u"card number: %s, card series: %s, sex: %s, birthday: %s" % (card_number, card_series, sex, birthday)).encode('utf8')
 
 
 
