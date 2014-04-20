@@ -18,9 +18,10 @@ iface wlan0 inet static
   netmask 255.255.255.0
 
 
-allow-hotplug eth0
+auto eth0
 iface eth0 inet dhcp
-hwaddress ether 7e:f5:a2:c9:2e:9a
+   pre-up ifconfig eth0 hw ether 7e:f5:a2:c9:2e:9a || /bin/true
+
 
 allow-hotplug eth1
 iface eth1 inet dhcp
