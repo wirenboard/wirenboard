@@ -1,0 +1,22 @@
+in the chroot-ed environment
+
+3) do
+
+dget -u -x http://ftp.de.debian.org/debian/pool/main/libn/libnfc/libnfc_1.7.0-2.dsc
+
+
+then cd to libnfc-1.7.0
+
+
+
+4) install dependencies
+
+
+
+apt-get install debhelper dh-autoreconf libtool pkg-config libusb-dev
+
+
+
+5) create packages
+
+fakeroot debian/rules binary

@@ -12,6 +12,6 @@ fi
 
 
 sudo sfdisk --in-order --Linux --unit M ${1} <<-__EOF__
-1,16,0x53,-
+4,16,0x53,-
 ,,,-
 __EOF__
