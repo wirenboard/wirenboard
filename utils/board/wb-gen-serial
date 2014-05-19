@@ -1,0 +1,93 @@
+#!/bin/bash
+
+PREFIX="00:86"
+
+. /etc/wb_env.sh
+
+function debug() {
+    echo $1 1>&2
+}
+
+function _gen_mac_simcom()
+{
+    IMEI=`wb-gsm imei`
+    RC=$?
+
+    if [[ $RC != 0 ]] ; then
+        echo "ERROR"
+        return $RC;
+    fi
+
+    MAC="$PREFIX:42:${IMEI:0:2}:${IMEI:2:2}:${IMEI:4:2}"
+    echo $MAC
+    return 0
+}
+
+function gen_mac_simcom()
+{
+    debug "Trying to get GSM IMEI..."
+    _gen_mac_simcom
+    RC=$?
+    if [[ $RC != 0 ]] ; then
+        wb-gsm on
+        _gen_mac_simcom
+        RC=$?
+    fi
+
+    return $RC
+}
+
+function gen_mac_wifi()
+{
+    debug "Trying to get Wi-Fi MAC..."
+    ADDR_FNAME=/sys/class/net/wlan0/address
+    if [ -e $ADDR_FNAME ]; then
+        WIFI_MAC=`cat $ADDR_FNAME`
+        MAC="$PREFIX:41:${WIFI_MAC:9:8}"
+        echo $MAC
+        return 0
+    else
+        return 1;
+    fi
+}
+
+function gen_mac_rand()
+{
+    debug "Trying to get random MAC..."
+    LC_CTYPE=C
+    SUFFIX=
+    for i in {1..3}
+    do
+        IFS= read -d '' -r -n 1 char < /dev/urandom
+        SUFFIX+=$(printf -- ':%02x\n' "'$char")
+    done
+    MAC="$PREFIX:43$SUFFIX"
+    echo $MAC
+    return 0;
+}
+
+function gen_mac_best()
+{
+    gen_mac_wifi || gen_mac_simcom || gen_mac_rand
+}
+
+case "$1" in
+	"gsm" )
+		gen_mac_simcom
+	;;
+	"wifi" )
+		gen_mac_wifi
+	;;
+	"rand" )
+		gen_mac_rand
+	;;
+
+    "-h" | "--help" | "help" )
+		echo "USAGE: $0 [gsm|wifi|rand|help]";
+        exit 0;
+    ;;
+	* )
+		gen_mac_best
+	;;
+esac
+
