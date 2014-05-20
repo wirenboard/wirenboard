@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,netplug"
+ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,netplug,psmisc,curl,dnsmasq"
 REPO="http://ftp.debian.org/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
@@ -61,12 +61,6 @@ chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom iw pp
 #chroot ${OUTPUT}/ dpkg -i ${RTL8188_DEB}
 #chroot ${OUTPUT}/ rm ${RTL8188_DEB}
 
-echo "Add libnfc packages"
-mkdir ${OUTPUT}/tmp/libnfc
-cp ../contrib/libnfc/libnfc*.deb ${OUTPUT}/tmp/libnfc
-chroot ${OUTPUT}/ dpkg -i /tmp/libnfc/libnfc5_1.7.0-2_armel.deb /tmp/libnfc/libnfc-bin_1.7.0-2_armel.deb /tmp/libnfc/libnfc-examples_1.7.0-2_armel.deb
-rm -r ${OUTPUT}/tmp/libnfc
-
 
 
 echo "Install realtek firmware"
@@ -78,7 +72,7 @@ echo "Overwrite configs one more time"
 cp -r configs/* ${OUTPUT}/
 
 echo "Copy utils, examples to opt folder"
-cp -r ../utils ${OUTPUT}/opt/
+#~ cp -r ../utils ${OUTPUT}/opt/
 cp -r ../examples ${OUTPUT}/opt/
 
 
@@ -96,6 +90,20 @@ echo "Install cmux"
 wget https://github.com/contactless/cmux/releases/download/0.3/cmux -O ${OUTPUT}/opt/utils/gsm/cmux
 chmod a+x ${OUTPUT}/opt/utils/gsm/cmux
 
+echo "Install public key for contactless repo"
+chroot ${OUTPUT}/ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+chroot ${OUTPUT}/ apt-get update
+
+
+echo "Install packages from contactless repo"
+chroot ${OUTPUT}/ apt-get install hubpower python-wb-io modbus-utils wb-utils
+chroot ${OUTPUT}/ apt-get install libnfc5 libnfc-bin libnfc-examples
+
+# mqtt
+chroot ${OUTPUT}/ apt-get install libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
+
+# todo: should be in dependencies
+chroot ${OUTPUT}/ apt-get install  libjsoncpp0
 
 echo "Umount proc,dev,dev/pts in rootfs"
 umount ${OUTPUT}/proc

@@ -20,7 +20,7 @@ iface wlan0 inet static
 
 auto eth0
 iface eth0 inet dhcp
-   pre-up ifconfig eth0 hw ether 7e:f5:a2:c9:2e:9a || /bin/true
+   pre-up ifconfig eth0 down hw ether `cat /var/lib/wirenboard/serial.conf` up || /bin/true
 
 
 allow-hotplug eth1
