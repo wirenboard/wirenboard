@@ -1,0 +1,11 @@
+Source: wb-utils
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 9), pkg-config
+
+Package: wb-utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Wiren Board command-line utils

@@ -1,0 +1,9 @@
+Package: wb-utils
+Version: 1.0
+Architecture: armel
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Installed-Size: 58
+Depends: libc6 (>= 2.4)
+Section: misc
+Priority: optional
+Description: Wiren Board command-line utils
