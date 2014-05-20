@@ -83,7 +83,7 @@ wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip
 unzip master.zip
 cd ${ORIG_DIR}
 
-echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
+#~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
 
 echo "Install cmux"
