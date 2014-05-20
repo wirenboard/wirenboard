@@ -12,6 +12,7 @@ then cd to libnfc-1.7.0
 4) install dependencies
 
 
+dpkg-checkbuilddeps
 
 apt-get install debhelper dh-autoreconf libtool pkg-config libusb-dev
 
