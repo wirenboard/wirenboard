@@ -1,0 +1,11 @@
+Source: mqtt-wss
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 9), pkg-config
+
+Package: mqtt-wss
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, mosquitto-dev
+Description: MQTT-aware WebSocket to TCP Gateway

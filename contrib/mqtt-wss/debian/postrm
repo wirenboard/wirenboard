@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = "purge" ] ; then
+	update-rc.d wb-homa-gpio remove >/dev/null
+	update-rc.d wb-homa-w1 remove >/dev/null
+	update-rc.d wb-homa-ninja-bridge remove >/dev/null
+fi
+
+#DEBHELPER#
+
+exit 0

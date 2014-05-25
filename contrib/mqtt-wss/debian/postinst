@@ -1,0 +1,10 @@
+#!/bin/sh
+
+update-rc.d wb-homa-gpio defaults
+invoke-rc.d wb-homa-gpio start
+
+update-rc.d wb-homa-w1 defaults
+invoke-rc.d wb-homa-w1 start
+
+update-rc.d wb-homa-ninja-bridge defaults
+invoke-rc.d wb-homa-ninja-bridge start

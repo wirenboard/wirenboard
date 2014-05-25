@@ -1,0 +1,7 @@
+mqtt-wss (1.0) wheezy; urgency=low
+
+  * Initial debianization of https://github.com/stylpen/WSS/tree/mqtt
+
+ -- Evgeny Boger <boger@contactless.ru>  Sat, 24 May 2014 01:59:04 +0400
+
+
