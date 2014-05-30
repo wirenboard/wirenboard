@@ -4,7 +4,7 @@ PWM_NUM=2
 PWM_DIR=/sys/class/pwm/pwmchip0/pwm${PWM_NUM}
 
 if [ ! -d "$PWM_DIR" ]; then
-    echo 2 > /sys/class/pwm/export
+    echo 2 > /sys/class/pwm/pwmchip0/export
 fi;
 
 
