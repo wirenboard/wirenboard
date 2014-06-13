@@ -6,4 +6,4 @@ if [ "x$1" = "x" ]; then
     exit 1;
 fi
     
-sudo mkfs.ext4 $1 -E stride=2,stripe-width=1024 -b 4096 -L rootfs 262144
+sudo mkfs.ext4 $1 -E stride=2,stripe-width=1024 -b 4096 -L rootfs 131072
