@@ -1,6 +1,5 @@
 #!/bin/bash -e
 . /etc/wb_env.sh
 
-wb-adc-set-mux $1
-wb-adc-get-value
+wb-adc-set-mux $1 && wb-adc-get-value
 
