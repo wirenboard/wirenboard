@@ -40,13 +40,14 @@ echo "Overwrite configs"
 cp -r configs/* ${OUTPUT}/
 
 
-echo "Update apt"
+echo "Update&upgrade apt"
 sudo chroot ${OUTPUT}/ apt-get update
+sudo chroot ${OUTPUT}/ apt-get -y upgrade
 
 echo "Setup locales"
 chroot ${OUTPUT}/ apt-get -y install apt-utils dialog locales
 
-chroot ${OUTPUT}/ sed -i "s/^# en_US/en_US/" /etc/locale.gen
+cp configs/etc/locale.gen ${OUTPUT}/etc/locale.gen
 chroot ${OUTPUT}/ /usr/sbin/locale-gen
 LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
 
@@ -90,6 +91,7 @@ echo "Install cmux"
 wget https://github.com/contactless/cmux/releases/download/0.3/cmux -O ${OUTPUT}/opt/utils/gsm/cmux
 chmod a+x ${OUTPUT}/opt/utils/gsm/cmux
 
+
 echo "Install public key for contactless repo"
 chroot ${OUTPUT}/ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 chroot ${OUTPUT}/ apt-get update
@@ -100,10 +102,17 @@ chroot ${OUTPUT}/ apt-get install hubpower python-wb-io modbus-utils wb-utils
 chroot ${OUTPUT}/ apt-get install libnfc5 libnfc-bin libnfc-examples
 
 # mqtt
-chroot ${OUTPUT}/ apt-get install libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
+chroot ${OUTPUT}/ apt-get install libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
 
 # todo: should be in dependencies
 chroot ${OUTPUT}/ apt-get install  libjsoncpp0
+
+# smart-home stuff
+chroot ${OUTPUT}/ apt-get install  wb-homa-drivers mqtt-wss wb-homa-ism-radio webfs wb-homa-webinterface
+chroot ${OUTPUT}/ apt-get install  openssl ca-certificates
+
+
+
 
 echo "Umount proc,dev,dev/pts in rootfs"
 umount ${OUTPUT}/proc
