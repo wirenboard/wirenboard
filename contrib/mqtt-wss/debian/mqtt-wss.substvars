@@ -1,0 +1,2 @@
+shlibs:Depends=libc6 (>= 2.9), libgcc1 (>= 1:4.4.0), libstdc++6 (>= 4.6)
+misc:Depends=

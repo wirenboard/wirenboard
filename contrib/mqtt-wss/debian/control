@@ -7,5 +7,5 @@ Build-Depends: debhelper (>= 9), pkg-config
 
 Package: mqtt-wss
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mosquitto-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, mosquitto
 Description: MQTT-aware WebSocket to TCP Gateway

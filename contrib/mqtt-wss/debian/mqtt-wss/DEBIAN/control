@@ -1,0 +1,9 @@
+Package: mqtt-wss
+Version: 1.0
+Architecture: armel
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Installed-Size: 667
+Depends: libc6 (>= 2.9), libgcc1 (>= 1:4.4.0), libstdc++6 (>= 4.6), mosquitto
+Section: misc
+Priority: optional
+Description: MQTT-aware WebSocket to TCP Gateway
