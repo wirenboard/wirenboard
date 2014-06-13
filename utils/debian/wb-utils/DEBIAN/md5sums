@@ -1,8 +1,0 @@
-fb5a4a8d00272f8cb4b47b57da388749  usr/bin/lradc-set-current
-9714c7504e07db5fde9d3edb416f8cf1  usr/bin/wb-adc-get-value
-9c4c582e58978a5768a440f4ddd9b44f  usr/bin/wb-adc-read-channel
-43a413f6f35d7734d55798739919a4b4  usr/bin/wb-adc-set-mux
-1eb6bcc4eaa19f3bed4c967f31586972  usr/bin/wb-gen-serial
-3a584b24787c967586250f897b47aee2  usr/bin/wb-gsm
-e0db9292a59f24c62a883a13a54e54ef  usr/share/doc/wb-utils/changelog.gz
-d41d8cd98f00b204e9800998ecf8427e  usr/share/doc/wb-utils/copyright
