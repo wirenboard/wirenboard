@@ -1,0 +1,56 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# Wiren board
+
+wb_firstboot()
+{
+    if [ ! -d "/var/lib/wirenboard/" ]; then
+	mkdir /var/lib/wirenboard/
+    fi
+
+    echo "Regenerating SSH host keys"
+    echo "y\n" | ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa || return 1
+    echo 'y\n'| ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa || return 2
+    echo 'y\n'| ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa || return 3
+
+    echo "Get WB serial number"
+    wb-gen-serial > /var/lib/wirenboard/serial.conf || return 4
+
+    echo "Restarting up network interface"
+    /etc/init.d/netplug stop
+    ifdown eth0 ; ifdown eth0 ; ifup eth0
+    /etc/init.d/netplug start
+
+    echo "Resizing root partition..."
+    resize2fs /dev/mmcblk0p2
+    return 0
+}
+
+FLAG="/var/lib/wirenboard/firstboot.flag"
+if [ ! -f $FLAG ]; then
+    wb_firstboot
+    RC=$?
+    if [ $RC -ne "0" ] ; then
+	echo "Error in WB firstboot  script"
+	exit $RC
+    fi
+
+    touch /var/lib/wirenboard/firstboot.flag
+
+    echo "Rebooting..."
+    reboot
+fi
+
+
+exit 0

@@ -1,0 +1,12 @@
+Source: wb-configs
+Section: unknown
+Priority: optional
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: <insert the upstream URL, if relevant>
+
+Package: wb-configs
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Default config files for Wiren Board rootfs
