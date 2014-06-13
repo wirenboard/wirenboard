@@ -3,9 +3,9 @@ case "`cat /proc/device-tree/model`" in
     "Wiren Board rev. 3.2 (i.MX23)" )
 	WB_VERSION=32;
 
-	WB_GPIO_MUX_A=32;
+	WB_GPIO_MUX_A=34;
 	WB_GPIO_MUX_B=33;
-	WB_GPIO_MUX_C=34;
+	WB_GPIO_MUX_C=32;
 
 	WB_GPIO_PWR_33=39;
 	WB_GPIO_RFM_CS=51;
@@ -25,14 +25,14 @@ case "`cat /proc/device-tree/model`" in
 	WB_GPIO_FET_4=54;
 	WB_FET_COUNT=4;
 
-    WB_MUX_NAMES_0=( A1 a1 )
-    WB_MUX_NAMES_1=( A2 a2)
-    WB_MUX_NAMES_2=( A3 a3)
-    WB_MUX_NAMES_3=( A4 a4)
+    WB_MUX_NAMES_0=( A1 a1 ADC1 adc1)
+    WB_MUX_NAMES_1=( A2 a2 ADC2 adc2)
+    WB_MUX_NAMES_2=( A3 a3 ADC3 adc3)
+    WB_MUX_NAMES_3=( A4 a4 ADC4 adc4)
     WB_MUX_NAMES_4=( R1 r1)
-    WB_MUX_NAMES_5=( R2 r2)
-    WB_MUX_NAMES_6=( R3 r3)
-    WB_MUX_NAMES_7=( R4 r4)
+    WB_MUX_NAMES_5=( R4 r4)
+    WB_MUX_NAMES_6=( R2 r2)
+    WB_MUX_NAMES_7=( R3 r3)
 
 	WB_GPIO_A1=${WB_GPIO_FET_1};
 	WB_GPIO_A2=${WB_GPIO_FET_2};
