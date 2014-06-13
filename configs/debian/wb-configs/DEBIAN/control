@@ -1,9 +1,0 @@
-Package: wb-configs
-Version: 1.00
-Architecture: all
-Maintainer: Evgeny Boger <boger@contactless.ru>
-Installed-Size: 162
-Section: unknown
-Priority: optional
-Homepage: <insert the upstream URL, if relevant>
-Description: Default config files for Wiren Board rootfs

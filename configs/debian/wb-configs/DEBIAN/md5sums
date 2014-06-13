@@ -1,8 +1,0 @@
-97a1b717a2e1d2f914a46a10b7f0bc0d  boot/uEnv.txt
-90c2e4bcbf407f0d91720d0fb2685513  chroot_this.sh
-be83ab16a7bd33103882feb48f393067  modprobe.d/wirenboard.conf
-ead68aae2e3e3c04ba86e59a0c953c7b  root/.bashrc
-f3f547584bae332eac7d5f93c3a388cd  umount_chroot.sh
-3af0c4d23eaa9b31afaea3e43550261a  usr/share/doc/wb-configs/README.Debian
-4c4c7757a74f4f84f804f35857fe5f57  usr/share/doc/wb-configs/changelog.gz
-d6cdd41a7472045397c5448311b9ea63  usr/share/doc/wb-configs/copyright

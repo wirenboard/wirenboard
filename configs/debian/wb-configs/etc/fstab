@@ -1,2 +1,0 @@
-# UNCONFIGURED FSTAB FOR BASE SYSTEM
-/dev/mmcblk0p2   /           auto   errors=remount-ro   0   1

@@ -1,6 +1,0 @@
-deb http://security.debian.org/ wheezy/updates main
-deb http://ftp.debian.org/debian/ wheezy main
-#deb-src http://security.debian.org/ wheezy/updates main
-#deb-src http://ftp.debian.org/debian/ wheezy main
-
-deb [arch=armel,all] http://releases.contactless.ru/ wheezy main
