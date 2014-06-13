@@ -1,3 +1,14 @@
+wb-utils (1.02) stable; urgency=medium
+
+  * Fix r1-r4 mux gpios (again)
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 26 May 2014 00:50:49 +0400
+
+wb-utils (1.01) stable; urgency=medium
+
+  * Fix ADC mux gpios, add new aliases for a1-a4 channels 
+
+ -- Evgeny Boger <boger@contactless.ru>  Sun, 25 May 2014 17:06:00 +0400
+
 wb-utils (1.0) wheezy; urgency=low
 
   * Initial debianization
