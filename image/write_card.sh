@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ "x$1" = "x" ]; then
+    echo "please provide the image location"
+    exit 1;
+fi
+
 sudo umount /dev/mmcblk0p1
 sudo umount /dev/mmcblk0p2
 
