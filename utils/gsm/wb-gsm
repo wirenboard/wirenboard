@@ -164,6 +164,19 @@ function ensure_on() {
 	set_speed
 }
 
+function restart_if_broken() {
+    #~ set_speed
+    /usr/sbin/chat   TIMEOUT 5 ABORT "ERROR" ABORT "BUSY" "" ATZ OK "" > $PORT < $PORT
+    RC=$?
+
+    if [[ $RC != 0 ]] ; then
+        debug "connection test error!"
+        debug "Restarting GSM modem..."
+        ensure_on
+        sleep 5
+        exit $RC;
+    fi
+}
 init
 
 
@@ -180,6 +193,10 @@ case "$1" in
 	"on" )
 		ensure_on
 	;;
+
+    "restart_if_broken" )
+        restart_if_broken
+    ;;
 
 	"off" )
 		switch_off

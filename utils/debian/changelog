@@ -1,3 +1,11 @@
+wb-utils (1.03) stable; urgency=medium
+
+  * Add restart_if_broken command line argument to wb-gsm:
+  *  test if modem answers to AT command and if it doesn't then 
+  *  perform power restart cycle
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 05 Aug 2014 21:28:36 +0400
+
 wb-utils (1.02) stable; urgency=medium
 
   * Fix r1-r4 mux gpios (again)
