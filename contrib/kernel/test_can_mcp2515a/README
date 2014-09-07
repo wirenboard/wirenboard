@@ -1,0 +1,4 @@
+mcp2515a.ko => /lib/modules/3.13.0-imxv5-x0.1/kernel/drivers/net/can/
+
+modprobe -r mcp251x
+modprobe  mcp2515a
