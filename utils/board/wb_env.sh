@@ -11,6 +11,7 @@ for compat in $DT_COMPAT_LIST; do
         "contactless,imx23-wirenboard32" )
         WB_VERSION=32;
 
+        WB_ADC_TYPE=1
         WB_GPIO_MUX_A=34;
         WB_GPIO_MUX_B=33;
         WB_GPIO_MUX_C=32;
@@ -63,7 +64,7 @@ for compat in $DT_COMPAT_LIST; do
         WB_GPIO_W2=2
         WB_GPIO_W3=1
 
-        export WB_VERSION WB_GPIO_MUX_A WB_GPIO_MUX_B WB_GPIO_MUX_C \
+        export WB_VERSION WB_ADC_TYPE WB_GPIO_MUX_A WB_GPIO_MUX_B WB_GPIO_MUX_C \
             WB_GPIO_PWR_33 WB_GPIO_RFM_CS WB_GPIO_NRF_CS WB_GPIO_NRF_EN \
             WB_GSM_POWER_TYPE WB_GPIO_GSM_POWER WB_GPIO_GSM_PWRKEY \
             WB_GPIO_GSM_STATUS WB_GPIO_RELAY_1 WB_GPIO_RELAY_2 \
@@ -83,6 +84,7 @@ for compat in $DT_COMPAT_LIST; do
         WB_GPIO_GSM_RESET=7;
         WB_GPIO_GSM_PWRKEY=6;
 
+        WB_ADC_TYPE=1
         WB_GPIO_MUX_A=36;
         WB_GPIO_MUX_B=37;
         WB_GPIO_MUX_C=38;
@@ -129,7 +131,7 @@ for compat in $DT_COMPAT_LIST; do
         fi
 
 
-        export WB_VERSION WB_GSM_POWER_TYPE WB_GPIO_GSM_RESET \
+        export WB_VERSION  WB_ADC_TYPE WB_GSM_POWER_TYPE WB_GPIO_GSM_RESET \
             WB_GPIO_GSM_PWRKEY WB_GPIO_MUX_A WB_GPIO_MUX_B WB_GPIO_MUX_C \
             WB_GPIO_PWR_33 WB_GPIO_TB2 WB_GPIO_TB3 WB_GPIO_TB4 \
             WB_GPIO_TB5 WB_GPIO_TB6 WB_GPIO_TB7 WB_GPIO_TB19 \
@@ -144,6 +146,7 @@ for compat in $DT_COMPAT_LIST; do
         "contactless,imx23-wirenboard-kmon1" )
         WB_VERSION="KMON1";
 
+        WB_ADC_TYPE=1
         WB_GPIO_MUX_A=32;
         WB_GPIO_MUX_B=33;
         WB_GPIO_MUX_C=34;
@@ -217,7 +220,7 @@ for compat in $DT_COMPAT_LIST; do
         WB_GPIO_W1=92
 
         export WB_VERSION WB_GPIO_MUX_A WB_GPIO_MUX_B WB_GPIO_MUX_C \
-            WB_GPIO_PWR_33 \
+            WB_GPIO_PWR_33 WB_ADC_TYPE \
             WB_GSM_POWER_TYPE WB_GPIO_GSM_POWER WB_GPIO_GSM_PWRKEY \
             WB_GPIO_GSM_STATUS WB_GPIO_RELAY_1 WB_GPIO_RELAY_2 \
             WB_GPIO_RELAY_3 WB_GPIO_RELAY_4 WB_GPIO_RELAY_BACK_1 WB_GPIO_RELAY_BACK_2 \
@@ -232,6 +235,31 @@ for compat in $DT_COMPAT_LIST; do
             WB_GPIO_DRY_17 WB_GPIO_DRY_18 WB_GPIO_DRY_19 WB_GPIO_DRY_20 \
             WB_GPIO_DRY_21 WB_GPIO_DRY_22 \
             WB_GPIO_5V_ISOLATED_ON WB_GPIO_PROG_BUTTON
+
+        break;
+        ;;
+        "contactless,imx23-wirenboard-rcterm1" )
+        WB_VERSION="RCTERM1";
+
+        WB_ADC_TYPE=0
+        WB_GPIO_PWR_33=37;
+
+        WB_GSM_POWER_TYPE=2
+        WB_GPIO_GSM_POWER=50;
+        WB_GPIO_GSM_PWRKEY=52;
+        WB_GPIO_GSM_STATUS=51;
+
+        WB_FET_COUNT=0;
+
+        WB_GPIO_TFT_RESET=1
+        WB_GPIO_TFT_BACKLIGHT=60
+
+
+        export WB_VERSION WB_ADC_TYPE \
+            WB_GPIO_PWR_33 \
+            WB_GSM_POWER_TYPE WB_GPIO_GSM_POWER WB_GPIO_GSM_PWRKEY \
+            WB_GPIO_GSM_STATUS \
+            WB_FET_COUNT WB_GPIO_TFT_RESET WB_GPIO_TFT_BACKLIGHT
 
         break;
         ;;
