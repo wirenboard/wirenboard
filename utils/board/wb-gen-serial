@@ -14,7 +14,7 @@ function _gen_mac_simcom()
     RC=$?
 
     if [[ $RC != 0 ]] ; then
-        echo "ERROR"
+        debug "ERROR"
         return $RC;
     fi
 
