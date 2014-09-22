@@ -1,0 +1,500 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2012-08-13 23:30+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: mosquitto_sub.1.xml:6(refentrytitle) mosquitto_sub.1.xml:13(refname) mosquitto_sub.1.xml:19(command) mosquitto_sub.1.xml:57(command)
+msgid "mosquitto_sub"
+msgstr ""
+
+#: mosquitto_sub.1.xml:7(manvolnum) mosquitto_sub.1.xml:345(manvolnum)
+msgid "1"
+msgstr ""
+
+#: mosquitto_sub.1.xml:8(refmiscinfo)
+msgid "Mosquitto Project"
+msgstr ""
+
+#: mosquitto_sub.1.xml:9(refmiscinfo)
+msgid "Commands"
+msgstr ""
+
+#: mosquitto_sub.1.xml:14(refpurpose)
+msgid "an mqtt version 3.1 client for subscribing to topics"
+msgstr ""
+
+#: mosquitto_sub.1.xml:20(option) mosquitto_sub.1.xml:75(option)
+msgid "-c"
+msgstr ""
+
+#: mosquitto_sub.1.xml:21(option) mosquitto_sub.1.xml:119(option)
+msgid "-d"
+msgstr ""
+
+#: mosquitto_sub.1.xml:22(option) mosquitto_sub.1.xml:132(option)
+msgid "-h"
+msgstr ""
+
+#: mosquitto_sub.1.xml:22(replaceable)
+msgid "hostname"
+msgstr ""
+
+#: mosquitto_sub.1.xml:23(option) mosquitto_sub.1.xml:139(option)
+msgid "-i"
+msgstr ""
+
+#: mosquitto_sub.1.xml:23(replaceable)
+msgid "client_id"
+msgstr ""
+
+#: mosquitto_sub.1.xml:24(option) mosquitto_sub.1.xml:149(option)
+msgid "-I"
+msgstr ""
+
+#: mosquitto_sub.1.xml:24(replaceable)
+msgid "client id prefix"
+msgstr ""
+
+#: mosquitto_sub.1.xml:25(option) mosquitto_sub.1.xml:160(option)
+msgid "-k"
+msgstr ""
+
+#: mosquitto_sub.1.xml:25(replaceable)
+msgid "keepalive time"
+msgstr ""
+
+#: mosquitto_sub.1.xml:26(option) mosquitto_sub.1.xml:178(option)
+msgid "-p"
+msgstr ""
+
+#: mosquitto_sub.1.xml:26(replaceable)
+msgid "port number"
+msgstr ""
+
+#: mosquitto_sub.1.xml:27(option) mosquitto_sub.1.xml:213(option)
+msgid "-q"
+msgstr ""
+
+#: mosquitto_sub.1.xml:27(replaceable)
+msgid "message QoS"
+msgstr ""
+
+#: mosquitto_sub.1.xml:28(option) mosquitto_sub.1.xml:225(option)
+msgid "--quiet"
+msgstr ""
+
+#: mosquitto_sub.1.xml:29(option) mosquitto_sub.1.xml:253(option)
+msgid "-v"
+msgstr ""
+
+#: mosquitto_sub.1.xml:31(option) mosquitto_sub.1.xml:244(option)
+msgid "-u"
+msgstr ""
+
+#: mosquitto_sub.1.xml:31(replaceable)
+msgid "username"
+msgstr ""
+
+#: mosquitto_sub.1.xml:32(option) mosquitto_sub.1.xml:185(option)
+msgid "-P"
+msgstr ""
+
+#: mosquitto_sub.1.xml:32(replaceable)
+msgid "password"
+msgstr ""
+
+#: mosquitto_sub.1.xml:35(option) mosquitto_sub.1.xml:286(option)
+msgid "--will-topic"
+msgstr ""
+
+#: mosquitto_sub.1.xml:35(replaceable)
+msgid "topic"
+msgstr ""
+
+#: mosquitto_sub.1.xml:36(option) mosquitto_sub.1.xml:263(option)
+msgid "--will-payload"
+msgstr ""
+
+#: mosquitto_sub.1.xml:36(replaceable)
+msgid "payload"
+msgstr ""
+
+#: mosquitto_sub.1.xml:37(option) mosquitto_sub.1.xml:271(option)
+msgid "--will-qos"
+msgstr ""
+
+#: mosquitto_sub.1.xml:37(replaceable)
+msgid "qos"
+msgstr ""
+
+#: mosquitto_sub.1.xml:38(option) mosquitto_sub.1.xml:278(option)
+msgid "--will-retain"
+msgstr ""
+
+#: mosquitto_sub.1.xml:43(option) mosquitto_sub.1.xml:88(option)
+msgid "--cafile"
+msgstr ""
+
+#: mosquitto_sub.1.xml:43(replaceable) mosquitto_sub.1.xml:46(replaceable) mosquitto_sub.1.xml:47(replaceable)
+msgid "file"
+msgstr ""
+
+#: mosquitto_sub.1.xml:44(option) mosquitto_sub.1.xml:97(option)
+msgid "--capath"
+msgstr ""
+
+#: mosquitto_sub.1.xml:44(replaceable)
+msgid "dir"
+msgstr ""
+
+#: mosquitto_sub.1.xml:46(option) mosquitto_sub.1.xml:110(option)
+msgid "--cert"
+msgstr ""
+
+#: mosquitto_sub.1.xml:47(option) mosquitto_sub.1.xml:169(option)
+msgid "--key"
+msgstr ""
+
+#: mosquitto_sub.1.xml:50(option) mosquitto_sub.1.xml:195(option)
+msgid "--psk"
+msgstr ""
+
+#: mosquitto_sub.1.xml:50(replaceable)
+msgid "hex-key"
+msgstr ""
+
+#: mosquitto_sub.1.xml:51(option) mosquitto_sub.1.xml:205(option)
+msgid "--psk-identity"
+msgstr ""
+
+#: mosquitto_sub.1.xml:51(replaceable)
+msgid "identity"
+msgstr ""
+
+#: mosquitto_sub.1.xml:54(option) mosquitto_sub.1.xml:234(option)
+msgid "-t"
+msgstr ""
+
+#: mosquitto_sub.1.xml:54(replaceable)
+msgid "message-topic"
+msgstr ""
+
+#: mosquitto_sub.1.xml:59(option) mosquitto_sub.1.xml:126(option)
+msgid "--help"
+msgstr ""
+
+#: mosquitto_sub.1.xml:65(title)
+msgid "Description"
+msgstr ""
+
+#: mosquitto_sub.1.xml:66(para)
+msgid "<command>mosquitto_sub</command> is a simple mqtt version 3.1 client that will subscribe to a topic and print the messages that it receives."
+msgstr ""
+
+#: mosquitto_sub.1.xml:72(title)
+msgid "Options"
+msgstr ""
+
+#: mosquitto_sub.1.xml:76(option)
+msgid "--disable-clean-session"
+msgstr ""
+
+#: mosquitto_sub.1.xml:78(para)
+msgid "Disable the 'clean session' flag. This means that all of the subscriptions for the client will be maintained after it disconnects, along with subsequent QoS 1 and QoS 2 messages that arrive. When the client reconnects, it will receive all of the queued messages."
+msgstr ""
+
+#: mosquitto_sub.1.xml:83(para)
+msgid "If using this option, it is recommended that the client id is set manually with <option>--id</option>"
+msgstr ""
+
+#: mosquitto_sub.1.xml:90(para)
+msgid "Define the path to a file containing PEM encoded CA certificates that are trusted. Used to enable SSL communication."
+msgstr ""
+
+#: mosquitto_sub.1.xml:93(para)
+msgid "See also <option>--capath</option>"
+msgstr ""
+
+#: mosquitto_sub.1.xml:99(para)
+msgid "Define the path to a directory containing PEM encoded CA certificates that are trusted. Used to enable SSL communication."
+msgstr ""
+
+#: mosquitto_sub.1.xml:102(para)
+msgid "For <option>--capath</option> to work correctly, the certificate files must have \".crt\" as the file ending and you must run \"c_rehash &lt;path to capath&gt;\" each time you add/remove a certificate."
+msgstr ""
+
+#: mosquitto_sub.1.xml:106(para)
+msgid "See also <option>--cafile</option>"
+msgstr ""
+
+#: mosquitto_sub.1.xml:112(para)
+msgid "Define the path to a file containing a PEM encoded certificate for this client, if required by the server."
+msgstr ""
+
+#: mosquitto_sub.1.xml:115(para)
+msgid "See also <option>--key</option>."
+msgstr ""
+
+#: mosquitto_sub.1.xml:120(option)
+msgid "--debug"
+msgstr ""
+
+#: mosquitto_sub.1.xml:122(para)
+msgid "Enable debug messages."
+msgstr ""
+
+#: mosquitto_sub.1.xml:128(para)
+msgid "Display usage information."
+msgstr ""
+
+#: mosquitto_sub.1.xml:133(option)
+msgid "--host"
+msgstr ""
+
+#: mosquitto_sub.1.xml:135(para)
+msgid "Specify the host to connect to. Defaults to localhost."
+msgstr ""
+
+#: mosquitto_sub.1.xml:140(option)
+msgid "--id"
+msgstr ""
+
+#: mosquitto_sub.1.xml:142(para)
+msgid "The id to use for this client. If not given, defaults to mosquitto_sub_ appended with the process id of the client. Cannot be used at the same time as the <option>--id-prefix</option> argument."
+msgstr ""
+
+#: mosquitto_sub.1.xml:150(option)
+msgid "--id-prefix"
+msgstr ""
+
+#: mosquitto_sub.1.xml:152(para)
+msgid "Provide a prefix that the client id will be built from by appending the process id of the client. This is useful where the broker is using the clientid_prefixes option. Cannot be used at the same time as the <option>--id</option> argument."
+msgstr ""
+
+#: mosquitto_sub.1.xml:161(option)
+msgid "--keepalive"
+msgstr ""
+
+#: mosquitto_sub.1.xml:163(para)
+msgid "The number of seconds between sending PING commands to the broker for the purposes of informing it we are still connected and functioning. Defaults to 60 seconds."
+msgstr ""
+
+#: mosquitto_sub.1.xml:171(para)
+msgid "Define the path to a file containing a PEM encoded private key for this client, if required by the server."
+msgstr ""
+
+#: mosquitto_sub.1.xml:174(para)
+msgid "See also <option>--cert</option>."
+msgstr ""
+
+#: mosquitto_sub.1.xml:179(option)
+msgid "--port"
+msgstr ""
+
+#: mosquitto_sub.1.xml:181(para)
+msgid "Connect to the port specified instead of the default 1883."
+msgstr ""
+
+#: mosquitto_sub.1.xml:186(option)
+msgid "--pw"
+msgstr ""
+
+#: mosquitto_sub.1.xml:188(para)
+msgid "Provide a password to be used for authenticating with the broker. Using this argument without also specifying a username is invalid. This requires a broker that supports MQTT v3.1. See also the <option>--username</option> option."
+msgstr ""
+
+#: mosquitto_sub.1.xml:197(para)
+msgid "Provide the hexadecimal (no leading 0x) pre-shared-key matching the one used on the broker to use TLS-PSK encryption support. <option>--psk-identity</option> must also be provided to enable TLS-PSK."
+msgstr ""
+
+#: mosquitto_sub.1.xml:207(para)
+msgid "The client identity to use with TLS-PSK support. This may be used instead of a username if the broker is configured to do so."
+msgstr ""
+
+#: mosquitto_sub.1.xml:214(option)
+msgid "--qos"
+msgstr ""
+
+#: mosquitto_sub.1.xml:216(para)
+msgid "Specify the quality of service desired for the incoming messages, from 0, 1 and 2. Defaults to 0. See <citerefentry><refentrytitle>mqtt</refentrytitle><manvolnum>7</manvolnum></citerefentry> for more information on QoS."
+msgstr ""
+
+#: mosquitto_sub.1.xml:220(para)
+msgid "The QoS is identical for all topics subscribed to in a single instance of mosquitto_sub."
+msgstr ""
+
+#: mosquitto_sub.1.xml:227(para)
+msgid "If this argument is given, no runtime errors will be printed. This excludes any error messages given in case of invalid user input (e.g. using <option>--port</option> without a port)."
+msgstr ""
+
+#: mosquitto_sub.1.xml:235(option)
+msgid "--topic"
+msgstr ""
+
+#: mosquitto_sub.1.xml:237(para)
+msgid "The mqtt topic to subscribe to. See <citerefentry><refentrytitle>mqtt</refentrytitle><manvolnum>7</manvolnum></citerefentry> for more information on mqtt topics."
+msgstr ""
+
+#: mosquitto_sub.1.xml:240(para)
+msgid "This option may be repeated to subscribe to multiple topics."
+msgstr ""
+
+#: mosquitto_sub.1.xml:245(option)
+msgid "--username"
+msgstr ""
+
+#: mosquitto_sub.1.xml:247(para)
+msgid "Provide a username to be used for authenticating with the broker. This requires a broker that supports MQTT v3.1. See also the <option>--pw</option> argument."
+msgstr ""
+
+#: mosquitto_sub.1.xml:254(option)
+msgid "--verbose"
+msgstr ""
+
+#: mosquitto_sub.1.xml:256(para)
+msgid "Print received messages verbosely. With this argument, messages will be printed as \"topic payload\". When this argument is not given, the messages are printed as \"payload\"."
+msgstr ""
+
+#: mosquitto_sub.1.xml:265(para)
+msgid "Specify a message that will be stored by the broker and sent out if this client disconnects unexpectedly. This must be used in conjunction with <option>--will-topic</option>."
+msgstr ""
+
+#: mosquitto_sub.1.xml:273(para)
+msgid "The QoS to use for the Will. Defaults to 0. This must be used in conjunction with <option>--will-topic</option>."
+msgstr ""
+
+#: mosquitto_sub.1.xml:280(para)
+msgid "If given, if the client disconnects unexpectedly the message sent out will be treated as a retained message. This must be used in conjunction with <option>--will-topic</option>."
+msgstr ""
+
+#: mosquitto_sub.1.xml:288(para)
+msgid "The topic on which to send a Will, in the event that the client disconnects unexpectedly."
+msgstr ""
+
+#: mosquitto_sub.1.xml:296(title)
+msgid "Wills"
+msgstr ""
+
+#: mosquitto_sub.1.xml:297(para)
+msgid "mosquitto_sub can register a message with the broker that will be sent out if it disconnects unexpectedly. See <citerefentry><refentrytitle>mqtt</refentrytitle><manvolnum>7</manvolnum></citerefentry> for more information."
+msgstr ""
+
+#: mosquitto_sub.1.xml:301(para)
+msgid "The minimum requirement for this is to use <option>--will-topic</option> to specify which topic the will should be sent out on. This will result in a non-retained, zero length message with QoS 0."
+msgstr ""
+
+#: mosquitto_sub.1.xml:304(para)
+msgid "Use the <option>--will-retain</option>, <option>--will-payload</option> and <option>--will-qos</option> arguments to modify the other will parameters."
+msgstr ""
+
+#: mosquitto_sub.1.xml:309(title)
+msgid "Examples"
+msgstr ""
+
+#: mosquitto_sub.1.xml:310(para)
+msgid "Note that these really are examples - the subscriptions will work if you run them as shown, but there must be something publishing messages on those topics for you to receive anything."
+msgstr ""
+
+#: mosquitto_sub.1.xml:313(para)
+msgid "Subscribe to temperature information on localhost with QoS 1:"
+msgstr ""
+
+#: mosquitto_sub.1.xml:315(para)
+msgid "mosquitto_sub <literal>-t</literal> sensors/temperature <literal>-q</literal> 1"
+msgstr ""
+
+#: mosquitto_sub.1.xml:317(para)
+msgid "Subscribe to hard drive temperature updates on multiple machines/hard drives. This expects each machine to be publishing its hard drive temperature to sensors/machines/HOSTNAME/temperature/HD_NAME."
+msgstr ""
+
+#: mosquitto_sub.1.xml:322(para)
+msgid "mosquitto_sub <literal>-t</literal> sensors/machines/+/temperature/+"
+msgstr ""
+
+#: mosquitto_sub.1.xml:324(para)
+msgid "Subscribe to all broker status messages:"
+msgstr ""
+
+#: mosquitto_sub.1.xml:326(para)
+msgid "mosquitto_sub <literal>-v</literal><literal>-t</literal> \\$SYS/#"
+msgstr ""
+
+#: mosquitto_sub.1.xml:331(title)
+msgid "Bugs"
+msgstr ""
+
+#: mosquitto_sub.1.xml:332(para)
+msgid "<command>mosquitto_sub</command> bug information can be found at <uri type=\"webpage\">http://launchpad.net/mosquitto</uri>"
+msgstr ""
+
+#: mosquitto_sub.1.xml:337(title)
+msgid "See Also"
+msgstr ""
+
+#: mosquitto_sub.1.xml:340(link)
+msgid "mqtt"
+msgstr ""
+
+#: mosquitto_sub.1.xml:341(manvolnum) mosquitto_sub.1.xml:357(manvolnum)
+msgid "7"
+msgstr ""
+
+#: mosquitto_sub.1.xml:344(link)
+msgid "mosquitto_pub"
+msgstr ""
+
+#: mosquitto_sub.1.xml:348(link)
+msgid "mosquitto"
+msgstr ""
+
+#: mosquitto_sub.1.xml:349(manvolnum)
+msgid "8"
+msgstr ""
+
+#: mosquitto_sub.1.xml:352(link)
+msgid "libmosquitto"
+msgstr ""
+
+#: mosquitto_sub.1.xml:353(manvolnum)
+msgid "3"
+msgstr ""
+
+#: mosquitto_sub.1.xml:356(link)
+msgid "mosquitto-tls"
+msgstr ""
+
+#: mosquitto_sub.1.xml:363(title)
+msgid "Acknowledgements"
+msgstr ""
+
+#: mosquitto_sub.1.xml:364(para)
+msgid "This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+msgstr ""
+
+#: mosquitto_sub.1.xml:366(para)
+msgid "This product includes cryptographic software written by Eric Young (eay@cryptsoft.com)"
+msgstr ""
+
+#: mosquitto_sub.1.xml:368(para)
+msgid "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+msgstr ""
+
+#: mosquitto_sub.1.xml:373(title)
+msgid "Author"
+msgstr ""
+
+#: mosquitto_sub.1.xml:374(para)
+msgid "Roger Light <email>roger@atchoo.org</email>"
+msgstr ""
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+#: mosquitto_sub.1.xml:0(None)
+msgid "translator-credits"
+msgstr ""
+

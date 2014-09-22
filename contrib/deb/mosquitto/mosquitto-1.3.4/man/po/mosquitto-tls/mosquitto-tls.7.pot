@@ -1,0 +1,140 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2012-08-13 23:30+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: mosquitto-tls.7.xml:6(refentrytitle) mosquitto-tls.7.xml:13(refname)
+msgid "mosquitto-tls"
+msgstr ""
+
+#: mosquitto-tls.7.xml:7(manvolnum)
+msgid "7"
+msgstr ""
+
+#: mosquitto-tls.7.xml:8(refmiscinfo)
+msgid "Mosquitto Project"
+msgstr ""
+
+#: mosquitto-tls.7.xml:9(refmiscinfo)
+msgid "Conventions and miscellaneous"
+msgstr ""
+
+#: mosquitto-tls.7.xml:14(refpurpose)
+msgid "Configure SSL/TLS support for Mosquitto"
+msgstr ""
+
+#: mosquitto-tls.7.xml:18(title)
+msgid "Description"
+msgstr ""
+
+#: mosquitto-tls.7.xml:19(para)
+msgid "<command>mosquitto</command> provides SSL support for encrypted network connections and authentication. This manual describes how to create the files needed."
+msgstr ""
+
+#: mosquitto-tls.7.xml:25(title)
+msgid "Certificate Authority"
+msgstr ""
+
+#: mosquitto-tls.7.xml:26(para)
+msgid "Generate a certificate authority certificate and key."
+msgstr ""
+
+#: mosquitto-tls.7.xml:28(para)
+msgid "openssl req -new -x509 -days &lt;duration&gt; -extensions v3_ca -keyout ca.key -out ca.crt"
+msgstr ""
+
+#: mosquitto-tls.7.xml:33(title)
+msgid "Server"
+msgstr ""
+
+#: mosquitto-tls.7.xml:34(para)
+msgid "Generate a server key."
+msgstr ""
+
+#: mosquitto-tls.7.xml:36(para)
+msgid "openssl genrsa -des3 -out server.key 2048"
+msgstr ""
+
+#: mosquitto-tls.7.xml:39(para)
+msgid "Generate a server key without encryption."
+msgstr ""
+
+#: mosquitto-tls.7.xml:41(para)
+msgid "openssl genrsa -out server.key 2048"
+msgstr ""
+
+#: mosquitto-tls.7.xml:44(para) mosquitto-tls.7.xml:62(para)
+msgid "Generate a certificate signing request to send to the CA."
+msgstr ""
+
+#: mosquitto-tls.7.xml:46(para)
+msgid "openssl req -out server.csr -key server.key -new"
+msgstr ""
+
+#: mosquitto-tls.7.xml:49(para) mosquitto-tls.7.xml:67(para)
+msgid "Send the CSR to the CA, or sign it with your CA key:"
+msgstr ""
+
+#: mosquitto-tls.7.xml:51(para)
+msgid "openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days &lt;duration&gt;"
+msgstr ""
+
+#: mosquitto-tls.7.xml:56(title)
+msgid "Client"
+msgstr ""
+
+#: mosquitto-tls.7.xml:57(para)
+msgid "Generate a client key."
+msgstr ""
+
+#: mosquitto-tls.7.xml:59(para)
+msgid "openssl genrsa -des3 -out client.key 2048"
+msgstr ""
+
+#: mosquitto-tls.7.xml:64(para)
+msgid "openssl req -out client.csr -key client.key -new"
+msgstr ""
+
+#: mosquitto-tls.7.xml:69(para)
+msgid "openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days &lt;duration&gt;"
+msgstr ""
+
+#: mosquitto-tls.7.xml:74(title)
+msgid "See Also"
+msgstr ""
+
+#: mosquitto-tls.7.xml:77(link)
+msgid "mosquitto"
+msgstr ""
+
+#: mosquitto-tls.7.xml:78(manvolnum)
+msgid "8"
+msgstr ""
+
+#: mosquitto-tls.7.xml:81(link)
+msgid "mosquitto-conf"
+msgstr ""
+
+#: mosquitto-tls.7.xml:82(manvolnum)
+msgid "5"
+msgstr ""
+
+#: mosquitto-tls.7.xml:88(title)
+msgid "Author"
+msgstr ""
+
+#: mosquitto-tls.7.xml:89(para)
+msgid "Roger Light <email>roger@atchoo.org</email>"
+msgstr ""
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+#: mosquitto-tls.7.xml:0(None)
+msgid "translator-credits"
+msgstr ""
+

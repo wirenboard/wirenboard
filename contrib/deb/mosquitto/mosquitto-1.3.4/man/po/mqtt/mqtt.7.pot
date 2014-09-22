@@ -1,0 +1,224 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2012-08-13 23:30+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: mqtt.7.xml:6(refentrytitle) mqtt.7.xml:13(refname) mqtt.7.xml:19(command)
+msgid "mqtt"
+msgstr ""
+
+#: mqtt.7.xml:7(manvolnum)
+msgid "7"
+msgstr ""
+
+#: mqtt.7.xml:8(refmiscinfo)
+msgid "Mosquitto Project"
+msgstr ""
+
+#: mqtt.7.xml:9(refmiscinfo)
+msgid "Conventions and miscellaneous"
+msgstr ""
+
+#: mqtt.7.xml:14(refpurpose)
+msgid "MQ Telemetry Transport"
+msgstr ""
+
+#: mqtt.7.xml:24(title)
+msgid "Description"
+msgstr ""
+
+#: mqtt.7.xml:25(para)
+msgid "<command>mqtt</command> is a lightweight publish/subscribe messaging protocol. It is useful for use with low power sensors, but is applicable to many scenarios."
+msgstr ""
+
+#: mqtt.7.xml:27(para)
+msgid "This manual describes some of the features of mqtt version 3.1, to assist end users in getting the most out of the protocol. For more complete information on mqtt, see <uri type=\"webpage\">http://mqtt.org/</uri>."
+msgstr ""
+
+#: mqtt.7.xml:34(title)
+msgid "Publish/Subscribe"
+msgstr ""
+
+#: mqtt.7.xml:35(para)
+msgid "The mqtt protocol is based on the principle of publishing messages and subscribing to topics, or \"pub/sub\". Multiple clients connect to a broker and subscribe to topics that they are interested in. Clients also connect to the broker and publish messages to topics. Many clients may subscribe to the same topics and do with the information as they please. The broker and mqtt act as a simple, common interface for everything to connect to. This means that you if you have clients that dump subscribed messages to a database, to twitter, pachube or even a simple text file, then it becomes very simple to add new sensors or other data input to a database, twitter or so on."
+msgstr ""
+
+#: mqtt.7.xml:48(title)
+msgid "Topics/Subscriptions"
+msgstr ""
+
+#: mqtt.7.xml:49(para)
+msgid "Messages in mqtt are published on topics. There is no need to configure a topic, publishing on it is enough. Topics are treated as a hierarchy, using a slash (/) as a separator. This allows sensible arrangement of common themes to be created, much in the same way as a filesystem. For example, multiple computers may all publish their hard drive temperature information on the following topic, with their own computer and hard drive name being replaced as appropriate:"
+msgstr ""
+
+#: mqtt.7.xml:57(para)
+msgid "sensors/COMPUTER_NAME/temperature/HARDDRIVE_NAME"
+msgstr ""
+
+#: mqtt.7.xml:59(para)
+msgid "Clients can receive messages by creating subscriptions. A subscription may be to an explicit topic, in which case only messages to that topic will be received, or it may include wildcards. Two wildcards are available, <option>+</option> or <option>#</option>."
+msgstr ""
+
+#: mqtt.7.xml:63(para)
+msgid "<option>+</option> can be used as a wildcard for a single level of hierarchy. It could be used with the topic above to get information on all computers and hard drives as follows:"
+msgstr ""
+
+#: mqtt.7.xml:67(para)
+msgid "sensors/+/temperature/+"
+msgstr ""
+
+#: mqtt.7.xml:69(para)
+msgid "As another example, for a topic of \"a/b/c/d\", the following example subscriptions will match:"
+msgstr ""
+
+#: mqtt.7.xml:72(para) mqtt.7.xml:89(para)
+msgid "a/b/c/d"
+msgstr ""
+
+#: mqtt.7.xml:73(para)
+msgid "+/b/c/d"
+msgstr ""
+
+#: mqtt.7.xml:74(para)
+msgid "a/+/c/d"
+msgstr ""
+
+#: mqtt.7.xml:75(para)
+msgid "a/+/+/d"
+msgstr ""
+
+#: mqtt.7.xml:76(para)
+msgid "+/+/+/+"
+msgstr ""
+
+#: mqtt.7.xml:78(para)
+msgid "The following subscriptions will not match:"
+msgstr ""
+
+#: mqtt.7.xml:80(para)
+msgid "a/b/c"
+msgstr ""
+
+#: mqtt.7.xml:81(para)
+msgid "b/+/c/d"
+msgstr ""
+
+#: mqtt.7.xml:82(para)
+msgid "+/+/+"
+msgstr ""
+
+#: mqtt.7.xml:84(para)
+msgid "<option>#</option> can be used as a wildcard for all remaining levels of hierarchy. This means that it must be the final character in a subscription. With a topic of \"a/b/c/d\", the following example subscriptions will match:"
+msgstr ""
+
+#: mqtt.7.xml:90(para)
+msgid "#"
+msgstr ""
+
+#: mqtt.7.xml:91(para)
+msgid "a/#"
+msgstr ""
+
+#: mqtt.7.xml:92(para)
+msgid "a/b/#"
+msgstr ""
+
+#: mqtt.7.xml:93(para)
+msgid "a/b/c/#"
+msgstr ""
+
+#: mqtt.7.xml:94(para)
+msgid "+/b/c/#"
+msgstr ""
+
+#: mqtt.7.xml:99(title)
+msgid "Quality of Service"
+msgstr ""
+
+#: mqtt.7.xml:100(para)
+msgid "mqtt defines three levels of Quality of Service (QoS). The QoS defines how hard the broker/client will try to ensure that a message is received. Messages may be sent at any QoS level, and clients may attempt to subscribe to topics at any QoS level. This means that the client chooses the maximum QoS it will receive. For example, if a message is published at QoS 2 and a client is subscribed with QoS 0, the message will be delivered to that client with QoS 0. If a second client is also subscribed to the same topic, but with QoS 2, then it will receive the same message but with QoS 2. For a second example, if a client is subscribed with QoS 2 and a message is published on QoS 0, the client will receive it on QoS 0."
+msgstr ""
+
+#: mqtt.7.xml:111(para)
+msgid "Higher levels of QoS are more reliable, but involve higher latency and have higher bandwidth requirements."
+msgstr ""
+
+#: mqtt.7.xml:114(para)
+msgid "0: The broker/client will deliver the message once, with no confirmation."
+msgstr ""
+
+#: mqtt.7.xml:115(para)
+msgid "1: The broker/client will deliver the message at least once, with confirmation required."
+msgstr ""
+
+#: mqtt.7.xml:116(para)
+msgid "2: The broker/client will deliver the message exactly once by using a four step handshake."
+msgstr ""
+
+#: mqtt.7.xml:121(title)
+msgid "Retained Messages"
+msgstr ""
+
+#: mqtt.7.xml:122(para)
+msgid "All messages may be set to be retained. This means that the broker will keep the message even after sending it to all current subscribers. If a new subscription is made that matches the topic of the retained message, then the message will be sent to the client. This is useful as a \"last known good\" mechanism. If a topic is only updated infrequently, then without a retained message, a newly subscribed client may have to wait a long time to receive an update. With a retained message, the client will receive an instant update."
+msgstr ""
+
+#: mqtt.7.xml:133(title)
+msgid "Clean session / Durable connections"
+msgstr ""
+
+#: mqtt.7.xml:134(para)
+msgid "On connection, a client sets the \"clean session\" flag, which is sometimes also known as the \"clean start\" flag. If clean session is set to false, then the connection is treated as durable. This means that when the client disconnects, any subscriptions it has will remain and any subsequent QoS 1 or 2 messages will be stored until it connects again in the future. If clean session is true, then all subscriptions will be removed for the client when it disconnects."
+msgstr ""
+
+#: mqtt.7.xml:144(title)
+msgid "Wills"
+msgstr ""
+
+#: mqtt.7.xml:145(para)
+msgid "When a client connects to a broker, it may inform the broker that it has a will. This is a message that it wishes the broker to send when the client disconnects unexpectedly. The will message has a topic, QoS and retain status just the same as any other message."
+msgstr ""
+
+#: mqtt.7.xml:152(title)
+msgid "See Also"
+msgstr ""
+
+#: mqtt.7.xml:155(link)
+msgid "mosquitto"
+msgstr ""
+
+#: mqtt.7.xml:156(manvolnum)
+msgid "8"
+msgstr ""
+
+#: mqtt.7.xml:159(link)
+msgid "mosquitto_pub"
+msgstr ""
+
+#: mqtt.7.xml:160(manvolnum) mqtt.7.xml:164(manvolnum)
+msgid "1"
+msgstr ""
+
+#: mqtt.7.xml:163(link)
+msgid "mosquitto_sub"
+msgstr ""
+
+#: mqtt.7.xml:170(title)
+msgid "Author"
+msgstr ""
+
+#: mqtt.7.xml:171(para)
+msgid "Roger Light <email>roger@atchoo.org</email>"
+msgstr ""
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+#: mqtt.7.xml:0(None)
+msgid "translator-credits"
+msgstr ""
+

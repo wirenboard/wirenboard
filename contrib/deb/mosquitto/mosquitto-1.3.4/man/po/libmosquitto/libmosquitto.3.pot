@@ -1,0 +1,609 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2012-08-13 23:31+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: libmosquitto.3.xml:6(refentrytitle) libmosquitto.3.xml:13(refname)
+msgid "libmosquitto"
+msgstr ""
+
+#: libmosquitto.3.xml:7(manvolnum)
+msgid "3"
+msgstr ""
+
+#: libmosquitto.3.xml:8(refmiscinfo)
+msgid "Mosquitto Project"
+msgstr ""
+
+#: libmosquitto.3.xml:9(refmiscinfo)
+msgid "Library calls"
+msgstr ""
+
+#: libmosquitto.3.xml:14(refpurpose)
+msgid "MQTT version 3.1 client library"
+msgstr ""
+
+#: libmosquitto.3.xml:18(title)
+msgid "Description"
+msgstr ""
+
+#: libmosquitto.3.xml:19(para)
+msgid "This is an overview of how to use libmosquitto to create MQTT aware client programs. There may be separate man pages on each of the functions described here in the future. There is also a binding for libmosquitto for C++ and a Python implementation. They are not documented here but operate in a similar way."
+msgstr ""
+
+#: libmosquitto.3.xml:24(para)
+msgid "This is fairly incomplete, please see mosquitto.h for a better description of the functions."
+msgstr ""
+
+#: libmosquitto.3.xml:29(title)
+msgid "libmosquitto symbol names"
+msgstr ""
+
+#: libmosquitto.3.xml:30(para)
+msgid "All public functions in libmosquitto have the prefix \"mosquitto_\". Any other functions defined in the source code are to be treated as private functions and may change between any release. Do not use these functions!"
+msgstr ""
+
+#: libmosquitto.3.xml:37(title)
+msgid "Functions"
+msgstr ""
+
+#: libmosquitto.3.xml:40(title)
+msgid "Library version"
+msgstr ""
+
+#: libmosquitto.3.xml:42(function)
+msgid "mosquitto_lib_version"
+msgstr ""
+
+#: libmosquitto.3.xml:42(funcdef) libmosquitto.3.xml:57(funcdef) libmosquitto.3.xml:60(funcdef) libmosquitto.3.xml:82(funcdef) libmosquitto.3.xml:93(funcdef) libmosquitto.3.xml:99(funcdef) libmosquitto.3.xml:105(paramdef) libmosquitto.3.xml:109(funcdef) libmosquitto.3.xml:111(paramdef) libmosquitto.3.xml:116(funcdef) libmosquitto.3.xml:127(funcdef) libmosquitto.3.xml:130(paramdef) libmosquitto.3.xml:132(paramdef) libmosquitto.3.xml:136(funcdef) libmosquitto.3.xml:147(paramdef) libmosquitto.3.xml:148(paramdef) libmosquitto.3.xml:154(paramdef) libmosquitto.3.xml:155(paramdef) libmosquitto.3.xml:162(funcdef) libmosquitto.3.xml:170(funcdef) libmosquitto.3.xml:174(paramdef) libmosquitto.3.xml:176(paramdef) libmosquitto.3.xml:184(funcdef) libmosquitto.3.xml:188(paramdef) libmosquitto.3.xml:191(funcdef) libmosquitto.3.xml:201(funcdef) libmosquitto.3.xml:203(paramdef) libmosquitto.3.xml:204(paramdef) libmosquitto.3.xml:207(funcdef) libmosquitto.3.xml:209(paramdef) libmosquitto.3.xml:212(funcdef) libmosquitto.3.xml:214(paramdef) libmosquitto.3.xml:217(funcdef) libmosquitto.3.xml:221(funcdef) libmosquitto.3.xml:233(funcdef) libmosquitto.3.xml:237(funcdef) libmosquitto.3.xml:246(funcdef) libmosquitto.3.xml:251(funcdef) libmosquitto.3.xml:260(funcdef) libmosquitto.3.xml:265(funcdef) libmosquitto.3.xml:270(funcdef) libmosquitto.3.xml:275(funcdef) libmosquitto.3.xml:280(funcdef) libmosquitto.3.xml:285(funcdef) libmosquitto.3.xml:290(funcdef) libmosquitto.3.xml:300(paramdef) libmosquitto.3.xml:303(funcdef) libmosquitto.3.xml:308(funcdef) libmosquitto.3.xml:313(paramdef) libmosquitto.3.xml:316(funcdef) libmosquitto.3.xml:322(funcdef) libmosquitto.3.xml:324(paramdef) libmosquitto.3.xml:327(funcdef)
+msgid "int <placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:43(parameter)
+msgid "major"
+msgstr ""
+
+#: libmosquitto.3.xml:43(paramdef) libmosquitto.3.xml:44(paramdef) libmosquitto.3.xml:45(paramdef) libmosquitto.3.xml:172(paramdef) libmosquitto.3.xml:186(paramdef) libmosquitto.3.xml:193(paramdef) libmosquitto.3.xml:319(paramdef)
+msgid "int *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:44(parameter)
+msgid "minor"
+msgstr ""
+
+#: libmosquitto.3.xml:45(parameter)
+msgid "revision"
+msgstr ""
+
+#: libmosquitto.3.xml:47(para)
+msgid "Obtain version information about the library. If any of major, minor or revision are not NULL they will return the corresponding version numbers. The return value is an integer representation of the complete version number (e.g. 1009001 for 1.9.1) that can be used for comparisons."
+msgstr ""
+
+#: libmosquitto.3.xml:55(title)
+msgid "Library initialisation and cleanup"
+msgstr ""
+
+#: libmosquitto.3.xml:57(function)
+msgid "mosquitto_lib_init"
+msgstr ""
+
+#: libmosquitto.3.xml:60(function)
+msgid "mosquitto_lib_cleanup"
+msgstr ""
+
+#: libmosquitto.3.xml:62(para)
+msgid "Call mosquitto_lib_init() before using any of the other library functions and mosquitto_lib_cleanup() after finishing with the library."
+msgstr ""
+
+#: libmosquitto.3.xml:68(title)
+msgid "Client constructor/destructor"
+msgstr ""
+
+#: libmosquitto.3.xml:70(function)
+msgid "mosquitto_new"
+msgstr ""
+
+#: libmosquitto.3.xml:70(funcdef) libmosquitto.3.xml:78(paramdef) libmosquitto.3.xml:83(paramdef) libmosquitto.3.xml:94(paramdef) libmosquitto.3.xml:100(paramdef) libmosquitto.3.xml:110(paramdef) libmosquitto.3.xml:117(paramdef) libmosquitto.3.xml:128(paramdef) libmosquitto.3.xml:145(paramdef) libmosquitto.3.xml:152(paramdef) libmosquitto.3.xml:159(paramdef) libmosquitto.3.xml:163(paramdef) libmosquitto.3.xml:171(paramdef) libmosquitto.3.xml:185(paramdef) libmosquitto.3.xml:192(paramdef) libmosquitto.3.xml:202(paramdef) libmosquitto.3.xml:208(paramdef) libmosquitto.3.xml:213(paramdef) libmosquitto.3.xml:218(paramdef) libmosquitto.3.xml:222(paramdef) libmosquitto.3.xml:226(paramdef) libmosquitto.3.xml:234(paramdef) libmosquitto.3.xml:238(paramdef) libmosquitto.3.xml:247(paramdef) libmosquitto.3.xml:252(paramdef) libmosquitto.3.xml:261(paramdef) libmosquitto.3.xml:266(paramdef) libmosquitto.3.xml:271(paramdef) libmosquitto.3.xml:276(paramdef) libmosquitto.3.xml:281(paramdef) libmosquitto.3.xml:286(paramdef) libmosquitto.3.xml:291(paramdef)
+msgid "struct mosquitto *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:71(parameter) libmosquitto.3.xml:84(parameter)
+msgid "id"
+msgstr ""
+
+#: libmosquitto.3.xml:71(paramdef) libmosquitto.3.xml:84(paramdef) libmosquitto.3.xml:95(paramdef) libmosquitto.3.xml:96(paramdef) libmosquitto.3.xml:101(paramdef) libmosquitto.3.xml:102(paramdef) libmosquitto.3.xml:103(paramdef) libmosquitto.3.xml:104(paramdef) libmosquitto.3.xml:112(paramdef) libmosquitto.3.xml:113(paramdef) libmosquitto.3.xml:118(paramdef) libmosquitto.3.xml:119(paramdef) libmosquitto.3.xml:120(paramdef) libmosquitto.3.xml:129(paramdef) libmosquitto.3.xml:146(paramdef) libmosquitto.3.xml:153(paramdef) libmosquitto.3.xml:173(paramdef) libmosquitto.3.xml:187(paramdef) libmosquitto.3.xml:194(paramdef) libmosquitto.3.xml:299(funcdef) libmosquitto.3.xml:312(funcdef) libmosquitto.3.xml:317(paramdef) libmosquitto.3.xml:328(paramdef) libmosquitto.3.xml:329(paramdef)
+msgid "const char *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:72(parameter) libmosquitto.3.xml:85(parameter)
+msgid "clean_session"
+msgstr ""
+
+#: libmosquitto.3.xml:72(paramdef) libmosquitto.3.xml:85(paramdef) libmosquitto.3.xml:133(paramdef) libmosquitto.3.xml:177(paramdef) libmosquitto.3.xml:225(funcdef) libmosquitto.3.xml:239(paramdef)
+msgid "bool <placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:73(parameter) libmosquitto.3.xml:86(parameter) libmosquitto.3.xml:253(parameter)
+msgid "obj"
+msgstr ""
+
+#: libmosquitto.3.xml:73(paramdef) libmosquitto.3.xml:86(paramdef) libmosquitto.3.xml:253(paramdef)
+msgid "void *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:75(para)
+msgid "Create a new mosquitto client instance."
+msgstr ""
+
+#: libmosquitto.3.xml:77(function)
+msgid "mosquitto_destroy"
+msgstr ""
+
+#: libmosquitto.3.xml:77(funcdef) libmosquitto.3.xml:144(funcdef) libmosquitto.3.xml:151(funcdef) libmosquitto.3.xml:158(funcdef) libmosquitto.3.xml:262(paramdef) libmosquitto.3.xml:267(paramdef) libmosquitto.3.xml:272(paramdef) libmosquitto.3.xml:277(paramdef) libmosquitto.3.xml:282(paramdef) libmosquitto.3.xml:287(paramdef) libmosquitto.3.xml:292(paramdef)
+msgid "void <placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:78(parameter) libmosquitto.3.xml:83(parameter) libmosquitto.3.xml:94(parameter) libmosquitto.3.xml:100(parameter) libmosquitto.3.xml:110(parameter) libmosquitto.3.xml:117(parameter) libmosquitto.3.xml:128(parameter) libmosquitto.3.xml:145(parameter) libmosquitto.3.xml:152(parameter) libmosquitto.3.xml:159(parameter) libmosquitto.3.xml:163(parameter) libmosquitto.3.xml:171(parameter) libmosquitto.3.xml:185(parameter) libmosquitto.3.xml:192(parameter) libmosquitto.3.xml:202(parameter) libmosquitto.3.xml:208(parameter) libmosquitto.3.xml:213(parameter) libmosquitto.3.xml:218(parameter) libmosquitto.3.xml:222(parameter) libmosquitto.3.xml:226(parameter) libmosquitto.3.xml:234(parameter) libmosquitto.3.xml:238(parameter) libmosquitto.3.xml:247(parameter) libmosquitto.3.xml:252(parameter) libmosquitto.3.xml:261(parameter) libmosquitto.3.xml:266(parameter) libmosquitto.3.xml:271(parameter) libmosquitto.3.xml:276(parameter) libmosquitto.3.xml:281(parameter) libmosquitto.3.xml:286(parameter) libmosquitto.3.xml:291(parameter)
+msgid "mosq"
+msgstr ""
+
+#: libmosquitto.3.xml:80(para)
+msgid "Use to free memory associated with a mosquitto client instance."
+msgstr ""
+
+#: libmosquitto.3.xml:82(function)
+msgid "mosquitto_reinitialise"
+msgstr ""
+
+#: libmosquitto.3.xml:91(title)
+msgid "Authentication and encryption"
+msgstr ""
+
+#: libmosquitto.3.xml:93(function)
+msgid "mosquitto_username_pw_set"
+msgstr ""
+
+#: libmosquitto.3.xml:95(parameter)
+msgid "username"
+msgstr ""
+
+#: libmosquitto.3.xml:96(parameter)
+msgid "password"
+msgstr ""
+
+#: libmosquitto.3.xml:99(function)
+msgid "mosquitto_tls_set"
+msgstr ""
+
+#: libmosquitto.3.xml:101(parameter)
+msgid "cafile"
+msgstr ""
+
+#: libmosquitto.3.xml:102(parameter)
+msgid "capath"
+msgstr ""
+
+#: libmosquitto.3.xml:103(parameter)
+msgid "certfile"
+msgstr ""
+
+#: libmosquitto.3.xml:104(parameter)
+msgid "keyfile"
+msgstr ""
+
+#: libmosquitto.3.xml:105(parameter)
+msgid "(*pw_callback)(char *buf, int size, int rwflag, void *userdata)"
+msgstr ""
+
+#: libmosquitto.3.xml:109(function)
+msgid "mosquitto_tls_opts_set"
+msgstr ""
+
+#: libmosquitto.3.xml:111(parameter)
+msgid "cert_reqs"
+msgstr ""
+
+#: libmosquitto.3.xml:112(parameter)
+msgid "tls_version"
+msgstr ""
+
+#: libmosquitto.3.xml:113(parameter) libmosquitto.3.xml:120(parameter)
+msgid "ciphers"
+msgstr ""
+
+#: libmosquitto.3.xml:116(function)
+msgid "mosquitto_tls_psk_set"
+msgstr ""
+
+#: libmosquitto.3.xml:118(parameter)
+msgid "psk"
+msgstr ""
+
+#: libmosquitto.3.xml:119(parameter)
+msgid "identity"
+msgstr ""
+
+#: libmosquitto.3.xml:125(title)
+msgid "Wills"
+msgstr ""
+
+#: libmosquitto.3.xml:127(function)
+msgid "mosquitto_will_set"
+msgstr ""
+
+#: libmosquitto.3.xml:129(parameter) libmosquitto.3.xml:173(parameter) libmosquitto.3.xml:329(parameter)
+msgid "topic"
+msgstr ""
+
+#: libmosquitto.3.xml:130(parameter) libmosquitto.3.xml:174(parameter)
+msgid "payloadlen"
+msgstr ""
+
+#: libmosquitto.3.xml:131(parameter) libmosquitto.3.xml:175(parameter)
+msgid "payload"
+msgstr ""
+
+#: libmosquitto.3.xml:131(paramdef) libmosquitto.3.xml:175(paramdef)
+msgid "const void *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:132(parameter) libmosquitto.3.xml:176(parameter) libmosquitto.3.xml:188(parameter)
+msgid "qos"
+msgstr ""
+
+#: libmosquitto.3.xml:133(parameter) libmosquitto.3.xml:177(parameter)
+msgid "retain"
+msgstr ""
+
+#: libmosquitto.3.xml:136(function)
+msgid "mosquitto_will_clear"
+msgstr ""
+
+#: libmosquitto.3.xml:137(parameter)
+msgid "struct mosquitto *mosq"
+msgstr ""
+
+#: libmosquitto.3.xml:142(title)
+msgid "Connect/disconnect"
+msgstr ""
+
+#: libmosquitto.3.xml:144(function)
+msgid "mosquitto_connect"
+msgstr ""
+
+#: libmosquitto.3.xml:146(parameter) libmosquitto.3.xml:153(parameter)
+msgid "host"
+msgstr ""
+
+#: libmosquitto.3.xml:147(parameter) libmosquitto.3.xml:154(parameter)
+msgid "port"
+msgstr ""
+
+#: libmosquitto.3.xml:148(parameter) libmosquitto.3.xml:155(parameter)
+msgid "keepalive"
+msgstr ""
+
+#: libmosquitto.3.xml:151(function)
+msgid "mosquitto_connect_async"
+msgstr ""
+
+#: libmosquitto.3.xml:158(function)
+msgid "mosquitto_reconnect"
+msgstr ""
+
+#: libmosquitto.3.xml:162(function)
+msgid "mosquitto_disconnect"
+msgstr ""
+
+#: libmosquitto.3.xml:168(title)
+msgid "Publish"
+msgstr ""
+
+#: libmosquitto.3.xml:170(function)
+msgid "mosquitto_publish"
+msgstr ""
+
+#: libmosquitto.3.xml:172(parameter) libmosquitto.3.xml:186(parameter) libmosquitto.3.xml:193(parameter)
+msgid "mid"
+msgstr ""
+
+#: libmosquitto.3.xml:182(title)
+msgid "Subscribe/unsubscribe"
+msgstr ""
+
+#: libmosquitto.3.xml:184(function)
+msgid "mosquitto_subscribe"
+msgstr ""
+
+#: libmosquitto.3.xml:187(parameter) libmosquitto.3.xml:194(parameter) libmosquitto.3.xml:328(parameter)
+msgid "sub"
+msgstr ""
+
+#: libmosquitto.3.xml:191(function)
+msgid "mosquitto_unsubscribe"
+msgstr ""
+
+#: libmosquitto.3.xml:199(title)
+msgid "Network loop"
+msgstr ""
+
+#: libmosquitto.3.xml:201(function)
+msgid "mosquitto_loop"
+msgstr ""
+
+#: libmosquitto.3.xml:203(parameter)
+msgid "timeout"
+msgstr ""
+
+#: libmosquitto.3.xml:204(parameter) libmosquitto.3.xml:209(parameter) libmosquitto.3.xml:214(parameter)
+msgid "max_packets"
+msgstr ""
+
+#: libmosquitto.3.xml:207(function)
+msgid "mosquitto_loop_read"
+msgstr ""
+
+#: libmosquitto.3.xml:212(function)
+msgid "mosquitto_loop_write"
+msgstr ""
+
+#: libmosquitto.3.xml:217(function)
+msgid "mosquitto_loop_misc"
+msgstr ""
+
+#: libmosquitto.3.xml:221(function)
+msgid "mosquitto_socket"
+msgstr ""
+
+#: libmosquitto.3.xml:225(function)
+msgid "mosquitto_want_write"
+msgstr ""
+
+#: libmosquitto.3.xml:231(title)
+msgid "Threaded network loop"
+msgstr ""
+
+#: libmosquitto.3.xml:233(function)
+msgid "mosquitto_loop_start"
+msgstr ""
+
+#: libmosquitto.3.xml:237(function)
+msgid "mosquitto_loop_stop"
+msgstr ""
+
+#: libmosquitto.3.xml:239(parameter)
+msgid "force"
+msgstr ""
+
+#: libmosquitto.3.xml:244(title)
+msgid "Misc client functions"
+msgstr ""
+
+#: libmosquitto.3.xml:246(function)
+msgid "mosquitto_message_retry_set"
+msgstr ""
+
+#: libmosquitto.3.xml:248(parameter)
+msgid "message_retry"
+msgstr ""
+
+#: libmosquitto.3.xml:248(paramdef)
+msgid "unsigned int <placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:251(function)
+msgid "mosquitto_user_data_set"
+msgstr ""
+
+#: libmosquitto.3.xml:258(title)
+msgid "Callbacks"
+msgstr ""
+
+#: libmosquitto.3.xml:260(function)
+msgid "mosquitto_connect_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:262(parameter)
+msgid "(*on_connect)(struct mosquitto *, void *, int)"
+msgstr ""
+
+#: libmosquitto.3.xml:265(function)
+msgid "mosquitto_disconnect_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:267(parameter)
+msgid "(*on_disconnect)(struct mosquitto *, void *, int)"
+msgstr ""
+
+#: libmosquitto.3.xml:270(function)
+msgid "mosquitto_publish_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:272(parameter)
+msgid "(*on_publish)(struct mosquitto *, void *, int)"
+msgstr ""
+
+#: libmosquitto.3.xml:275(function)
+msgid "mosquitto_message_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:277(parameter)
+msgid "(*on_message)(struct mosquitto *, void *, const struct mosquitto_message *)"
+msgstr ""
+
+#: libmosquitto.3.xml:280(function)
+msgid "mosquitto_subscribe_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:282(parameter)
+msgid "(*on_subscribe)(struct mosquitto *, void *, int, int, const int *)"
+msgstr ""
+
+#: libmosquitto.3.xml:285(function)
+msgid "mosquitto_unsubscribe_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:287(parameter)
+msgid "(*on_unsubscribe)(struct mosquitto *, void *, int)"
+msgstr ""
+
+#: libmosquitto.3.xml:290(function)
+msgid "mosquitto_log_callback_set"
+msgstr ""
+
+#: libmosquitto.3.xml:292(parameter)
+msgid "(*on_unsubscribe)(struct mosquitto *, void *, int, const char *)"
+msgstr ""
+
+#: libmosquitto.3.xml:297(title)
+msgid "Utility functions"
+msgstr ""
+
+#: libmosquitto.3.xml:299(function)
+msgid "mosquitto_connack_string"
+msgstr ""
+
+#: libmosquitto.3.xml:300(parameter)
+msgid "connack_code"
+msgstr ""
+
+#: libmosquitto.3.xml:303(function)
+msgid "mosquitto_message_copy"
+msgstr ""
+
+#: libmosquitto.3.xml:304(parameter)
+msgid "dst"
+msgstr ""
+
+#: libmosquitto.3.xml:304(paramdef)
+msgid "struct mosquitto_message *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:305(parameter)
+msgid "src"
+msgstr ""
+
+#: libmosquitto.3.xml:305(paramdef)
+msgid "const struct mosquitto_message *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:308(function)
+msgid "mosquitto_message_free"
+msgstr ""
+
+#: libmosquitto.3.xml:309(parameter)
+msgid "message"
+msgstr ""
+
+#: libmosquitto.3.xml:309(paramdef)
+msgid "struct mosquitto_message **<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:312(function)
+msgid "mosquitto_strerror"
+msgstr ""
+
+#: libmosquitto.3.xml:313(parameter)
+msgid "mosq_errno"
+msgstr ""
+
+#: libmosquitto.3.xml:316(function)
+msgid "mosquitto_sub_topic_tokenise"
+msgstr ""
+
+#: libmosquitto.3.xml:317(parameter)
+msgid "subtopic"
+msgstr ""
+
+#: libmosquitto.3.xml:318(parameter) libmosquitto.3.xml:323(parameter)
+msgid "topics"
+msgstr ""
+
+#: libmosquitto.3.xml:318(paramdef) libmosquitto.3.xml:323(paramdef)
+msgid "char ***<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:319(parameter) libmosquitto.3.xml:324(parameter)
+msgid "count"
+msgstr ""
+
+#: libmosquitto.3.xml:322(function)
+msgid "mosquitto_sub_topic_tokens_free"
+msgstr ""
+
+#: libmosquitto.3.xml:327(function)
+msgid "mosquitto_topic_matches_sub"
+msgstr ""
+
+#: libmosquitto.3.xml:330(parameter)
+msgid "result"
+msgstr ""
+
+#: libmosquitto.3.xml:330(paramdef)
+msgid "bool *<placeholder-1/>"
+msgstr ""
+
+#: libmosquitto.3.xml:336(title)
+msgid "Examples"
+msgstr ""
+
+#: libmosquitto.3.xml:337(programlisting)
+#, no-wrap
+msgid "\n#include &lt;stdio.h&gt;\n#include &lt;mosquitto.h&gt;\n\nvoid my_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)\n{\n\tif(message-&gt;payloadlen){\n\t\tprintf(\"%s %s\\n\", message-&gt;topic, message-&gt;payload);\n\t}else{\n\t\tprintf(\"%s (null)\\n\", message-&gt;topic);\n\t}\n\tfflush(stdout);\n}\n\nvoid my_connect_callback(struct mosquitto *mosq, void *obj, int result)\n{\n\tint i;\n\tif(!result){\n\t\t/* Subscribe to broker information topics on successful connect. */\n\t\tmosquitto_subscribe(mosq, NULL, \"$SYS/#\", 2);\n\t}else{\n\t\tfprintf(stderr, \"Connect failed\\n\");\n\t}\n}\n\nvoid my_subscribe_callback(struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos)\n{\n\tint i;\n\n\tprintf(\"Subscribed (mid: %d): %d\", mid, granted_qos[0]);\n\tfor(i=1; i&lt;qos_count; i++){\n\t\tprintf(\", %d\", granted_qos[i]);\n\t}\n\tprintf(\"\\n\");\n}\n\nvoid my_log_callback(struct mosquitto *mosq, void *obj, int level, const char *str)\n{\n\t/* Pring all log messages regardless of level. */\n\tprintf(\"%s\\n\", str);\n}\n\nint main(int argc, char *argv[])\n{\n\tchar id[30];\n\tint i;\n\tchar *host = \"localhost\";\n\tint port = 1883;\n\tint keepalive = 60;\n\tbool clean_session = true;\n\tstruct mosquitto *mosq = NULL;\n\n\tmosquitto_lib_init();\n\tmosq = mosquitto_new(id, clean_session, NULL);\n\tif(!mosq){\n\t\tfprintf(stderr, \"Error: Out of memory.\\n\");\n\t\treturn 1;\n\t}\n\tmosquitto_log_callback_set(mosq, my_log_callback);\n\n\tmosquitto_connect_callback_set(mosq, my_connect_callback);\n\tmosquitto_message_callback_set(mosq, my_message_callback);\n\tmosquitto_subscribe_callback_set(mosq, my_subscribe_callback);\n\n\tif(mosquitto_connect(mosq, host, port, keepalive)){\n\t\tfprintf(stderr, \"Unable to connect.\\n\");\n\t\treturn 1;\n\t}\n\n\twhile(!mosquitto_loop(mosq, -1)){\n\t}\n\tmosquitto_destroy(mosq);\n\tmosquitto_lib_cleanup();\n\treturn 0;\n}\n\t\t"
+msgstr ""
+
+#: libmosquitto.3.xml:415(title)
+msgid "See Also"
+msgstr ""
+
+#: libmosquitto.3.xml:418(link)
+msgid "mosquitto"
+msgstr ""
+
+#: libmosquitto.3.xml:419(manvolnum)
+msgid "8"
+msgstr ""
+
+#: libmosquitto.3.xml:422(link)
+msgid "mqtt"
+msgstr ""
+
+#: libmosquitto.3.xml:423(manvolnum)
+msgid "7"
+msgstr ""
+
+#: libmosquitto.3.xml:429(title)
+msgid "Acknowledgements"
+msgstr ""
+
+#: libmosquitto.3.xml:430(para)
+msgid "This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+msgstr ""
+
+#: libmosquitto.3.xml:432(para)
+msgid "This product includes cryptographic software written by Eric Young (eay@cryptsoft.com)"
+msgstr ""
+
+#: libmosquitto.3.xml:434(para)
+msgid "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+msgstr ""
+
+#: libmosquitto.3.xml:439(title)
+msgid "Author"
+msgstr ""
+
+#: libmosquitto.3.xml:440(para)
+msgid "Roger Light <email>roger@atchoo.org</email>"
+msgstr ""
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+#: libmosquitto.3.xml:0(None)
+msgid "translator-credits"
+msgstr ""
+

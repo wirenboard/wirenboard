@@ -1,0 +1,13 @@
+Description: Disable bad test, upstream is going to improve it.
+Author: Roger Light <roger@atchoo.org>
+Forwarded: not-needed
+--- a/test/lib/Makefile
++++ b/test/lib/Makefile
+@@ -39,7 +39,6 @@
+ 	./08-ssl-connect-no-auth.py $@/08-ssl-connect-no-auth.test
+ 	./08-ssl-connect-cert-auth.py $@/08-ssl-connect-cert-auth.test
+ 	./08-ssl-bad-cacert.py $@/08-ssl-bad-cacert.test
+-	./08-ssl-fake-cacert.py $@/08-ssl-fake-cacert.test
+ 	./09-util-topic-matching.py $@/09-util-topic-matching.test
+ 	./09-util-topic-tokenise.py $@/09-util-topic-tokenise.test
+ 

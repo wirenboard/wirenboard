@@ -1,0 +1,1028 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2012-08-13 23:30+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: mosquitto.conf.5.xml:6(refentrytitle) mosquitto.conf.5.xml:13(refname) mosquitto.conf.5.xml:19(command) mosquitto.conf.5.xml:978(para)
+msgid "mosquitto.conf"
+msgstr ""
+
+#: mosquitto.conf.5.xml:7(manvolnum) mosquitto.conf.5.xml:860(entry) mosquitto.conf.5.xml:1008(manvolnum)
+msgid "5"
+msgstr ""
+
+#: mosquitto.conf.5.xml:8(refmiscinfo)
+msgid "Mosquitto Project"
+msgstr ""
+
+#: mosquitto.conf.5.xml:9(refmiscinfo)
+msgid "File formats and conventions"
+msgstr ""
+
+#: mosquitto.conf.5.xml:14(refpurpose)
+msgid "the configuration file for mosquitto"
+msgstr ""
+
+#: mosquitto.conf.5.xml:24(title)
+msgid "Description"
+msgstr ""
+
+#: mosquitto.conf.5.xml:25(para)
+msgid "<command>mosquitto.conf</command> is the configuration file for mosquitto. This file can reside anywhere as long as mosquitto can read it. By default, mosquitto does not need a configuration file and will use the default values listed below. See <citerefentry><refentrytitle>mosquitto</refentrytitle><manvolnum>8</manvolnum></citerefentry> for information on how to load a configuration file."
+msgstr ""
+
+#: mosquitto.conf.5.xml:34(title)
+msgid "File Format"
+msgstr ""
+
+#: mosquitto.conf.5.xml:35(para)
+msgid "All lines with a # as the very first character are treated as a comment."
+msgstr ""
+
+#: mosquitto.conf.5.xml:37(para)
+msgid "Configuration lines start with a variable name. The variable value is separated from the name by a single space."
+msgstr ""
+
+#: mosquitto.conf.5.xml:42(title)
+msgid "Authentication"
+msgstr ""
+
+#: mosquitto.conf.5.xml:43(para)
+msgid "The authentication options described below allow a wide range of possibilities in conjunction with the listener options. This section aims to clarify the possibilities."
+msgstr ""
+
+#: mosquitto.conf.5.xml:46(para)
+msgid "The simplest option is to have no authentication at all. This is the default if no other options are given. Unauthenticated encrypted support is provided by using the certificate based SSL/TLS based options cafile/capath, certfile and keyfile."
+msgstr ""
+
+#: mosquitto.conf.5.xml:50(para)
+msgid "MQTT provides username/password authentication as part of the protocol. Use the password_file option to define the valid usernames and passwords. Be sure to use network encryption if you are using this option otherwise the username and password will be vulnerable to interception."
+msgstr ""
+
+#: mosquitto.conf.5.xml:55(para)
+msgid "When using certificate based encryption there are two options that affect authentication. The first is require_certificate, which may be set to true or false. If false, the SSL/TLS component of the client will verify the server but there is no requirement for the client to provide anything for the server: authentication is limited to the MQTT built in username/password. If require_certificate is true, the client must provide a valid certificate in order to connect successfully. In this case, the second option, use_identity_as_username, becomes relevant. If set to true, the Common Name (CN) from the client certificate is used instead of the MQTT username for access control purposes. The password is not replaced because it is assumed that only authenticated clients have valid certificates. If use_identity_as_username is false, the client must authenticate as normal (if required by password_file) through the MQTT options."
+msgstr ""
+
+#: mosquitto.conf.5.xml:71(para)
+msgid "When using pre-shared-key based encryption through the psk_hint and psk_file options, the client must provide a valid identity and key in order to connect to the broker before any MQTT communication takes place. If use_identity_as_username is true, the PSK identity is used instead of the MQTT username for access control purposes. If use_identity_as_username is false, the client may still authenticate using the MQTT username/password if using the password_file option."
+msgstr ""
+
+#: mosquitto.conf.5.xml:79(para)
+msgid "Both certificate and PSK based encryption are configured on a per-listener basis."
+msgstr ""
+
+#: mosquitto.conf.5.xml:80(para)
+msgid "Authentication plugins can be created to replace the password_file and psk_file options (as well as the ACL options) with e.g. SQL based lookups."
+msgstr ""
+
+#: mosquitto.conf.5.xml:83(para)
+msgid "It is possible to support multiple authentication schemes at once. A config could be created that had a listener for all of the different encryption options described above and hence a large number of ways of authenticating."
+msgstr ""
+
+#: mosquitto.conf.5.xml:90(title) mosquitto.conf.5.xml:470(title)
+msgid "General Options"
+msgstr ""
+
+#: mosquitto.conf.5.xml:93(option)
+msgid "acl_file"
+msgstr ""
+
+#: mosquitto.conf.5.xml:93(replaceable) mosquitto.conf.5.xml:160(replaceable) mosquitto.conf.5.xml:287(replaceable) mosquitto.conf.5.xml:363(replaceable) mosquitto.conf.5.xml:377(replaceable) mosquitto.conf.5.xml:541(replaceable) mosquitto.conf.5.xml:566(replaceable) mosquitto.conf.5.xml:572(replaceable) mosquitto.conf.5.xml:611(replaceable) mosquitto.conf.5.xml:906(replaceable) mosquitto.conf.5.xml:918(replaceable) mosquitto.conf.5.xml:934(replaceable) mosquitto.conf.5.xml:954(replaceable)
+msgid "file path"
+msgstr ""
+
+#: mosquitto.conf.5.xml:95(para)
+msgid "Set the path to an access control list file. If defined, the contents of the file are used to control client access to topics on the broker."
+msgstr ""
+
+#: mosquitto.conf.5.xml:98(para)
+msgid "If this parameter is defined then only the topics listed will have access. Topic access is added with lines of the format:"
+msgstr ""
+
+#: mosquitto.conf.5.xml:102(code)
+msgid "topic [read|write] &lt;topic&gt;"
+msgstr ""
+
+#: mosquitto.conf.5.xml:104(para)
+msgid "The access type is controlled using \"read\" or \"write\". This parameter is optional - if not given then the access is read/write. &lt;topic&gt; can contain the + or # wildcards as in subscriptions."
+msgstr ""
+
+#: mosquitto.conf.5.xml:109(para)
+msgid "The first set of topics are applied to anonymous clients, assuming allow_anonymous is true. User specific topic ACLs are added after a user line as follows:"
+msgstr ""
+
+#: mosquitto.conf.5.xml:113(code)
+msgid "user &lt;username&gt;"
+msgstr ""
+
+#: mosquitto.conf.5.xml:115(para)
+msgid "The username referred to here is the same as in password_file. It is not the clientid."
+msgstr ""
+
+#: mosquitto.conf.5.xml:118(para)
+msgid "It is also possible to define ACLs based on pattern substitution within the topic. The form is the same as for the topic keyword, but using pattern as the keyword."
+msgstr ""
+
+#: mosquitto.conf.5.xml:121(code)
+msgid "pattern [read|write] &lt;topic&gt;"
+msgstr ""
+
+#: mosquitto.conf.5.xml:123(para)
+msgid "The patterns available for substition are:"
+msgstr ""
+
+#: mosquitto.conf.5.xml:125(para)
+msgid "%c to match the client id of the client"
+msgstr ""
+
+#: mosquitto.conf.5.xml:126(para)
+msgid "%u to match the username of the client"
+msgstr ""
+
+#: mosquitto.conf.5.xml:128(para)
+msgid "The substitution pattern must be the only text for that level of hierarchy. Pattern ACLs apply to all users even if the \"user\" keyword has previously been given."
+msgstr ""
+
+#: mosquitto.conf.5.xml:133(para)
+msgid "Example:"
+msgstr ""
+
+#: mosquitto.conf.5.xml:134(code)
+msgid "pattern write sensor/%u/data"
+msgstr ""
+
+#: mosquitto.conf.5.xml:136(para)
+msgid "Reloaded on reload signal. The currently loaded ACLs will be freed and reloaded. Existing subscriptions will be affected after the reload."
+msgstr ""
+
+#: mosquitto.conf.5.xml:142(term)
+msgid "<option>allow_anonymous</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:144(para)
+msgid "Boolean value that determines whether clients that connect without providing a username are allowed to connect. If set to false then another means of connection should be created to control authenticated client access. Defaults to true."
+msgstr ""
+
+#: mosquitto.conf.5.xml:149(para) mosquitto.conf.5.xml:178(para) mosquitto.conf.5.xml:190(para) mosquitto.conf.5.xml:212(para) mosquitto.conf.5.xml:241(para) mosquitto.conf.5.xml:249(para) mosquitto.conf.5.xml:261(para) mosquitto.conf.5.xml:273(para) mosquitto.conf.5.xml:283(para) mosquitto.conf.5.xml:318(para) mosquitto.conf.5.xml:325(para) mosquitto.conf.5.xml:334(para) mosquitto.conf.5.xml:359(para) mosquitto.conf.5.xml:402(para) mosquitto.conf.5.xml:410(para) mosquitto.conf.5.xml:420(para) mosquitto.conf.5.xml:433(para) mosquitto.conf.5.xml:443(para)
+msgid "Reloaded on reload signal."
+msgstr ""
+
+#: mosquitto.conf.5.xml:153(option)
+msgid "auth_opt_*"
+msgstr ""
+
+#: mosquitto.conf.5.xml:153(replaceable) mosquitto.conf.5.xml:759(replaceable) mosquitto.conf.5.xml:769(replaceable) mosquitto.conf.5.xml:856(entry) mosquitto.conf.5.xml:856(entry) mosquitto.conf.5.xml:856(entry) mosquitto.conf.5.xml:857(entry) mosquitto.conf.5.xml:857(entry) mosquitto.conf.5.xml:858(entry) mosquitto.conf.5.xml:858(entry) mosquitto.conf.5.xml:859(entry) mosquitto.conf.5.xml:860(entry) mosquitto.conf.5.xml:860(entry) mosquitto.conf.5.xml:861(entry) mosquitto.conf.5.xml:862(entry)
+msgid "value"
+msgstr ""
+
+#: mosquitto.conf.5.xml:155(para)
+msgid "Options to be passed to the auth plugin. See the specific plugin instructions."
+msgstr ""
+
+#: mosquitto.conf.5.xml:160(option)
+msgid "auth_plugin"
+msgstr ""
+
+#: mosquitto.conf.5.xml:162(para)
+msgid "Specify an external module to use for authentication and access control. This allows custom username/password and access control functions to be created."
+msgstr ""
+
+#: mosquitto.conf.5.xml:165(para)
+msgid "Not currently reloaded on reload signal."
+msgstr ""
+
+#: mosquitto.conf.5.xml:169(option)
+msgid "autosave_interval"
+msgstr ""
+
+#: mosquitto.conf.5.xml:169(replaceable) mosquitto.conf.5.xml:182(replaceable) mosquitto.conf.5.xml:414(replaceable) mosquitto.conf.5.xml:424(replaceable) mosquitto.conf.5.xml:437(replaceable) mosquitto.conf.5.xml:721(replaceable) mosquitto.conf.5.xml:730(replaceable)
+msgid "seconds"
+msgstr ""
+
+#: mosquitto.conf.5.xml:171(para)
+msgid "The number of seconds that mosquitto will wait between each time it saves the in-memory database to disk. If set to 0, the in-memory database will only be saved when mosquitto exits or when receiving the SIGUSR1 signal. Note that this setting only has an effect if persistence is enabled. Defaults to 1800 seconds (30 minutes)."
+msgstr ""
+
+#: mosquitto.conf.5.xml:182(option)
+msgid "autosave_on_changes"
+msgstr ""
+
+#: mosquitto.conf.5.xml:184(para)
+msgid "If true, mosquitto will count the number of subscription changes, retained messages received and queued messages and if the total exceeds autosave_interval then the in-memory database will be saved to disk. If false, mosquitto will save the in-memory database to disk by treating autosave_interval as a time in seconds."
+msgstr ""
+
+#: mosquitto.conf.5.xml:194(option)
+msgid "clientid_prefixes"
+msgstr ""
+
+#: mosquitto.conf.5.xml:194(replaceable)
+msgid "prefix"
+msgstr ""
+
+#: mosquitto.conf.5.xml:196(para)
+msgid "If defined, only clients that have a clientid with a prefix that matches clientid_prefixes will be allowed to connect to the broker. For example, setting \"secure-\" here would mean a client \"secure-client\" could connect but another with clientid \"mqtt\" couldn't. By default, all client ids are valid."
+msgstr ""
+
+#: mosquitto.conf.5.xml:202(para)
+msgid "Reloaded on reload signal. Note that currently connected clients will be unaffected by any changes."
+msgstr ""
+
+#: mosquitto.conf.5.xml:207(term)
+msgid "<option>connection_messages</option> &lt; true | false &gt;"
+msgstr ""
+
+#: mosquitto.conf.5.xml:209(para)
+msgid "If set to true, the log will include entries when clients connect and disconnect. If set to false, these entries will not appear."
+msgstr ""
+
+#: mosquitto.conf.5.xml:216(option)
+msgid "include_dir"
+msgstr ""
+
+#: mosquitto.conf.5.xml:216(replaceable)
+msgid "dir"
+msgstr ""
+
+#: mosquitto.conf.5.xml:218(para)
+msgid "External configuration files may be included by using the include_dir option. This defines a directory that will be searched for config files. All files that end in '.conf' will be loaded as a configuration file. It is best to have this as the last option in the main file. This option will only be processed from the main configuration file. The directory specified must not contain the main configuration file."
+msgstr ""
+
+#: mosquitto.conf.5.xml:229(option)
+msgid "log_dest"
+msgstr ""
+
+#: mosquitto.conf.5.xml:229(replaceable)
+msgid "destinations"
+msgstr ""
+
+#: mosquitto.conf.5.xml:231(para)
+msgid "Send log messages to a particular destination. Possible destinations are: stdout stderr syslog topic. stdout and stderr log to the console on the named output. syslog uses the userspace syslog facility which usually ends up in /var/log/messages or similar and topic logs to the broker topic '$SYS/broker/log/&lt;severity&gt;', where severity is one of D, E, W, N, I which are debug, error, warning, notice and information. Use \"log_dest none\" if you wish to disable logging. Defaults to stderr. This option may be specified multiple times."
+msgstr ""
+
+#: mosquitto.conf.5.xml:245(term)
+msgid "<option>log_timestamp</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:247(para)
+msgid "Boolean value, if set to true a timestamp value will be added to each log entry. The default is true."
+msgstr ""
+
+#: mosquitto.conf.5.xml:253(option)
+msgid "log_type"
+msgstr ""
+
+#: mosquitto.conf.5.xml:253(replaceable)
+msgid "types"
+msgstr ""
+
+#: mosquitto.conf.5.xml:255(para)
+msgid "Choose types of messages to log. Possible types are: debug, error, warning, notice, information, none. Defaults to error, warning, notice and information. This option may be specified multiple times. Note that the debug type (used for decoding incoming network packets) is never logged in syslog or topics."
+msgstr ""
+
+#: mosquitto.conf.5.xml:265(option)
+msgid "max_inflight_messages"
+msgstr ""
+
+#: mosquitto.conf.5.xml:265(replaceable) mosquitto.conf.5.xml:277(replaceable) mosquitto.conf.5.xml:498(replaceable) mosquitto.conf.5.xml:803(replaceable)
+msgid "count"
+msgstr ""
+
+#: mosquitto.conf.5.xml:267(para)
+msgid "The maximum number of QoS 1 or 2 messages that can be in the process of being transmitted simultaneously. This includes messages currently going through handshakes and messages that are being retried. Defaults to 20. Set to 0 for no maximum. If set to 1, this will guarantee in-order delivery of messages."
+msgstr ""
+
+#: mosquitto.conf.5.xml:277(option)
+msgid "max_queued_messages"
+msgstr ""
+
+#: mosquitto.conf.5.xml:279(para)
+msgid "The maximum number of QoS 1 or 2 messages to hold in the queue above those messages that are currently in flight. Defaults to 100. Set to 0 for no maximum (not recommended). See also the queue_qos0_messages option."
+msgstr ""
+
+#: mosquitto.conf.5.xml:287(option)
+msgid "password_file"
+msgstr ""
+
+#: mosquitto.conf.5.xml:289(para)
+msgid "Set the path to a password file. If defined, the contents of the file are used to control client access to the broker. Each line should be in the format \"username:password\", where the colon and password are optional but recommended. If allow_anonymous is set to false, only users defined in this file will be able to connect. Setting allow_anonymous to true when password_file is defined is valid and could be used with acl_file to have e.g. read only guest/anonymous accounts and defined users that can publish."
+msgstr ""
+
+#: mosquitto.conf.5.xml:299(para)
+msgid "Reloaded on reload signal. The currently loaded username and password data will be freed and reloaded. Clients that are already connected will not be affected."
+msgstr ""
+
+#: mosquitto.conf.5.xml:302(para)
+msgid "See also <citerefentry><refentrytitle>mosquitto_passwd</refentrytitle><manvolnum>1</manvolnum></citerefentry>."
+msgstr ""
+
+#: mosquitto.conf.5.xml:306(term)
+msgid "<option>persistence</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:308(para)
+msgid "Can be true or false. If true, connection, subscription and message data will be written to the disk in mosquitto.db at the location dictated by persistence_location. When mosquitto is restarted, it will reload the information stored in mosquitto.db. The data will be written to disk when mosquitto closes and also at periodic intervals as defined by autosave_interval. Writing of the persistence database may also be forced by sending mosquitto the SIGUSR1 signal. If false, the data will be stored in memory only. Defaults to false."
+msgstr ""
+
+#: mosquitto.conf.5.xml:322(option)
+msgid "persistence_file"
+msgstr ""
+
+#: mosquitto.conf.5.xml:322(replaceable)
+msgid "file name"
+msgstr ""
+
+#: mosquitto.conf.5.xml:324(para)
+msgid "The filename to use for the persistent database. Defaults to mosquitto.db."
+msgstr ""
+
+#: mosquitto.conf.5.xml:329(option)
+msgid "persistence_location"
+msgstr ""
+
+#: mosquitto.conf.5.xml:329(replaceable)
+msgid "path"
+msgstr ""
+
+#: mosquitto.conf.5.xml:331(para)
+msgid "The path where the persistence database should be stored. Must end in a trailing slash. If not given, then the current directory is used."
+msgstr ""
+
+#: mosquitto.conf.5.xml:338(option)
+msgid "persistent_client_expiration"
+msgstr ""
+
+#: mosquitto.conf.5.xml:338(replaceable)
+msgid "duration"
+msgstr ""
+
+#: mosquitto.conf.5.xml:340(para)
+msgid "This option allows persistent clients (those with clean session set to false) to be removed if they do not reconnect within a certain time frame. This is a non-standard option. As far as the MQTT spec is concerned, persistent clients persist forever."
+msgstr ""
+
+#: mosquitto.conf.5.xml:345(para)
+msgid "Badly designed clients may set clean session to false whilst using a randomly generated client id. This leads to persistent clients that will never reconnect. This option allows these clients to be removed."
+msgstr ""
+
+#: mosquitto.conf.5.xml:349(para)
+msgid "The expiration period should be an integer followed by one of d w m y for day, week, month and year respectively. For example:"
+msgstr ""
+
+#: mosquitto.conf.5.xml:353(para)
+msgid "persistent_client_expiration 2m"
+msgstr ""
+
+#: mosquitto.conf.5.xml:354(para)
+msgid "persistent_client_expiration 14d"
+msgstr ""
+
+#: mosquitto.conf.5.xml:355(para)
+msgid "persistent_client_expiration 1y"
+msgstr ""
+
+#: mosquitto.conf.5.xml:357(para)
+msgid "As this is a non-standard option, the default if not set is to never expire persistent clients."
+msgstr ""
+
+#: mosquitto.conf.5.xml:363(option)
+msgid "pid_file"
+msgstr ""
+
+#: mosquitto.conf.5.xml:365(para)
+msgid "Write a pid file to the file specified. If not given (the default), no pid file will be written. If the pid file cannot be written, mosquitto will exit. This option only has an effect is mosquitto is run in daemon mode."
+msgstr ""
+
+#: mosquitto.conf.5.xml:369(para)
+msgid "If mosquitto is being automatically started by an init script it will usually be required to write a pid file. This should then be configured as /var/run/mosquitto.pid"
+msgstr ""
+
+#: mosquitto.conf.5.xml:373(para) mosquitto.conf.5.xml:458(para) mosquitto.conf.5.xml:481(para) mosquitto.conf.5.xml:494(para) mosquitto.conf.5.xml:506(para) mosquitto.conf.5.xml:521(para) mosquitto.conf.5.xml:529(para)
+msgid "Not reloaded on reload signal."
+msgstr ""
+
+#: mosquitto.conf.5.xml:377(option)
+msgid "psk_file"
+msgstr ""
+
+#: mosquitto.conf.5.xml:379(para)
+msgid "Set the path to a pre-shared-key file. This option requires a listener to be have PSK support enabled. If defined, the contents of the file are used to control client access to the broker. Each line should be in the format \"identity:key\", where the key is a hexadecimal string with no leading \"0x\". A client connecting to a listener that has PSK support enabled must provide a matching identity and PSK to allow the encrypted connection to proceed."
+msgstr ""
+
+#: mosquitto.conf.5.xml:387(para)
+msgid "Reloaded on reload signal. The currently loaded identity and key data will be freed and reloaded. Clients that are already connected will not be affected."
+msgstr ""
+
+#: mosquitto.conf.5.xml:393(term)
+msgid "<option>queue_qos0_messages</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:395(para)
+msgid "Set to true to queue messages with QoS 0 when a persistent client is disconnected. These messages are included in the limit imposed by max_queued_messages. Defaults to false."
+msgstr ""
+
+#: mosquitto.conf.5.xml:399(para)
+msgid "Note that the MQTT v3.1 spec states that only QoS 1 and 2 messages should be saved in this situation so this is a non-standard option."
+msgstr ""
+
+#: mosquitto.conf.5.xml:406(term)
+msgid "<option>retained_persistence</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:408(para)
+msgid "This is a synonym of the <option>persistence</option> option."
+msgstr ""
+
+#: mosquitto.conf.5.xml:414(option)
+msgid "retry_interval"
+msgstr ""
+
+#: mosquitto.conf.5.xml:416(para)
+msgid "The integer number of seconds after a QoS=1 or QoS=2 message has been sent that mosquitto will wait before retrying when no response is received. If unset, defaults to 20 seconds."
+msgstr ""
+
+#: mosquitto.conf.5.xml:424(option)
+msgid "store_clean_interval"
+msgstr ""
+
+#: mosquitto.conf.5.xml:426(para)
+msgid "The integer number of seconds between the internal message store being cleaned of messages that are no longer referenced. Lower values will result in lower memory usage but more processor time, higher values will have the opposite effect. Setting a value of 0 means the unreferenced messages will be disposed of as quickly as possible. Defaults to 10 seconds."
+msgstr ""
+
+#: mosquitto.conf.5.xml:437(option)
+msgid "sys_interval"
+msgstr ""
+
+#: mosquitto.conf.5.xml:439(para)
+msgid "The integer number of seconds between updates of the $SYS subscription hierarchy, which provides status information about the broker. If unset, defaults to 10 seconds."
+msgstr ""
+
+#: mosquitto.conf.5.xml:447(option)
+msgid "user"
+msgstr ""
+
+#: mosquitto.conf.5.xml:447(replaceable) mosquitto.conf.5.xml:892(option)
+msgid "username"
+msgstr ""
+
+#: mosquitto.conf.5.xml:449(para)
+msgid "When run as root, change to this user and its primary group on startup. If mosquitto is unable to change to this user and group, it will exit with an error. The user specified must have read/write access to the persistence database if it is to be written. If run as a non-root user, this setting has no effect. Defaults to mosquitto."
+msgstr ""
+
+#: mosquitto.conf.5.xml:455(para)
+msgid "This setting has no effect on Windows and so you should run mosquitto as the user you wish it to run as."
+msgstr ""
+
+#: mosquitto.conf.5.xml:465(title)
+msgid "Listeners"
+msgstr ""
+
+#: mosquitto.conf.5.xml:466(para)
+msgid "The network ports that mosquitto listens on can be controlled using listeners. The default listener options can be overridden and further listeners can be created."
+msgstr ""
+
+#: mosquitto.conf.5.xml:473(option)
+msgid "bind_address"
+msgstr ""
+
+#: mosquitto.conf.5.xml:473(replaceable) mosquitto.conf.5.xml:677(option)
+msgid "address"
+msgstr ""
+
+#: mosquitto.conf.5.xml:475(para)
+msgid "Listen for incoming network connections on the specified IP address/hostname only. This is useful to restrict access to certain network interfaces. To restrict access to mosquitto to the local host only, use \"bind_address localhost\". This only applies to the default listener. Use the listener variable to control other listeners."
+msgstr ""
+
+#: mosquitto.conf.5.xml:485(option)
+msgid "listener"
+msgstr ""
+
+#: mosquitto.conf.5.xml:485(replaceable) mosquitto.conf.5.xml:525(option)
+msgid "port"
+msgstr ""
+
+#: mosquitto.conf.5.xml:487(para)
+msgid "Listen for incoming network connection on the specified port. A second optional argument allows the listener to be bound to a specific ip address/hostname. If this variable is used and neither bind_address nor port are used then the default listener will not be started. This option may be specified multiple times. See also the mount_point option."
+msgstr ""
+
+#: mosquitto.conf.5.xml:498(option)
+msgid "max_connections"
+msgstr ""
+
+#: mosquitto.conf.5.xml:500(para)
+msgid "Limit the total number of clients connected for the current listener. Set to <literal>-1</literal> to have \"unlimited\" connections. Note that other limits may be imposed that are outside the control of mosquitto. See e.g. <citerefentry><refentrytitle>limits.conf</refentrytitle><manvolnum>5</manvolnum></citerefentry>."
+msgstr ""
+
+#: mosquitto.conf.5.xml:510(option)
+msgid "mount_point"
+msgstr ""
+
+#: mosquitto.conf.5.xml:510(replaceable)
+msgid "topic prefix"
+msgstr ""
+
+#: mosquitto.conf.5.xml:512(para)
+msgid "This option is used with the listener option to isolate groups of clients. When a client connects to a listener which uses this option, the string argument is attached to the start of all topics for this client. This prefix is removed when any messages are sent to the client. This means a client connected to a listener with mount point <option>example</option> can only see messages that are published in the topic hierarchy <option>example</option> and above."
+msgstr ""
+
+#: mosquitto.conf.5.xml:525(replaceable)
+msgid "port number"
+msgstr ""
+
+#: mosquitto.conf.5.xml:527(para)
+msgid "Set the network port for the default listener to listen on. Defaults to 1883."
+msgstr ""
+
+#: mosquitto.conf.5.xml:535(title)
+msgid "Certificate based SSL/TLS Support"
+msgstr ""
+
+#: mosquitto.conf.5.xml:536(para)
+msgid "The following options are available for all listeners to configure certificate based SSL support. See also \"Pre-shared-key based SSL/TLS support\"."
+msgstr ""
+
+#: mosquitto.conf.5.xml:541(option)
+msgid "cafile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:543(para) mosquitto.conf.5.xml:554(para)
+msgid "At least one of <option>cafile</option> or <option>capath</option> must be provided to allow SSL support."
+msgstr ""
+
+#: mosquitto.conf.5.xml:546(para)
+msgid "cafile is used to define the path to a file containing the PEM encoded CA certificates that are trusted."
+msgstr ""
+
+#: mosquitto.conf.5.xml:552(option)
+msgid "capath"
+msgstr ""
+
+#: mosquitto.conf.5.xml:552(replaceable)
+msgid "directory path"
+msgstr ""
+
+#: mosquitto.conf.5.xml:557(para)
+msgid "capath is used to define a directory that contains PEM encoded CA certificates that are trusted. For capath to work correctly, the certificates files must have \".crt\" as the file ending and you must run \"c_rehash &lt;path to capath&gt;\" each time you add/remove a certificate."
+msgstr ""
+
+#: mosquitto.conf.5.xml:566(option)
+msgid "certfile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:568(para)
+msgid "Path to the PEM encoded server certificate."
+msgstr ""
+
+#: mosquitto.conf.5.xml:572(option)
+msgid "keyfile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:574(para)
+msgid "Path to the PEM encoded keyfile."
+msgstr ""
+
+#: mosquitto.conf.5.xml:578(option) mosquitto.conf.5.xml:655(option)
+msgid "ciphers"
+msgstr ""
+
+#: mosquitto.conf.5.xml:578(replaceable) mosquitto.conf.5.xml:655(replaceable)
+msgid "cipher:list"
+msgstr ""
+
+#: mosquitto.conf.5.xml:580(para)
+msgid "The list of allowed ciphers, each separated with a colon. Available ciphers can be obtained using the \"openssl ciphers\" command."
+msgstr ""
+
+#: mosquitto.conf.5.xml:586(term)
+msgid "<option>require_certificate</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:588(para)
+msgid "By default an SSL/TLS enabled listener will operate in a similar fashion to a https enabled web server, in that the server has a certificate signed by a CA and the client will verify that it is a trusted certificate. The overall aim is encryption of the network traffic. By setting require_certificate to true, the client must provide a valid certificate in order for the network connection to proceed. This allows access to the broker to be controlled outside of the mechanisms provided by MQTT."
+msgstr ""
+
+#: mosquitto.conf.5.xml:601(term) mosquitto.conf.5.xml:644(term)
+msgid "<option>use_identity_as_username</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:603(para)
+msgid "If require_certificate is true, you may set use_identity_as_username to true to use the CN value from the client certificate as a username. If this is true, the password_file option will not be used for this listener."
+msgstr ""
+
+#: mosquitto.conf.5.xml:611(option)
+msgid "crlfile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:613(para)
+msgid "If you have require_certificate set to true, you can create a certificate revocation list file to revoke access to particular client certificates. If you have done this, use crlfile to point to the PEM encoded revocation file."
+msgstr ""
+
+#: mosquitto.conf.5.xml:623(title)
+msgid "Pre-shared-key based SSL/TLS Support"
+msgstr ""
+
+#: mosquitto.conf.5.xml:624(para)
+msgid "The following options are available for all listeners to configure pre-shared-key based SSL support. See also \"Certificate based SSL/TLS support\"."
+msgstr ""
+
+#: mosquitto.conf.5.xml:629(option)
+msgid "psk_hint"
+msgstr ""
+
+#: mosquitto.conf.5.xml:629(replaceable)
+msgid "hint"
+msgstr ""
+
+#: mosquitto.conf.5.xml:631(para)
+msgid "The psk_hint option enables pre-shared-key support for this listener and also acts as an identifier for this listener. The hint is sent to clients and may be used locally to aid authentication. The hint is a free form string that doesn't have much meaning in itself, so feel free to be creative."
+msgstr ""
+
+#: mosquitto.conf.5.xml:638(para)
+msgid "If this option is provided, see psk_file to define the pre-shared keys to be used or create a security plugin to handle them."
+msgstr ""
+
+#: mosquitto.conf.5.xml:646(para)
+msgid "Set use_identity_as_username to have the psk identity sent by the client used as its username. The username will be checked as normal, so password_file or another means of authentication checking must be used. No password will be used."
+msgstr ""
+
+#: mosquitto.conf.5.xml:657(para)
+msgid "When using PSK, the encryption ciphers used will be chosen from the list of available PSK ciphers. If you want to control which ciphers are available, use the \"ciphers\" option. The list of available ciphers can be optained using the \"openssl ciphers\" command and should be provided in the same format as the output of that command."
+msgstr ""
+
+#: mosquitto.conf.5.xml:671(title)
+msgid "Configuring Bridges"
+msgstr ""
+
+#: mosquitto.conf.5.xml:672(para)
+msgid "Multiple bridges (connections to other brokers) can be configured using the following variables."
+msgstr ""
+
+#: mosquitto.conf.5.xml:674(para)
+msgid "Bridges cannot currently be reloaded on reload signal."
+msgstr ""
+
+#: mosquitto.conf.5.xml:677(replaceable) mosquitto.conf.5.xml:678(replaceable)
+msgid "address[:port]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:678(option)
+msgid "addresses"
+msgstr ""
+
+#: mosquitto.conf.5.xml:680(para)
+msgid "Specify the address and optionally the port of the bridge to connect to. This must be given for each bridge connection. If the port is not specified, the default of 1883 is used."
+msgstr ""
+
+#: mosquitto.conf.5.xml:684(para)
+msgid "Unlike rsmb, it is not currently possible to specify multiple addresses for a single bridge connection here. This is true even if the name \"addresses\" is used."
+msgstr ""
+
+#: mosquitto.conf.5.xml:690(term)
+msgid "<option>cleansession</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:692(para)
+msgid "Set the clean session option for this bridge. Setting to false (the default), means that all subscriptions on the remote broker are kept in case of the network connection dropping. If set to true, all subscriptions and messages on the remote broker will be cleaned up if the connection drops. Note that setting to true may cause a large amount of retained messages to be sent each time the bridge reconnects."
+msgstr ""
+
+#: mosquitto.conf.5.xml:703(option)
+msgid "clientid"
+msgstr ""
+
+#: mosquitto.conf.5.xml:703(replaceable)
+msgid "id"
+msgstr ""
+
+#: mosquitto.conf.5.xml:705(para)
+msgid "Set the client id for this bridge connection. If not defined, this defaults to 'name.hostname', where name is the connection name and hostname is the hostname of this computer."
+msgstr ""
+
+#: mosquitto.conf.5.xml:712(option)
+msgid "connection"
+msgstr ""
+
+#: mosquitto.conf.5.xml:712(replaceable) mosquitto.conf.5.xml:892(replaceable)
+msgid "name"
+msgstr ""
+
+#: mosquitto.conf.5.xml:714(para)
+msgid "This variable marks the start of a new bridge connection. It is also used to give the bridge a name which is used as the client id on the remote broker."
+msgstr ""
+
+#: mosquitto.conf.5.xml:721(option)
+msgid "keepalive_interval"
+msgstr ""
+
+#: mosquitto.conf.5.xml:723(para)
+msgid "Set the number of seconds after which the bridge should send a ping if no other traffic has occurred. Defaults to 60. A minimum value of 5 seconds isallowed."
+msgstr ""
+
+#: mosquitto.conf.5.xml:730(option)
+msgid "idle_timeout"
+msgstr ""
+
+#: mosquitto.conf.5.xml:732(para)
+msgid "Set the amount of time a bridge using the lazy start type must be idle before it will be stopped. Defaults to 60 seconds."
+msgstr ""
+
+#: mosquitto.conf.5.xml:738(term)
+msgid "<option>notifications</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:740(para)
+msgid "If set to true, publish notification messages to the local and remote brokers giving information about the state of the bridge connection. Retained messages are published to the topic $SYS/broker/connection/&lt;clientid&gt;/state unless otherwise set with notification_topics. If the message is 1 then the connection is active, or 0 if the connection has failed. Defaults to true."
+msgstr ""
+
+#: mosquitto.conf.5.xml:750(option)
+msgid "notification_topic"
+msgstr ""
+
+#: mosquitto.conf.5.xml:750(replaceable)
+msgid "topic"
+msgstr ""
+
+#: mosquitto.conf.5.xml:752(para)
+msgid "Choose the topic on which notifications will be published for this bridge. If not set the messages will be sent on the topic $SYS/bridge/connection/&lt;clientid&gt;/state."
+msgstr ""
+
+#: mosquitto.conf.5.xml:759(option)
+msgid "password"
+msgstr ""
+
+#: mosquitto.conf.5.xml:761(para)
+msgid "Configure a password for the bridge. This is used for authentication purposes when connecting to a broker that support MQTT v3.1 and requires a username and/or password to connect. This option is only valid if a username is also supplied."
+msgstr ""
+
+#: mosquitto.conf.5.xml:769(option)
+msgid "restart_timeout"
+msgstr ""
+
+#: mosquitto.conf.5.xml:771(para)
+msgid "Set the amount of time a bridge using the automatic start type will wait until attempting to reconnect. Defaults to 30 seconds."
+msgstr ""
+
+#: mosquitto.conf.5.xml:777(term)
+msgid "<option>start_type</option> [ automatic | lazy | once ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:779(para)
+msgid "Set the start type of the bridge. This controls how the bridge starts and can be one of three types: automatic, lazy and once. Note that RSMB provides a fourth start type \"manual\" which isn't currently supported by mosquitto."
+msgstr ""
+
+#: mosquitto.conf.5.xml:785(para)
+msgid "\"automatic\" is the default start type and means that the bridge connection will be started automatically when the broker starts and also restarted after a short delay (30 seconds) if the connection fails."
+msgstr ""
+
+#: mosquitto.conf.5.xml:790(para)
+msgid "Bridges using the \"lazy\" start type will be started automatically when the number of queued messages exceeds the number set with the \"threshold\" parameter. It will be stopped automatically after the time set by the \"idle_timeout\" parameter. Use this start type if you wish the connection to only be active when it is needed."
+msgstr ""
+
+#: mosquitto.conf.5.xml:797(para)
+msgid "A bridge using the \"once\" start type will be started automatically when the broker starts but will not be restarted if the connection fails."
+msgstr ""
+
+#: mosquitto.conf.5.xml:803(option)
+msgid "threshold"
+msgstr ""
+
+#: mosquitto.conf.5.xml:805(para)
+msgid "Set the number of messages that need to be queued for a bridge with lazy start type to be restarted. Defaults to 10 messages."
+msgstr ""
+
+#: mosquitto.conf.5.xml:811(term)
+msgid "<option>topic</option><replaceable>pattern</replaceable> [[[ out | in | both ] qos-level] local-prefix remote-prefix]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:813(para)
+msgid "Define a topic pattern to be shared between the two brokers. Any topics matching the pattern (which may include wildcards) are shared. The second parameter defines the direction that the messages will be shared in, so it is possible to import messages from a remote broker using \"in\", export messages to a remote broker using \"out\" or share messages in both directions. If this parameter is not defined, the default of \"out\" is used. The QoS level defines the publish/subscribe QoS level used for this topic and defaults to 0."
+msgstr ""
+
+#: mosquitto.conf.5.xml:823(para)
+msgid "The local-prefix and remote-prefix options allow topics to be remapped when publishing to and receiving from remote brokers. This allows a topic tree from the local broker to be inserted into the topic tree of the remote broker at an appropriate place."
+msgstr ""
+
+#: mosquitto.conf.5.xml:828(para)
+msgid "For incoming topics, the bridge will prepend the topic with the remote prefix and subscribe to the resulting topic on the remote broker. When a matching incoming message is received, the remote prefix will be removed from the topic and then the local prefix added."
+msgstr ""
+
+#: mosquitto.conf.5.xml:834(para)
+msgid "For outgoing topics, the bridge will prepend the topic with the local prefix and subscribe to the resulting topic on the local broker. When an outgoing message is processed, the local prefix will be removed from the topic then the remote prefix added."
+msgstr ""
+
+#: mosquitto.conf.5.xml:839(para)
+msgid "When using topic mapping, an empty prefix can be defined using the place marker \"\". Using the empty marker for the topic itself is also valid. The table below defines what combination of empty or value is valid."
+msgstr ""
+
+#: mosquitto.conf.5.xml:849(emphasis)
+msgid "Topic"
+msgstr ""
+
+#: mosquitto.conf.5.xml:850(emphasis)
+msgid "Local Prefix"
+msgstr ""
+
+#: mosquitto.conf.5.xml:851(emphasis)
+msgid "Remote Prefix"
+msgstr ""
+
+#: mosquitto.conf.5.xml:852(emphasis)
+msgid "Validity"
+msgstr ""
+
+#: mosquitto.conf.5.xml:856(entry) mosquitto.conf.5.xml:996(manvolnum)
+msgid "1"
+msgstr ""
+
+#: mosquitto.conf.5.xml:856(entry) mosquitto.conf.5.xml:857(entry) mosquitto.conf.5.xml:858(entry)
+msgid "valid"
+msgstr ""
+
+#: mosquitto.conf.5.xml:857(entry)
+msgid "2"
+msgstr ""
+
+#: mosquitto.conf.5.xml:857(entry) mosquitto.conf.5.xml:858(entry) mosquitto.conf.5.xml:859(entry) mosquitto.conf.5.xml:859(entry) mosquitto.conf.5.xml:860(entry) mosquitto.conf.5.xml:861(entry) mosquitto.conf.5.xml:861(entry) mosquitto.conf.5.xml:862(entry) mosquitto.conf.5.xml:862(entry) mosquitto.conf.5.xml:863(entry) mosquitto.conf.5.xml:863(entry) mosquitto.conf.5.xml:863(entry)
+msgid "\"\""
+msgstr ""
+
+#: mosquitto.conf.5.xml:858(entry)
+msgid "3"
+msgstr ""
+
+#: mosquitto.conf.5.xml:859(entry)
+msgid "4"
+msgstr ""
+
+#: mosquitto.conf.5.xml:859(entry)
+msgid "valid (no remapping)"
+msgstr ""
+
+#: mosquitto.conf.5.xml:860(entry)
+msgid "valid (remap entire local topic to remote)"
+msgstr ""
+
+#: mosquitto.conf.5.xml:861(entry)
+msgid "6"
+msgstr ""
+
+#: mosquitto.conf.5.xml:861(entry) mosquitto.conf.5.xml:862(entry) mosquitto.conf.5.xml:863(entry)
+msgid "invalid"
+msgstr ""
+
+#: mosquitto.conf.5.xml:862(entry) mosquitto.conf.5.xml:1000(manvolnum) mosquitto.conf.5.xml:1004(manvolnum)
+msgid "7"
+msgstr ""
+
+#: mosquitto.conf.5.xml:863(entry) mosquitto.conf.5.xml:992(manvolnum)
+msgid "8"
+msgstr ""
+
+#: mosquitto.conf.5.xml:868(para)
+msgid "This option can be specified multiple times per bridge."
+msgstr ""
+
+#: mosquitto.conf.5.xml:870(para)
+msgid "Care must be taken to ensure that loops are not created with this option. If you are experiencing high CPU load from a broker, it is possible that you have a loop where each broker is forever forwarding each other the same messages."
+msgstr ""
+
+#: mosquitto.conf.5.xml:878(term)
+msgid "<option>try_private</option> [ true | false ]"
+msgstr ""
+
+#: mosquitto.conf.5.xml:880(para)
+msgid "If try_private is set to true, the bridge will attempt to indicate to the remote broker that it is a bridge not an ordinary client. If successful, this means that loop detection will be more effective and that retained messages will be propagated correctly. Not all brokers support this feature so it may be necessary to set try_private to false if your bridge does not connect properly."
+msgstr ""
+
+#: mosquitto.conf.5.xml:888(para)
+msgid "Defaults to true."
+msgstr ""
+
+#: mosquitto.conf.5.xml:894(para)
+msgid "Configure a username for the bridge. This is used for authentication purposes when connecting to a broker that support MQTT v3.1 and requires a username and/or password to connect. See also the password option."
+msgstr ""
+
+#: mosquitto.conf.5.xml:902(title)
+msgid "SSL/TLS Support"
+msgstr ""
+
+#: mosquitto.conf.5.xml:903(para)
+msgid "The following options are available for all listeners to configure SSL/TLS support."
+msgstr ""
+
+#: mosquitto.conf.5.xml:906(option)
+msgid "bridge_cafile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:908(para)
+msgid "One of <option>bridge_cafile</option> or <option>bridge_capath</option> must be provided to allow SSL/TLS support."
+msgstr ""
+
+#: mosquitto.conf.5.xml:911(para)
+msgid "bridge_cafile is used to define the path to a file containing the PEM encoded CA certificates that have signed the certificate for the remote broker."
+msgstr ""
+
+#: mosquitto.conf.5.xml:918(option)
+msgid "bridge_capath"
+msgstr ""
+
+#: mosquitto.conf.5.xml:920(para)
+msgid "One of <option>bridge_capath</option> or <option>bridge_capath</option> must be provided to allow SSL/TLS support."
+msgstr ""
+
+#: mosquitto.conf.5.xml:923(para)
+msgid "bridge_capath is used to define the path to a directory containing the PEM encoded CA certificates that have signed the certificate for the remote broker. For bridge_capath to work correctly, the certificate files must have \".crt\" as the file ending and you must run \"c_rehash &lt;path to bridge_capath&gt;\" each time you add/remove a certificate."
+msgstr ""
+
+#: mosquitto.conf.5.xml:934(option)
+msgid "bridge_certfile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:936(para)
+msgid "Path to the PEM encoded client certificate for this bridge, if required by the remote broker."
+msgstr ""
+
+#: mosquitto.conf.5.xml:942(option)
+msgid "bridge_identity"
+msgstr ""
+
+#: mosquitto.conf.5.xml:942(replaceable)
+msgid "identity"
+msgstr ""
+
+#: mosquitto.conf.5.xml:944(para)
+msgid "Pre-shared-key encryption provides an alternative to certificate based encryption. A bridge can be configured to use PSK with the bridge_identity and bridge_psk options. This is the client identity used with PSK encryption. Only one of certificate and PSK based encryption can be used on one bridge at once."
+msgstr ""
+
+#: mosquitto.conf.5.xml:954(option)
+msgid "bridge_keyfile"
+msgstr ""
+
+#: mosquitto.conf.5.xml:956(para)
+msgid "Path to the PEM encoded private key for this bridge, if required by the remote broker."
+msgstr ""
+
+#: mosquitto.conf.5.xml:961(option)
+msgid "bridge_psk"
+msgstr ""
+
+#: mosquitto.conf.5.xml:961(replaceable)
+msgid "key"
+msgstr ""
+
+#: mosquitto.conf.5.xml:963(para)
+msgid "Pre-shared-key encryption provides an alternative to certificate based encryption. A bridge can be configured to use PSK with the bridge_identity and bridge_psk options. This is the pre-shared-key in hexadecimal format with no \"0x\". Only one of certificate and PSK based encryption can be used on one bridge at once."
+msgstr ""
+
+#: mosquitto.conf.5.xml:977(title)
+msgid "Files"
+msgstr ""
+
+#: mosquitto.conf.5.xml:982(title)
+msgid "Bugs"
+msgstr ""
+
+#: mosquitto.conf.5.xml:983(para)
+msgid "<command>mosquitto</command> bug information can be found at <uri type=\"webpage\">http://launchpad.net/mosquitto</uri>"
+msgstr ""
+
+#: mosquitto.conf.5.xml:988(title)
+msgid "See Also"
+msgstr ""
+
+#: mosquitto.conf.5.xml:991(link)
+msgid "mosquitto"
+msgstr ""
+
+#: mosquitto.conf.5.xml:995(link)
+msgid "mosquitto_passwd"
+msgstr ""
+
+#: mosquitto.conf.5.xml:999(link)
+msgid "mosquitto-tls"
+msgstr ""
+
+#: mosquitto.conf.5.xml:1003(link)
+msgid "mqtt"
+msgstr ""
+
+#: mosquitto.conf.5.xml:1007(link)
+msgid "limits.conf"
+msgstr ""
+
+#: mosquitto.conf.5.xml:1014(title)
+msgid "Author"
+msgstr ""
+
+#: mosquitto.conf.5.xml:1015(para)
+msgid "Roger Light <email>roger@atchoo.org</email>"
+msgstr ""
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2
+#: mosquitto.conf.5.xml:0(None)
+msgid "translator-credits"
+msgstr ""
+

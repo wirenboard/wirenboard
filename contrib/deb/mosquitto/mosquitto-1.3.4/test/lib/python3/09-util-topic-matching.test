@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+import mosquitto
+import sys
+
+def do_check(sub, topic, bad_res):
+    if mosquitto.topic_matches_sub(sub, topic) == bad_res:
+        print("ERROR: "+sub+" : "+topic)
+        sys.exit(1)
+
+do_check("foo/bar", "foo/bar", False)
+do_check("foo/+", "foo/bar", False)
+do_check("foo/+/baz", "foo/bar/baz", False)
+do_check("foo/+/#", "foo/bar/baz", False)
+do_check("#", "foo/bar/baz", False)
+
+do_check("foo/bar", "foo", True)
+do_check("foo/+", "foo/bar/baz", True)
+do_check("foo/+/baz", "foo/bar/bar", True)
+do_check("foo/+/#", "fo2/bar/baz", True)
+
+do_check("#", "/foo/bar", False)
+do_check("/#", "/foo/bar", False)
+do_check("/#", "foo/bar", True)
+
+do_check("foo//bar", "foo//bar", False)
+do_check("foo//+", "foo//bar", False)
+do_check("foo/+/+/baz", "foo///baz", False)
+do_check("foo/bar/+", "foo/bar/", False)
+
+sys.exit(0)

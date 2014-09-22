@@ -1,0 +1,14 @@
+Description: Disable python makefile, this is handled by dh_python* instead.
+Author: Roger Light <roger@atchoo.org>
+Forwarded: not-needed
+--- a/config.mk
++++ b/config.mk
+@@ -65,7 +65,7 @@
+ 
+ # Build with Python module. Comment out if Python is not installed, or required
+ # Python modules are not available.
+-WITH_PYTHON:=yes
++WITH_PYTHON:=no
+ 
+ # Build with SRV lookup support.
+ WITH_SRV:=yes
