@@ -1,0 +1,75 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Format: 1.8
+Date: Mon, 22 Sep 2014 18:11:27 +0400
+Source: mosquitto
+Binary: mosquitto libmosquitto1 libmosquitto-dev libmosquittopp1 libmosquittopp-dev mosquitto-clients python-mosquitto python3-mosquitto mosquitto-dbg
+Architecture: source armel all
+Version: 1.3.4-2contactless1
+Distribution: stable
+Urgency: medium
+Maintainer: Roger A. Light <roger@atchoo.org>
+Changed-By: Evgeny Boger <boger@contactless.ru>
+Description: 
+ libmosquitto-dev - MQTT version 3.1 client library, development files
+ libmosquitto1 - MQTT version 3.1 client library
+ libmosquittopp-dev - MQTT version 3.1 client C++ library, development files
+ libmosquittopp1 - MQTT version 3.1 client C++ library
+ mosquitto  - MQTT version 3.1/3.1.1 compatible message broker
+ mosquitto-clients - Mosquitto command line MQTT clients
+ mosquitto-dbg - debugging symbols for mosquitto binaries
+ python-mosquitto - MQTT version 3.1 Python client library
+ python3-mosquitto - MQTT version 3.1 Python 3 client library
+Changes: 
+ mosquitto (1.3.4-2contactless1) stable; urgency=medium
+ .
+   * Add --exit-after option
+Checksums-Sha1: 
+ 8683837f687222fcde10e1372cfe1c1abaab355f 2073 mosquitto_1.3.4-2contactless1.dsc
+ 9e7d1d43a64dbde41047cd4e9ac8b498913c3c14 24888 mosquitto_1.3.4-2contactless1.debian.tar.gz
+ 880061cae1be778878fff924b73ba805506ca052 118776 mosquitto_1.3.4-2contactless1_armel.deb
+ 3042c76a1b2b83ef0d7333f23a12ed9d55f58583 41854 libmosquitto1_1.3.4-2contactless1_armel.deb
+ 3c51cb3784ff5e5492e47404d7a784803b5a2da7 35314 libmosquitto-dev_1.3.4-2contactless1_all.deb
+ f2451be45ae46096fb5d83390bbdf3e0ce8d759c 25298 libmosquittopp1_1.3.4-2contactless1_armel.deb
+ 5585f0c98a0931108ac4596aa5ccc10b4e8d1036 21594 libmosquittopp-dev_1.3.4-2contactless1_all.deb
+ 72cd4549ade5c0ded1a7b8daae1dcccea385c889 43756 mosquitto-clients_1.3.4-2contactless1_armel.deb
+ 4c6c75b1708379190c8c4eeb70785ad172fd6cc8 36574 python-mosquitto_1.3.4-2contactless1_all.deb
+ 08e4fce86a64abd4f63c002b118356f764a49921 36374 python3-mosquitto_1.3.4-2contactless1_all.deb
+ 667ede1f4e24032a00ea470f642b605669a33308 531022 mosquitto-dbg_1.3.4-2contactless1_armel.deb
+Checksums-Sha256: 
+ 59ac8704a518a98dd01e995c79a53aa5606d8384eb1f2f8f62fe58facba61d62 2073 mosquitto_1.3.4-2contactless1.dsc
+ 8c086896f5c1158b11de878eda9105b422579f713cfd521fbdd59eb40cd18485 24888 mosquitto_1.3.4-2contactless1.debian.tar.gz
+ d4d084c1a225564802b2ee6af162defc177b5a9150a0691b41dc33252ef1acd6 118776 mosquitto_1.3.4-2contactless1_armel.deb
+ f01685bbf291999ee1954433a34f4cd72b2e3c2010a599376f576d85dec41db1 41854 libmosquitto1_1.3.4-2contactless1_armel.deb
+ 15526c730d96e2bb963deeee9e4f16ac516440ffc4c1749eddf9de8a5003cfbe 35314 libmosquitto-dev_1.3.4-2contactless1_all.deb
+ 5ec1c2c6cb1b50c3eb8cd6d589620bd877680984cd2d5f6abec40fa537b3256a 25298 libmosquittopp1_1.3.4-2contactless1_armel.deb
+ 4f059b6ea57bd861632e9757c36a62124b68793ef1b24df1ad4d56e88734b32b 21594 libmosquittopp-dev_1.3.4-2contactless1_all.deb
+ 44370bfcfea50088d7ed926ec876b3275f11a3d06837feb61e8ab8a65b37338f 43756 mosquitto-clients_1.3.4-2contactless1_armel.deb
+ 13037999ff248942a74a7493251071b7cc8a3392acbd69397c976fa894507240 36574 python-mosquitto_1.3.4-2contactless1_all.deb
+ 6739e97bed3e369b91965498a8b440a495b2d6b7089cc1aa1957d8c8f9f79df8 36374 python3-mosquitto_1.3.4-2contactless1_all.deb
+ da1653471b157b0bebccf13c6ce888bc98748aabec00f975abed441564771895 531022 mosquitto-dbg_1.3.4-2contactless1_armel.deb
+Files: 
+ cf0c1ae0fe4cd8b411de9711b9cfc939 2073 net optional mosquitto_1.3.4-2contactless1.dsc
+ aa6526e39856e03cea04cd1630c2f827 24888 net optional mosquitto_1.3.4-2contactless1.debian.tar.gz
+ 0e7439218e7cba1c37e257b481b1876c 118776 net optional mosquitto_1.3.4-2contactless1_armel.deb
+ dec9f344f988c1aa70ce2c1a854d9756 41854 libs optional libmosquitto1_1.3.4-2contactless1_armel.deb
+ 86448d8788474285cd12a984022bf8aa 35314 libdevel optional libmosquitto-dev_1.3.4-2contactless1_all.deb
+ fbaeb70492420b9a1960ff9e43933ba0 25298 libs optional libmosquittopp1_1.3.4-2contactless1_armel.deb
+ 77af37364f271033a8c87edb6347e3de 21594 libdevel optional libmosquittopp-dev_1.3.4-2contactless1_all.deb
+ 5e2623afff63f6f375533441ba5c9dd4 43756 net optional mosquitto-clients_1.3.4-2contactless1_armel.deb
+ bffadf283a7ebd9e49f01ce940a2a967 36574 python optional python-mosquitto_1.3.4-2contactless1_all.deb
+ 926206fcdf5d12667ed6db9600cbdfd3 36374 python optional python3-mosquitto_1.3.4-2contactless1_all.deb
+ 4e012fecc511cff9460622caab205498 531022 debug extra mosquitto-dbg_1.3.4-2contactless1_armel.deb
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJUIDYWAAoJEOSwlJ+u4HhpFGEH/AtlQc83NiTOC3RBEJ4udQC9
+qJ1CVoKZuISKZZp/Vwnr3H3Jy+HaChmNaPyOopWyN2gg9XE+g5WGMaqr3SwqTpyu
+Pz4IrCe5qbcl2/YeRWxUjOtZg/81C/XyibJzFRaYqonXkktXZtghsPnWzMO5K7bw
+JNnI5cD8wDXVuIvARnOop8ohb8pHVoONcodLsKWDDI+xnXg42U/RwEMSDXnySOTK
+ANOWIzD5zXw3Hh0l9jf471uLL0jcjjiMerzW5ibggXD7LNULQ3TQCKZ/3uN6am0X
+cDsyqkusj34vq8RLFCh5XA5AsfCMqjzGMVldiqMyxe/4XkRnpj0ZQev2LaCW/64=
+=W0VP
+-----END PGP SIGNATURE-----

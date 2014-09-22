@@ -1,0 +1,371 @@
+ dpkg-buildpackage -rfakeroot -D -us -uc
+dpkg-buildpackage: warning: using a gain-root-command while being root
+dpkg-buildpackage: source package mosquitto
+dpkg-buildpackage: source version 1.3.4-2contactless1
+dpkg-buildpackage: source changed by Evgeny Boger <boger@contactless.ru>
+ dpkg-source --before-build mosquitto-1.3.4
+dpkg-buildpackage: host architecture armel
+ fakeroot debian/rules clean
+dh clean --with=python2,python3
+   dh_testdir
+   dh_auto_clean
+make[1]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+set -e; for d in lib client src; do /usr/bin/make -C ${d} clean; done
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+rm -f *.o libmosquitto.so.1 libmosquitto.so libmosquitto.a
+/usr/bin/make -C cpp clean
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+rm -f *.o libmosquittopp.so.1
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+/usr/bin/make -C python clean
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+rm -rf build mosquitto.pyc __pycache__
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+rm -f *.o mosquitto_pub mosquitto_sub
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+rm -f *.o mosquitto mosquitto_passwd
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+set -e; for d in man; do /usr/bin/make -C ${d} clean; done
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/man'
+make[2]: Nothing to be done for `clean'.
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/man'
+/usr/bin/make -C test clean
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test'
+rm -f *.o random_client qos msgsps_pub msgsps_sub fake_user test_client *.pyc
+/usr/bin/make -C lib clean
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/lib'
+/usr/bin/make -C c clean
+ERROR: ld.so: object 'libfakeroot-sysv.so' from LD_PRELOAD cannot be preloaded: ignored.
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/lib/c'
+rm -f *.test
+ERROR: ld.so: object 'libfakeroot-sysv.so' from LD_PRELOAD cannot be preloaded: ignored.
+ERROR: ld.so: object 'libfakeroot-sysv.so' from LD_PRELOAD cannot be preloaded: ignored.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/lib/c'
+/usr/bin/make -C cpp clean
+ERROR: ld.so: object 'libfakeroot-sysv.so' from LD_PRELOAD cannot be preloaded: ignored.
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/lib/cpp'
+rm -f *.test
+ERROR: ld.so: object 'libfakeroot-sysv.so' from LD_PRELOAD cannot be preloaded: ignored.
+ERROR: ld.so: object 'libfakeroot-sysv.so' from LD_PRELOAD cannot be preloaded: ignored.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/lib/cpp'
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/lib'
+/usr/bin/make -C broker clean
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/broker'
+/usr/bin/make -C c clean
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/broker/c'
+rm -f *.so *.test
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/broker/c'
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test/broker'
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/test'
+make[1]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+   dh_clean
+ dpkg-source -b mosquitto-1.3.4
+dpkg-source: info: using source format `3.0 (quilt)'
+dpkg-source: info: building mosquitto using existing ./mosquitto_1.3.4.orig.tar.gz
+dpkg-source: info: building mosquitto in mosquitto_1.3.4-2contactless1.debian.tar.gz
+dpkg-source: info: building mosquitto in mosquitto_1.3.4-2contactless1.dsc
+ debian/rules build
+dh build --with=python2,python3
+   dh_testdir
+   debian/rules override_dh_auto_configure
+make[1]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+# Don't process CMake rules.
+make[1]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+   dh_auto_build
+make[1]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+set -e; for d in lib client src; do /usr/bin/make -C ${d}; done
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c mosquitto.c -o mosquitto.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c logging_mosq.c -o logging_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c memory_mosq.c -o memory_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c messages_mosq.c -o messages_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c net_mosq.c -o net_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c read_handle.c -o read_handle.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c read_handle_client.c -o read_handle_client.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c read_handle_shared.c -o read_handle_shared.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c send_mosq.c -o send_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c send_client_mosq.c -o send_client_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c srv_mosq.c -o srv_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c thread_mosq.c -o thread_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c time_mosq.c -o time_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c tls_mosq.c -o tls_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c util_mosq.c -o util_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -fPIC -DWITH_TLS -DWITH_TLS_PSK -DWITH_THREADING -DWITH_SRV -c will_mosq.c -o will_mosq.o
+cc -shared -Wl,-z,relro -Wl,--as-needed -Wl,--version-script=linker.version -Wl,-soname,libmosquitto.so.1 mosquitto.o logging_mosq.o memory_mosq.o messages_mosq.o net_mosq.o read_handle.o read_handle_client.o read_handle_shared.o send_mosq.o send_client_mosq.o srv_mosq.o thread_mosq.o time_mosq.o tls_mosq.o util_mosq.o will_mosq.o -o libmosquitto.so.1  -lrt -lssl -lcrypto -lpthread -lcares
+ar cr libmosquitto.a mosquitto.o logging_mosq.o memory_mosq.o messages_mosq.o net_mosq.o read_handle.o read_handle_client.o read_handle_shared.o send_mosq.o send_client_mosq.o srv_mosq.o thread_mosq.o time_mosq.o tls_mosq.o util_mosq.o will_mosq.o
+/usr/bin/make -C cpp
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+g++ -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -fPIC -c mosquittopp.cpp -o mosquittopp.o
+g++ -shared -Wl,-z,relro -Wl,--as-needed -Wl,-soname,libmosquittopp.so.1 mosquittopp.o -o libmosquittopp.so.1 ../libmosquitto.so.1
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+/usr/bin/make -C python
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+cc -c pub_client.c -o pub_client.o -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I../lib -DVERSION="\"1.3.4\"" -DWITH_TLS -DWITH_TLS_PSK
+cc pub_client.o -o mosquitto_pub -Wl,-z,relro -Wl,--as-needed -L../lib ../lib/libmosquitto.so.1
+cc -c sub_client.c -o sub_client.o -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I../lib -DVERSION="\"1.3.4\"" -DWITH_TLS -DWITH_TLS_PSK
+cc sub_client.o -o mosquitto_sub -Wl,-z,relro -Wl,--as-needed -L../lib ../lib/libmosquitto.so.1
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c mosquitto.c -o mosquitto.o -DCHANGESET=\"$(cat ../changeset)\"
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c bridge.c -o bridge.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c conf.c -o conf.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c context.c -o context.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c database.c -o database.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c logging.c -o logging.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c loop.c -o loop.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/memory_mosq.c -o memory_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c persist.c -o persist.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c net.c -o net.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/net_mosq.c -o net_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c read_handle.c -o read_handle.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c read_handle_client.c -o read_handle_client.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c read_handle_server.c -o read_handle_server.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/read_handle_shared.c -o read_handle_shared.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c security.c -o security.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c security_default.c -o security_default.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/send_client_mosq.c -o send_client_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/send_mosq.c -o send_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c send_server.c -o send_server.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c service.c -o service.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c subs.c -o subs.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c sys_tree.c -o sys_tree.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/time_mosq.c -o time_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/tls_mosq.c -o tls_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/util_mosq.c -o util_mosq.o
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -I. -I.. -I../lib -D_FORTIFY_SOURCE=2 -DVERSION="\"1.3.4\"" -DTIMESTAMP="\"2014-09-22 14:41:54+0000\"" -DWITH_BROKER -DWITH_WRAP -DWITH_TLS -DWITH_TLS_PSK -DWITH_BRIDGE -DWITH_PERSISTENCE -DWITH_MEMORY_TRACKING -DWITH_SYS_TREE -c ../lib/will_mosq.c -o will_mosq.o
+cc mosquitto.o bridge.o conf.o context.o database.o logging.o loop.o memory_mosq.o persist.o net.o net_mosq.o read_handle.o read_handle_client.o read_handle_server.o read_handle_shared.o security.o security_default.o send_client_mosq.o send_mosq.o send_server.o service.o subs.o sys_tree.o time_mosq.o tls_mosq.o util_mosq.o will_mosq.o -o mosquitto -Wl,-z,relro -Wl,--as-needed -ldl -lm -lrt -lwrap -lssl -lcrypto
+cc -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -c mosquitto_passwd.c -o mosquitto_passwd.o
+cc mosquitto_passwd.o -o mosquitto_passwd -Wl,-z,relro -Wl,--as-needed -lcrypto
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+set -e; for d in man; do /usr/bin/make -C ${d}; done
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/man'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/man'
+make[1]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+   dh_auto_test
+ fakeroot debian/rules binary
+dh binary --with=python2,python3
+   dh_auto_test
+   dh_testroot
+   dh_prep
+   dh_installdirs
+   debian/rules override_dh_auto_install
+make[1]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+dh_auto_install
+make[2]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+set -e; for d in lib client src; do /usr/bin/make -C ${d}; done
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+/usr/bin/make -C cpp
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+make[4]: Nothing to be done for `all'.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+/usr/bin/make -C python
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[4]: Nothing to be done for `all'.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+set -e; for d in lib client src; do /usr/bin/make -C ${d} install; done
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+/usr/bin/make -C cpp
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+make[4]: Nothing to be done for `all'.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+/usr/bin/make -C python
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[4]: Nothing to be done for `all'.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/lib/
+install libmosquitto.so.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/lib/libmosquitto.so.1
+ln -sf libmosquitto.so.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/lib/libmosquitto.so
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/include/
+install mosquitto.h /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/include/mosquitto.h
+/usr/bin/make -C cpp install
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/lib/
+install libmosquittopp.so.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/lib/libmosquittopp.so.1
+ln -sf libmosquittopp.so.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/lib/libmosquittopp.so
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/include/
+install mosquittopp.h /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/include/mosquittopp.h
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/cpp'
+/usr/bin/make -C python install
+make[4]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[4]: Nothing to be done for `install'.
+make[4]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib/python'
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/lib'
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/bin
+install mosquitto_pub /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/bin/mosquitto_pub
+install mosquitto_sub /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/bin/mosquitto_sub
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/client'
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/sbin
+install mosquitto /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/sbin/mosquitto
+install mosquitto_plugin.h /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/include/mosquitto_plugin.h
+install mosquitto_passwd /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/bin/mosquitto_passwd
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/src'
+set -e; for d in man; do /usr/bin/make -C ${d} install; done
+make[3]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/man'
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man8
+install -m 644 mosquitto.8 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man8/mosquitto.8
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man5
+install -m 644 mosquitto.conf.5 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man5/mosquitto.conf.5
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man1
+install -m 644 mosquitto_passwd.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man1/mosquitto_passwd.1
+install -m 644 mosquitto_pub.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man1/mosquitto_pub.1
+install -m 644 mosquitto_sub.1 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man1/mosquitto_sub.1
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man7
+install -m 644 mqtt.7 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man7/mqtt.7
+install -m 644 mosquitto-tls.7 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man7/mosquitto-tls.7
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man3
+install -m 644 libmosquitto.3 /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/usr/share/man/man3/libmosquitto.3
+make[3]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/man'
+install -d /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/etc/mosquitto
+install -m 644 mosquitto.conf /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/etc/mosquitto/mosquitto.conf.example
+install -m 644 aclfile.example /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/etc/mosquitto/aclfile.example
+install -m 644 pwfile.example /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/etc/mosquitto/pwfile.example
+install -m 644 pskfile.example /opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4/debian/tmp/etc/mosquitto/pskfile.example
+make[2]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+cd lib/python ; for python in 2.7 2.6 3.2; do \
+		python$python setup.py install --install-layout=deb --root=../../debian/tmp; \
+	done
+running install
+running build
+running build_py
+creating build
+creating build/lib.linux-armv7l-2.7
+copying mosquitto.py -> build/lib.linux-armv7l-2.7
+running install_lib
+creating ../../debian/tmp/usr/lib/python2.7
+creating ../../debian/tmp/usr/lib/python2.7/dist-packages
+copying build/lib.linux-armv7l-2.7/mosquitto.py -> ../../debian/tmp/usr/lib/python2.7/dist-packages
+byte-compiling ../../debian/tmp/usr/lib/python2.7/dist-packages/mosquitto.py to mosquitto.pyc
+running install_egg_info
+Writing ../../debian/tmp/usr/lib/python2.7/dist-packages/mosquitto-1.3.4.egg-info
+running install
+running build
+running build_py
+creating build/lib.linux-armv7l-2.6
+copying mosquitto.py -> build/lib.linux-armv7l-2.6
+running install_lib
+creating ../../debian/tmp/usr/lib/python2.6
+creating ../../debian/tmp/usr/lib/python2.6/dist-packages
+copying build/lib.linux-armv7l-2.6/mosquitto.py -> ../../debian/tmp/usr/lib/python2.6/dist-packages
+byte-compiling ../../debian/tmp/usr/lib/python2.6/dist-packages/mosquitto.py to mosquitto.pyc
+running install_egg_info
+Writing ../../debian/tmp/usr/lib/python2.6/dist-packages/mosquitto-1.3.4.egg-info
+running install
+running build
+running build_py
+creating build/lib
+copying mosquitto.py -> build/lib
+running install_lib
+creating ../../debian/tmp/usr/lib/python3
+creating ../../debian/tmp/usr/lib/python3/dist-packages
+copying build/lib/mosquitto.py -> ../../debian/tmp/usr/lib/python3/dist-packages
+byte-compiling ../../debian/tmp/usr/lib/python3/dist-packages/mosquitto.py to mosquitto.cpython-32.pyc
+running install_egg_info
+Writing ../../debian/tmp/usr/lib/python3/dist-packages/mosquitto-1.3.4.egg-info
+install -d debian/tmp/etc/mosquitto/conf.d/
+install -m 644 debian/README-conf-d debian/tmp/etc/mosquitto/conf.d/README
+install -d debian/tmp/etc/mosquitto/ca_certificates/
+install -m 644 debian/README-ca_certificates debian/tmp/etc/mosquitto/ca_certificates/README
+install -d debian/tmp/etc/mosquitto/certs/
+install -m 644 debian/README-certs debian/tmp/etc/mosquitto/certs/README
+install -m 644 debian/mosquitto.conf debian/tmp/etc/mosquitto/mosquitto.conf
+make[1]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+   dh_install
+   dh_installdocs
+   debian/rules override_dh_installchangelogs
+make[1]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+dh_installchangelogs ChangeLog.txt
+make[1]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+   dh_installexamples
+   dh_installman
+   dh_installcatalogs
+   dh_installcron
+   dh_installdebconf
+   dh_installemacsen
+   dh_installifupdown
+   dh_installinfo
+   dh_python2
+   dh_python3
+   dh_installinit
+   dh_installmenu
+   dh_installmime
+   dh_installmodules
+   dh_installlogcheck
+   dh_installlogrotate
+   dh_installpam
+   dh_installppp
+   dh_installudev
+   dh_installwm
+   dh_installxfonts
+   dh_installgsettings
+   dh_bugfiles
+   dh_ucf
+   dh_lintian
+   dh_gconf
+   dh_icons
+   dh_perl
+   dh_usrlocal
+   dh_link
+   dh_compress
+   dh_fixperms
+   debian/rules override_dh_strip
+make[1]: Entering directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+dh_strip --dbg-package=mosquitto-dbg
+make[1]: Leaving directory `/opt/board/wiren_rootfs/contrib/deb/mosquitto/mosquitto-1.3.4'
+   dh_makeshlibs
+   dh_shlibdeps
+   dh_installdeb
+   dh_gencontrol
+dpkg-gencontrol: warning: package mosquitto: unused substitution variable ${python3:Depends}
+dpkg-gencontrol: warning: package libmosquitto1: unused substitution variable ${python3:Depends}
+dpkg-gencontrol: warning: package libmosquitto-dev: unused substitution variable ${python3:Depends}
+dpkg-gencontrol: warning: package libmosquittopp1: unused substitution variable ${python3:Depends}
+dpkg-gencontrol: warning: package libmosquittopp-dev: unused substitution variable ${python3:Depends}
+dpkg-gencontrol: warning: package mosquitto-clients: unused substitution variable ${python3:Depends}
+dpkg-gencontrol: warning: package python-mosquitto: unused substitution variable ${python:Versions}
+dpkg-gencontrol: warning: package python-mosquitto: unused substitution variable ${python:Provides}
+dpkg-gencontrol: warning: package mosquitto-dbg: unused substitution variable ${python3:Depends}
+   dh_md5sums
+   dh_builddeb
+dpkg-deb: building package `mosquitto' in `../mosquitto_1.3.4-2contactless1_armel.deb'.
+dpkg-deb: building package `libmosquitto1' in `../libmosquitto1_1.3.4-2contactless1_armel.deb'.
+dpkg-deb: building package `libmosquitto-dev' in `../libmosquitto-dev_1.3.4-2contactless1_all.deb'.
+dpkg-deb: building package `libmosquittopp1' in `../libmosquittopp1_1.3.4-2contactless1_armel.deb'.
+dpkg-deb: building package `libmosquittopp-dev' in `../libmosquittopp-dev_1.3.4-2contactless1_all.deb'.
+dpkg-deb: building package `mosquitto-clients' in `../mosquitto-clients_1.3.4-2contactless1_armel.deb'.
+dpkg-deb: building package `python-mosquitto' in `../python-mosquitto_1.3.4-2contactless1_all.deb'.
+dpkg-deb: building package `python3-mosquitto' in `../python3-mosquitto_1.3.4-2contactless1_all.deb'.
+dpkg-deb: building package `mosquitto-dbg' in `../mosquitto-dbg_1.3.4-2contactless1_armel.deb'.
+ dpkg-genchanges  >../mosquitto_1.3.4-2contactless1_armel.changes
+dpkg-genchanges: not including original source code in upload
+ dpkg-source --after-build mosquitto-1.3.4
+dpkg-buildpackage: binary and diff upload (original source NOT included)
+Now running lintian...
+warning: the authors of lintian do not recommend running it with root privileges!
+W: mosquitto source: changelog-should-mention-nmu
+W: mosquitto source: source-nmu-has-incorrect-version-number 1.3.4-2contactless1
+W: mosquitto source: newer-standards-version 3.9.5 (current is 3.9.4)
+N: 3 tags overridden (3 warnings)
+Finished running lintian.
+Now signing changes and any dsc files...
+ signfile mosquitto_1.3.4-2contactless1.dsc Evgeny Boger <boger@contactless.ru>
+
+ signfile mosquitto_1.3.4-2contactless1_armel.changes Evgeny Boger <boger@contactless.ru>
+
+Successfully signed dsc and changes files
