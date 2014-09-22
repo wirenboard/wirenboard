@@ -1,5 +1,11 @@
+wb-configs (1.01) stable; urgency=medium
+
+  * Remove mosquitto.conf 
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 22 Sep 2014 18:54:42 +0400
+
 wb-configs (1.00) unstable; urgency=low
 
   * Initial Release.
 
- -- Evgeny Boger <boger@contactless.ru>  Fri, 13 Jun 2014 20:07:16 +0400
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 22 Sep 2014 18:54:35 +0400
