@@ -4,3 +4,4 @@ fix-prefix.patch
 nostrip.patch
 pynomake.patch
 disable-in-tree-uthash.patch
+mosquitto_sub_exit_after
