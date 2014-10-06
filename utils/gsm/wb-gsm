@@ -25,9 +25,12 @@ function gpio_set_value() {
 }
 
 function gpio_export() {
+    # workaround for lan951x driver bug
 	if [ ! -e  /sys/class/gpio/gpio$1  ]; then
-		echo $1 > /sys/class/gpio/export
+		echo $1 > /sys/class/gpio/unexport
 	fi
+
+    echo $1 > /sys/class/gpio/export
 }
 
 function init() {
