@@ -117,10 +117,14 @@ function imei() {
     REPORT=`cat $REPORT_FILE | cut -d' ' -f6-`
     rm $REPORT_FILE
 
-    IMEI=`echo $REPORT | cut -c 9-14`
-    echo $IMEI
+    echo $REPORT
 }
 
+function imei_sn() {
+    IMEI=`imei`
+    IMEI_SN=`echo $IMEI | cut -c 9-14`
+    echo ${IMEI_SN}
+}
 
 
 
@@ -164,16 +168,27 @@ function ensure_on() {
 	set_speed
 }
 
-function restart_if_broken() {
-    #~ set_speed
+function test_connection() {
     /usr/sbin/chat   TIMEOUT 5 ABORT "ERROR" ABORT "BUSY" "" ATZ OK "" > $PORT < $PORT
     RC=$?
+    echo $RC
+}
+
+function restart_if_broken() {
+    #~ set_speed
+    RC=$(test_connection)
 
     if [[ $RC != 0 ]] ; then
         debug "connection test error!"
         debug "Restarting GSM modem..."
         ensure_on
         sleep 5
+
+        RC=$(test_connection)
+        if [[ $RC != 0 ]] ; then
+            debug "ERROR: modem restarted, still no answer"
+        fi
+
         exit $RC;
     fi
 }
@@ -211,6 +226,10 @@ case "$1" in
 
     "imei" )
         imei
+    ;;
+
+    "imei_sn" )
+        imei_sn
     ;;
 
 	* )

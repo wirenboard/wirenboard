@@ -11,14 +11,19 @@ function debug() {
 function _gen_mac_simcom()
 {
     IMEI=`wb-gsm imei`
+    IMEI_SN=`echo $IMEI | cut -c 9-14`
+
     RC=$?
 
     if [[ $RC != 0 ]] ; then
         debug "ERROR"
         return $RC;
     fi
+    IMEIPREFIX=${IMEI:0:8}
 
-    MAC="$PREFIX:42:${IMEI:0:2}:${IMEI:2:2}:${IMEI:4:2}"
+    MAC_PREFIX_OCTET=`printf "%x\n" $((IMEIPREFIX%256))`
+
+    MAC="$PREFIX:${MAC_PREFIX_OCTET}:${IMEI_SN:0:2}:${IMEI_SN:2:2}:${IMEI_SN:4:2}"
     echo $MAC
     return 0
 }
