@@ -15,9 +15,7 @@ function debug() {
 }
 
 function gpio_set_dir() {
-    if [ `cat /sys/class/gpio/gpio$1/direction`  != "$2" ]; then
-        echo "$2" > /sys/class/gpio/gpio$1/direction
-    fi
+    echo "$2" > /sys/class/gpio/gpio$1/direction
 }
 
 
