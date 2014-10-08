@@ -1,3 +1,10 @@
+wb-utils (1.04) stable; urgency=medium
+
+  * fix wb-get-serial
+  * new wb_env
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 30 Sep 2014 19:23:08 +0400
+
 wb-utils (1.03) stable; urgency=medium
 
   * Add restart_if_broken command line argument to wb-gsm:
