@@ -177,7 +177,7 @@ int check_wifi () {
     sprintf(command_line, "ifconfig %s up", adapter_name);
     system(command_line); //Make wlanXX up
 
-    sprintf(command_line, "iwlist %s scanning | grep Yasha", adapter_name); //Looking for YashaTheForester network
+    sprintf(command_line, "iwlist %s scanning | grep PlantsVsZombiesN", adapter_name); //Looking for YashaTheForester network
 
     pp = popen(command_line, "r");
 
@@ -289,11 +289,12 @@ void old_check_serial() {
 
 void check_gsm() {
     system("wb-gsm on");
-    sleep(15);
+    sleep(18);
     system("echo AAAAAAAT > /dev/ttyAPP0");
     sleep(6);
 //    system("echo ATD89154816100\\; > /dev/ttyAPP0");
-    system("echo ATD89199658836\\; > /dev/ttyAPP0");
+    //~ system("echo ATDT89199658836\\; > /dev/ttyAPP0");
+    system("echo ATDT89263572423\\; > /dev/ttyAPP0");
 
     printf("\nWait for call...");
     return;
