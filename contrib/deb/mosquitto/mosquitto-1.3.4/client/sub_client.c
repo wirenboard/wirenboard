@@ -57,6 +57,7 @@ struct userdata {
 	bool quiet;
 	bool no_retain;
 	bool eol;
+    int remaining_messages;
 };
 
 void my_message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
@@ -98,6 +99,13 @@ void my_message_callback(struct mosquitto *mosq, void *obj, const struct mosquit
 			fflush(stdout);
 		}
 	}
+
+    if (ud->remaining_messages > 1) {
+        ud->remaining_messages -= 1;
+    } else if (ud->remaining_messages == 1) {
+        exit(0);
+    }
+
 }
 
 void my_connect_callback(struct mosquitto *mosq, void *obj, int result)
@@ -162,6 +170,7 @@ void print_usage(void)
 	printf("                      [--ciphers ciphers] [--insecure]]\n");
 #ifdef WITH_TLS_PSK
 	printf("                     [--psk hex-key --psk-identity identity [--ciphers ciphers]]\n");
+	printf("                     [--exit-after message_count]\n");
 #endif
 #endif
 	printf("       mosquitto_sub --help\n\n");
@@ -212,6 +221,8 @@ void print_usage(void)
 	printf(" --psk-identity : client identity string for TLS-PSK mode.\n");
 #endif
 #endif
+	printf(" --exit-after : exit after receiving the specified number of messages\n");
+
 	printf("\nSee http://mosquitto.org/ for more information.\n\n");
 }
 
@@ -232,7 +243,7 @@ int main(int argc, char *argv[])
 	char err[1024];
 	struct userdata ud;
 	int len;
-	
+
 	char *will_payload = NULL;
 	long will_payloadlen = 0;
 	int will_qos = 0;
@@ -255,6 +266,7 @@ int main(int argc, char *argv[])
 
 	memset(&ud, 0, sizeof(struct userdata));
 	ud.eol = true;
+    ud.remaining_messages = -1;
 
 	for(i=1; i<argc; i++){
 		if(!strcmp(argv[i], "-p") || !strcmp(argv[i], "--port")){
@@ -510,6 +522,19 @@ int main(int argc, char *argv[])
 				return 1;
 			}else{
 				will_topic = argv[i+1];
+			}
+			i++;
+		}else if(!strcmp(argv[i], "--exit-after")){
+			if(i==argc-1){
+				fprintf(stderr, "Error: --exit-after argument given but no maximum number of messages specified.\n\n");
+				print_usage();
+				return 1;
+			}else{
+				ud.remaining_messages = atoi(argv[i+1]);
+				if(ud.remaining_messages <= 0){
+					fprintf(stderr, "Error: Invalid maximum number of messages %d.\n\n", ud.remaining_messages);
+					return 1;
+				}
 			}
 			i++;
 		}else{
