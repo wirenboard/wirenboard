@@ -10,7 +10,7 @@ if [ "$1" == "/dev/sda" ]; then
 	exit 1
 fi
 
-sudo dd if=/dev/zero of=${1} bs=1M count=5
+sudo dd if=/dev/zero of=${1} bs=1M count=5 conv=notrunc
 sudo sfdisk --in-order --Linux --unit M ${1} <<-__EOF__
 4,16,0x53,-
 ,,,-
