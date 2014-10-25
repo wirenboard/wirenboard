@@ -1,11 +1,8 @@
 #!/bin/bash
 
-DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
+if [ "x$FORCE_WB_VERSION" = "x" ]; then
+	DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
 
-# newline inside quotation below is intentional
-IFS="
-"
-if [ "x$FORCE_WB_VERSION" == "x" ]; then
     for compat in $DT_COMPAT_LIST; do
         case "$compat" in
             "contactless,imx23-wirenboard32" )
