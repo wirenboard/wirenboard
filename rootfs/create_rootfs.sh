@@ -134,18 +134,18 @@ case "$BOARD" in
         FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install  wb-homa-drivers  wb-homa-ism-radio
         chroot ${OUTPUT}/ apt-get -y install netplug hostapd
 
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard32.dtb" ${OUTPUT}/boot/uEnv.txt
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard32.dtb" > ${OUTPUT}/boot/uEnv.txt
 
     ;;
     "28" )
 
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard28.dtb" ${OUTPUT}/boot/uEnv.txt
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard28.dtb" >  ${OUTPUT}/boot/uEnv.txt
 
     ;;
 
     "KMON1" )
         # MKA3
-        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
+        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
         chroot ${OUTPUT}/ apt-get -y install wb-dbic
 
         # https://github.com/contactless/wb-dbic
@@ -154,7 +154,7 @@ case "$BOARD" in
         rm ${OUTPUT}/set_confidential.sh
 
 
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" ${OUTPUT}/boot/uEnv.txt
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" > ${OUTPUT}/boot/uEnv.txt
 
     ;;
 
