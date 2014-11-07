@@ -1,9 +1,26 @@
 #!/bin/bash
-
-ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,netplug,psmisc,curl,dnsmasq"
+ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial"
 REPO="http://ftp.debian.org/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
+
+if [ $# -ne 2 ]
+then
+  echo "USAGE: $1 <path to rootfs> <BOARD>"
+  exit 1
+fi
+
+OUTPUT=$1
+BOARD=$2
+
+if [ -e "$OUTPUT" ]; then
+    echo "output rootfs folder $OUTPUT already exists, exiting"
+    exit 2;
+fi
+
+
+mkdir -p $OUTPUT
+
 
 
 if [ "$(id -u)" != "0" ]; then
@@ -12,9 +29,8 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
-# directly download firmware-realtek from non-free repo
-RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.36+wheezy.1_all.deb"
-
+# directly download firmware-realtek from jessie non-free repo
+RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
 
 echo "Install dependencies"
 apt-get install qemu-user-static binfmt-support
@@ -36,8 +52,13 @@ sudo chroot ${OUTPUT} /debootstrap/debootstrap --second-stage
 echo "Set root password"
 sudo chroot ${OUTPUT}/ /bin/sh -c "echo root:wirenboard | chpasswd"
 
+echo "Install initial repos"
+sudo cp ../configs/configs/etc/apt/sources.list ${OUTPUT}/etc/apt
+
 echo "Overwrite configs"
-cp -r configs/* ${OUTPUT}/
+sudo chroot ${OUTPUT}/ apt-get -o Dpkg::Options::="--force-overwrite" install wb-configs
+sudo chroot ${OUTPUT}/ locale-gen
+
 
 
 echo "Update&upgrade apt"
@@ -52,7 +73,7 @@ chroot ${OUTPUT}/ /usr/sbin/locale-gen
 LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
 
 echo "Setup additional packages"
-chroot ${OUTPUT}/ apt-get -y install hostapd python3-minimal unzip minicom iw ppp libmodbus5
+chroot ${OUTPUT}/ apt-get -y install  python3-minimal unzip minicom iw ppp libmodbus5
 
 
 
@@ -70,11 +91,8 @@ chroot ${OUTPUT}/ dpkg -i rtl_firmware.deb
 chroot ${OUTPUT}/ rm rtl_firmware.deb
 
 echo "Overwrite configs one more time"
-cp -r configs/* ${OUTPUT}/
+chroot ${OUTPUT}/  apt-get -o Dpkg::Options::="--force-overwrite" -o Dpkg::Options::="--force-confnew"  install wb-configs
 
-echo "Copy utils, examples to opt folder"
-#~ cp -r ../utils ${OUTPUT}/opt/
-cp -r ../examples ${OUTPUT}/opt/
 
 
 echo "Install quick2wire"
@@ -86,33 +104,69 @@ cd ${ORIG_DIR}
 
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
-
-echo "Install cmux"
-wget https://github.com/contactless/cmux/releases/download/0.3/cmux -O ${OUTPUT}/opt/utils/gsm/cmux
-chmod a+x ${OUTPUT}/opt/utils/gsm/cmux
-
-
 echo "Install public key for contactless repo"
 chroot ${OUTPUT}/ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 chroot ${OUTPUT}/ apt-get update
 
 
 echo "Install packages from contactless repo"
-chroot ${OUTPUT}/ apt-get install hubpower python-wb-io modbus-utils wb-utils
-chroot ${OUTPUT}/ apt-get install libnfc5 libnfc-bin libnfc-examples
+chroot ${OUTPUT}/ apt-get -y install cmux hubpower python-wb-io modbus-utils wb-utils
+chroot ${OUTPUT}/ apt-get -y install libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
 
 # mqtt
-chroot ${OUTPUT}/ apt-get install libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+chroot ${OUTPUT}/ apt-get -y install libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
 
 # todo: should be in dependencies
-chroot ${OUTPUT}/ apt-get install  libjsoncpp0
-
-# smart-home stuff
-chroot ${OUTPUT}/ apt-get install  wb-homa-drivers mqtt-wss wb-homa-ism-radio webfs wb-homa-webinterface
-chroot ${OUTPUT}/ apt-get install  openssl ca-certificates
+chroot ${OUTPUT}/ apt-get -y install  libjsoncpp0
 
 
+# kernel
+chroot ${OUTPUT}/ apt-get -y install linux-latest
 
+
+chroot ${OUTPUT}/ apt-get -y install  openssl ca-certificates
+
+chroot ${OUTPUT}/ apt-get -y install  mqtt-wss webfs wb-homa-webinterface
+
+case "$BOARD" in
+    "32" )
+        # WB Smart Home specific
+        FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install  wb-homa-drivers  wb-homa-ism-radio
+        chroot ${OUTPUT}/ apt-get -y install netplug hostapd
+
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard32.dtb" ${OUTPUT}/boot/uEnv.txt
+
+    ;;
+    "28" )
+
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard28.dtb" ${OUTPUT}/boot/uEnv.txt
+
+    ;;
+
+    "KMON1" )
+        # MKA3
+        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
+        chroot ${OUTPUT}/ apt-get -y install wb-dbic
+
+        # https://github.com/contactless/wb-dbic
+        cp ../../wb-dbic/set_confidential.sh ${OUTPUT}/
+        chroot ${OUTPUT}/ /set_confidential.sh
+        rm ${OUTPUT}/set_confidential.sh
+
+
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" ${OUTPUT}/boot/uEnv.txt
+
+    ;;
+
+esac
+
+
+
+
+
+
+
+chroot ${OUTPUT}/ apt-get clean
 
 echo "Umount proc,dev,dev/pts in rootfs"
 umount ${OUTPUT}/proc
