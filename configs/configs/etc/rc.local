@@ -28,9 +28,15 @@ wb_firstboot()
     wb-gen-serial > /var/lib/wirenboard/serial.conf || return 4
 
     echo "Restarting up network interface"
-    /etc/init.d/netplug stop
+    if [ -e /etc/init.d/netplug ]; then
+        /etc/init.d/netplug stop
+    fi
+
     ifdown eth0 ; ifdown eth0 ; ifup eth0
-    /etc/init.d/netplug start
+
+    if [ -e /etc/init.d/netplug ]; then
+        /etc/init.d/netplug start
+    fi
 
     echo "Resizing root partition..."
     resize2fs /dev/mmcblk0p2

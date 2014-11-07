@@ -1,3 +1,15 @@
+wb-configs (1.04) stable; urgency=medium
+
+  * support images with no netplug installed
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 07 Nov 2014 03:37:51 +0300
+
+wb-configs (1.03) stable; urgency=medium
+
+  * add kernel postinst to make zImage symlink
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 06 Nov 2014 23:09:28 +0300
+
 wb-configs (1.02) stable; urgency=medium
 
   * remove /boot/uEnv.txt 
