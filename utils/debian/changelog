@@ -1,3 +1,16 @@
+wb-utils (1.042) stable; urgency=medium
+
+  * fix wb-gen-serial
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 07 Nov 2014 03:39:22 +0300
+
+wb-utils (1.041) stable; urgency=medium
+
+  * restore sh compatibility
+ 
+
+ -- Evgeny Boger <boger@contactless.ru>  Sat, 25 Oct 2014 04:58:37 +0400
+
 wb-utils (1.04) stable; urgency=medium
 
   * fix wb-get-serial

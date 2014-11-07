@@ -11,9 +11,9 @@ function debug() {
 function _gen_mac_simcom()
 {
     IMEI=`wb-gsm imei`
-    IMEI_SN=`echo $IMEI | cut -c 9-14`
-
     RC=$?
+
+    IMEI_SN=`echo $IMEI | cut -c 9-14`
 
     if [[ $RC != 0 ]] ; then
         debug "ERROR"
@@ -31,11 +31,11 @@ function _gen_mac_simcom()
 function gen_mac_simcom()
 {
     debug "Trying to get GSM IMEI..."
+    wb-gsm restart_if_broken
     _gen_mac_simcom
     RC=$?
     if [[ $RC != 0 ]] ; then
-        wb-gsm on
-        _gen_mac_simcom
+        wb-gsm restart_if_broken
         RC=$?
     fi
 
