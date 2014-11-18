@@ -1,3 +1,9 @@
+wb-configs (1.041) stable; urgency=medium
+
+  * prevent /boot/uEnv.txt from being deleted
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 18 Nov 2014 18:27:56 +0300
+
 wb-configs (1.04) stable; urgency=medium
 
   * support images with no netplug installed
