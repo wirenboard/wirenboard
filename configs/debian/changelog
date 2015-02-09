@@ -1,3 +1,9 @@
+wb-configs (1.42) stable; urgency=medium
+
+  * Add options smsc95xx turbo_mode=N  (http://raspberrypi.stackexchange.com/questions/4958/networks-drops-and-freezes)
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 09 Feb 2015 20:38:50 +0300
+
 wb-configs (1.041) stable; urgency=medium
 
   * prevent /boot/uEnv.txt from being deleted
