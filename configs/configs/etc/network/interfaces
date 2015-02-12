@@ -21,6 +21,7 @@ iface wlan0 inet static
 auto eth0
 iface eth0 inet dhcp
    pre-up ifconfig eth0 hw ether `cat /var/lib/wirenboard/serial.conf` || /bin/true
+   hostname WirenBoard
 
 
 allow-hotplug eth1
