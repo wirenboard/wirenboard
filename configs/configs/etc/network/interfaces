@@ -24,6 +24,18 @@ iface eth0 inet dhcp
    hostname WirenBoard
 
 
+
+## The gsm pptp interface
+## vvv uncomment block to enable
+
+#auto ppp0
+#iface ppp0 inet ppp
+## select provider: megafon, mts or beeline below
+#  provider megafon
+
+
+
+
 allow-hotplug eth1
 iface eth1 inet dhcp
 
