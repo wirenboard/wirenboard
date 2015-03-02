@@ -8,5 +8,5 @@ Homepage: <insert the upstream URL, if relevant>
 
 Package: wb-configs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, wb-utils (>= 1.042)
 Description: Default config files for Wiren Board rootfs
