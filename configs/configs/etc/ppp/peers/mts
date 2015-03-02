@@ -27,5 +27,5 @@ holdoff 10
 
 init "/usr/bin/wb-gsm restart_if_broken"
 
-user gdata
-connect "/usr/sbin/chat -v -f /etc/chatscripts/megafon2"
+user mts
+connect "/usr/sbin/chat -v -f /etc/chatscripts/mts"

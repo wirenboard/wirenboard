@@ -4,6 +4,6 @@ ABORT "NO CARRIER"
 ABORT "ERROR"
 TIMEOUT 5
 "" ATZ
-OK AT+CGDCONT=1,"IP","internet"
+OK AT+CGDCONT=1,"IP","internet.beeline.ru"
 OK ATD*99***1#
 CONNECT
