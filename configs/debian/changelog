@@ -1,3 +1,9 @@
+wb-configs (1.43) stable; urgency=medium
+
+  * automatically repair filesystems with inconsistencies during boot
+
+ -- Evgeny Boger <boger@contactless.ru>  Wed, 18 Mar 2015 14:11:20 +0300
+
 wb-configs (1.42) stable; urgency=medium
 
   * Add options smsc95xx turbo_mode=N  (http://raspberrypi.stackexchange.com/questions/4958/networks-drops-and-freezes)
