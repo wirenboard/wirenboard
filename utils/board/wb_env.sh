@@ -5,6 +5,10 @@ if [ "x$FORCE_WB_VERSION" = "x" ]; then
 
     for compat in $DT_COMPAT_LIST; do
         case "$compat" in
+            "contactless,imx23-wirenboard41" )
+                WB_VERSION=41;
+                break;
+            ;;
             "contactless,imx23-wirenboard32" )
                 WB_VERSION=32;
                 break;
@@ -87,6 +91,95 @@ case "$WB_VERSION" in
     WB_GPIO_W1=4
     WB_GPIO_W2=2
     WB_GPIO_W3=1
+
+    export WB_ADC_TYPE WB_GPIO_MUX_A WB_GPIO_MUX_B WB_GPIO_MUX_C \
+        WB_GPIO_PWR_33 WB_GPIO_RFM_CS WB_GPIO_NRF_CS WB_GPIO_NRF_EN \
+        WB_GSM_POWER_TYPE WB_GPIO_GSM_POWER WB_GPIO_GSM_PWRKEY \
+        WB_GPIO_GSM_STATUS WB_GPIO_RELAY_1 WB_GPIO_RELAY_2 \
+        WB_GPIO_FET_1 WB_GPIO_FET_2 WB_GPIO_FET_3 WB_GPIO_FET_4 WB_FET_COUNT \
+        WB_MUX_NAMES_0 WB_MUX_NAMES_1 WB_MUX_NAMES_2 WB_MUX_NAMES_3 \
+        WB_MUX_NAMES_4 WB_MUX_NAMES_5 WB_MUX_NAMES_6 WB_MUX_NAMES_7 \
+        WB_GPIO_A1 WB_GPIO_A2 WB_GPIO_A3 WB_GPIO_A4 \
+        WB_GPIO_W1 WB_GPIO_W2 WB_GPIO_W3
+
+    ;;
+
+    "41" )
+    WB_ADC_TYPE=1
+    WB_GPIO_MUX_A=51;
+    WB_GPIO_MUX_B=57;
+    WB_GPIO_MUX_C=54;
+
+#    WB_GPIO_PWR_33=39;
+#    WB_GPIO_RFM_CS=51;
+#    WB_GPIO_NRF_CS=35;
+#    WB_GPIO_NRF_EN=37;
+
+    WB_GSM_POWER_TYPE=2
+    WB_GPIO_GSM_POWER=124;
+    WB_GPIO_GSM_PWRKEY=125;
+    WB_GPIO_GSM_STATUS=249;
+
+    WB_GPIO_RELAY_1=33;
+    WB_GPIO_RELAY_2=34;
+
+    WB_GPIO_FET_1=17;
+    WB_GPIO_FET_2=7;
+    WB_GPIO_FET_3=5;
+    WB_GPIO_FET_4=53;
+    WB_GPIO_FET_5=2;
+
+    WB_GPIO_A1=${WB_GPIO_FET_1};
+    WB_GPIO_A2=${WB_GPIO_FET_2};
+    WB_GPIO_A3=${WB_GPIO_FET_3};
+    WB_GPIO_A4=${WB_GPIO_FET_4};
+    WB_GPIO_A5=${WB_GPIO_FET_5};
+
+    WB_GPIO_FET_6=248;
+    WB_GPIO_FET_7=247;
+    WB_GPIO_FET_8=246;
+    WB_GPIO_FET_9=245;
+
+    WB_GPIO_D1=${WB_GPIO_FET_6};
+    WB_GPIO_D2=${WB_GPIO_FET_6};
+    WB_GPIO_D3=${WB_GPIO_FET_6};
+    WB_GPIO_D4=${WB_GPIO_FET_6};
+
+
+
+    WB_FET_COUNT=5;
+
+    if [ -n "$BASH_VERSION" ]; then
+        # eval is for /bin/sh compatibility
+        eval "WB_MUX_NAMES_0=( A4 a4 ADC4 adc4)"
+        eval "WB_MUX_NAMES_1=( A5 a5 ADC5 adc5)"
+        eval "WB_MUX_NAMES_2=( BAT bat)"
+        eval "WB_MUX_NAMES_3=( A1 a1 ADC1 adc1)"
+        eval "WB_MUX_NAMES_4=( A2 a2 ADC2 adc2)"
+        eval "WB_MUX_NAMES_5=( R2 r2)"
+        eval "WB_MUX_NAMES_6=( A3 a3 ADC3 adc3)"
+        eval "WB_MUX_NAMES_7=( R1 r1)"
+    else
+        WB_MUX_NAMES_0="A4 a4 ADC4 adc4"
+        WB_MUX_NAMES_1="A5 a5 ADC5 adc5"
+        WB_MUX_NAMES_2="BAT bat"
+        WB_MUX_NAMES_3="A1 a1 ADC1 adc1"
+        WB_MUX_NAMES_4="A2 a2 ADC2 adc2"
+        WB_MUX_NAMES_5="R2 r2"
+        WB_MUX_NAMES_6="A3 a3 ADC3 adc3"
+        WB_MUX_NAMES_7="R1 r1"
+    fi
+
+    WB_GPIO_A4_IN=123;
+    WB_GPIO_A5_IN=1;
+
+    WB_GPIO_D1_IN=36;
+    WB_GPIO_D2_IN=37;
+    WB_GPIO_D3_IN=38;
+    WB_GPIO_D4_IN=39;
+
+    WB_GPIO_W1=52
+    WB_GPIO_W2=50
 
     export WB_ADC_TYPE WB_GPIO_MUX_A WB_GPIO_MUX_B WB_GPIO_MUX_C \
         WB_GPIO_PWR_33 WB_GPIO_RFM_CS WB_GPIO_NRF_CS WB_GPIO_NRF_EN \
