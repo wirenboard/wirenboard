@@ -1,3 +1,15 @@
+wb-configs (1.45) stable; urgency=medium
+
+  * remove mosquitto.conf
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 24 Apr 2015 18:55:43 +0300
+
+wb-configs (1.44) stable; urgency=medium
+
+  * mosquitto config
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 23 Apr 2015 19:17:41 +0300
+
 wb-configs (1.43) stable; urgency=medium
 
   * automatically repair filesystems with inconsistencies during boot
