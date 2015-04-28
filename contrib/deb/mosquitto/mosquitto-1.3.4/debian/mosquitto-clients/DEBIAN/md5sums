@@ -1,0 +1,8 @@
+c0410a3184bac990ab5904f1f7ae7177  usr/bin/mosquitto_pub
+958baa4da706bfb9d8ed36a688f4fbd4  usr/bin/mosquitto_sub
+ef3c44c230318b0cbd9fb89238648f1c  usr/share/doc/mosquitto-clients/changelog.Debian.gz
+471c9152f0cf13cc38235802af1f6e04  usr/share/doc/mosquitto-clients/changelog.gz
+d8cdc908fb9a7674e7f41876ab53a4f2  usr/share/doc/mosquitto-clients/copyright
+f07bc6c1bacde08f3f9f8a17d4cc9c20  usr/share/lintian/overrides/mosquitto-clients
+a3e5bd3c99fd5c122d75af2ffa4ff3ab  usr/share/man/man1/mosquitto_pub.1.gz
+d495a148238afe656622946474c64d16  usr/share/man/man1/mosquitto_sub.1.gz

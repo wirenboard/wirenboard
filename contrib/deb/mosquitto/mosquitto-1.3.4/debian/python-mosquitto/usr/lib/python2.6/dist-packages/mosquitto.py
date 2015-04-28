@@ -1,0 +1,1 @@
+../../../share/pyshared/mosquitto.py

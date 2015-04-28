@@ -1,0 +1,18 @@
+Package: python-mosquitto
+Source: mosquitto
+Version: 1.3.4-2+contactless+2
+Architecture: all
+Maintainer: Roger A. Light <roger@atchoo.org>
+Installed-Size: 147
+Depends: python (>= 2.6.6-7~), python (<< 2.8)
+Section: python
+Priority: optional
+Homepage: http://mosquitto.org/
+Description: MQTT version 3.1 Python client library
+ This is a Python module for implementing MQTT version 3.1 clients.
+ .
+ MQTT provides a method of carrying out messaging using a publish/subscribe
+ model. It is lightweight, both in terms of bandwidth usage and ease of
+ implementation. This makes it particularly useful at the edge of the network
+ where a sensor or other simple device may be implemented using an arduino for
+ example.

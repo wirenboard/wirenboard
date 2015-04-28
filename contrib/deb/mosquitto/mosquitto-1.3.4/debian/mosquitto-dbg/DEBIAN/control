@@ -1,0 +1,14 @@
+Package: mosquitto-dbg
+Source: mosquitto
+Version: 1.3.4-2+contactless+2
+Architecture: armel
+Maintainer: Roger A. Light <roger@atchoo.org>
+Installed-Size: 667
+Depends: mosquitto (= 1.3.4-2+contactless+2) | mosquitto-clients (= 1.3.4-2+contactless+2) | libmosquitto1 (= 1.3.4-2+contactless+2) | libmosquittopp1 (= 1.3.4-2+contactless+2)
+Section: debug
+Priority: extra
+Homepage: http://mosquitto.org/
+Description: debugging symbols for mosquitto binaries
+ This package contains debugging files used to investigate problems with
+ the binaries provided by the packages mosquitto, mosquitto-clients,
+ libmosquitto1 and libmosquittopp1.

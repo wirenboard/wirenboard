@@ -1,0 +1,16 @@
+Package: libmosquitto-dev
+Source: mosquitto
+Version: 1.3.4-2+contactless+2
+Architecture: all
+Maintainer: Roger A. Light <roger@atchoo.org>
+Installed-Size: 124
+Depends: libmosquitto1 (>= 1.3.4-2+contactless+2), libmosquitto1 (<< 1.3.4-2+contactless+2.1~)
+Breaks: libmosquitto0-dev (<< 1.2-1~)
+Replaces: libmosquitto0-dev (<< 1.2-1~)
+Section: libdevel
+Priority: optional
+Homepage: http://mosquitto.org/
+Description: MQTT version 3.1 client library, development files
+ This is the header and man page for the libmosquitto1 C library, which is a
+ library for implementing MQTT version 3.1 clients. This package is needed to do
+ development with libmosquitto1.

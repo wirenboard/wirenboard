@@ -1,0 +1,6 @@
+b731c08da97e899a3207f0f9a5139660  usr/include/mosquitto.h
+ef3c44c230318b0cbd9fb89238648f1c  usr/share/doc/libmosquitto-dev/changelog.Debian.gz
+471c9152f0cf13cc38235802af1f6e04  usr/share/doc/libmosquitto-dev/changelog.gz
+d8cdc908fb9a7674e7f41876ab53a4f2  usr/share/doc/libmosquitto-dev/copyright
+4c8000b5edac12ed3ced891309569b6f  usr/share/lintian/overrides/libmosquitto-dev
+72ece6a90ae709e732fbd7219da0afa9  usr/share/man/man3/libmosquitto.3.gz

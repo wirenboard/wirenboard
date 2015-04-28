@@ -1,0 +1,4 @@
+python:Versions=2.6, 2.7
+python:Provides=python2.6-mosquitto, python2.7-mosquitto
+python:Depends=python (>= 2.6), python (<< 2.8), python (>= 2.6.6-7~)
+misc:Depends=

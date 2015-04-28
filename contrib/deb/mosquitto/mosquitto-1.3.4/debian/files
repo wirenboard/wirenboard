@@ -1,0 +1,9 @@
+mosquitto_1.3.4-2+contactless+2_armel.deb net optional
+libmosquitto1_1.3.4-2+contactless+2_armel.deb libs optional
+libmosquitto-dev_1.3.4-2+contactless+2_all.deb libdevel optional
+libmosquittopp1_1.3.4-2+contactless+2_armel.deb libs optional
+libmosquittopp-dev_1.3.4-2+contactless+2_all.deb libdevel optional
+mosquitto-clients_1.3.4-2+contactless+2_armel.deb net optional
+python-mosquitto_1.3.4-2+contactless+2_all.deb python optional
+python3-mosquitto_1.3.4-2+contactless+2_all.deb python optional
+mosquitto-dbg_1.3.4-2+contactless+2_armel.deb debug extra
