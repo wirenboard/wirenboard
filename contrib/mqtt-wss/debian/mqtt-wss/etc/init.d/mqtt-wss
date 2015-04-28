@@ -15,7 +15,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="MQTT-aware WebSocket to TCP Gateway"
 NAME=mqtt-wss
-BIN_NAME=WSS_static_armel
+BIN_NAME=WSS_static
 DAEMON=/usr/bin/$BIN_NAME
 DAEMON_ARGS=""
 PIDFILE=/var/run/$NAME.pid
