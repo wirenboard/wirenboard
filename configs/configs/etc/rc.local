@@ -38,7 +38,34 @@ wb_firstboot()
         /etc/init.d/netplug start
     fi
 
-    echo "Resizing root partition..."
+    echo "Resizing root partition and create swap..."
+    SWAP_SECTORS=524288  # 256 MB
+    TOTAL_SECTORS=`fdisk -b 512 -l /dev/mmcblk0 | grep -oP "total \K[0-9]+(?= sectors)"`
+    ROOT_FIRST_SECTOR=`fdisk -b 512 -l /dev/mmcblk0 | grep "/dev/mmcblk0p2" | awk '{print $2}'`
+    ROOT_LAST_SECTOR=$(($TOTAL_SECTORS-1-$SWAP_SECTORS))
+    SWAP_FIRST_SECTOR=$(($ROOT_LAST_SECTOR+1))
+    fdisk -b 512 /dev/mmcblk0 <<EOF
+d
+2
+n
+p
+2
+$ROOT_FIRST_SECTOR
+$ROOT_LAST_SECTOR
+n
+p
+3
+$SWAP_FIRST_SECTOR
+
+t
+3
+82
+w
+EOF
+    mkswap /dev/mmcblk0p3
+
+
+    echo "Resizing root filesystem..."
     resize2fs /dev/mmcblk0p2
     return 0
 }
