@@ -24,22 +24,22 @@ Package-List:
  python3-mosquitto deb python optional
 Checksums-Sha1: 
  b818672cc0db723995d7c3201ef6962931dd891a 351761 mosquitto_1.3.4.orig.tar.gz
- 9e7d1d43a64dbde41047cd4e9ac8b498913c3c14 24888 mosquitto_1.3.4-2contactless1.debian.tar.gz
+ fcd04a65683aab7515df5ff73355056981024f28 24566 mosquitto_1.3.4-2contactless1.debian.tar.gz
 Checksums-Sha256: 
  0a3982d6b875a458909c8828731da04772035468700fa7eb2f0885f4bd6d0dbc 351761 mosquitto_1.3.4.orig.tar.gz
- 8c086896f5c1158b11de878eda9105b422579f713cfd521fbdd59eb40cd18485 24888 mosquitto_1.3.4-2contactless1.debian.tar.gz
+ a970402c8420475f63dd2cc9c5edb4109a4c097166b0b4a99c9fad6169249737 24566 mosquitto_1.3.4-2contactless1.debian.tar.gz
 Files: 
  9d729849efd74c6e3eee17a4a002e1e9 351761 mosquitto_1.3.4.orig.tar.gz
- aa6526e39856e03cea04cd1630c2f827 24888 mosquitto_1.3.4-2contactless1.debian.tar.gz
+ fafc72fc4fb218bb2e4dbabbd32968d1 24566 mosquitto_1.3.4-2contactless1.debian.tar.gz
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQEcBAEBAgAGBQJUIDYVAAoJEOSwlJ+u4Hhp1d0H/iIH4p5yni0qxiV5UcRsAgqS
-P7Wci/fzhmqjLNrraTC5Z1ut3b2TBM9oexTReRUVEZnMDHTXvlJC4ukmtrzyTmJJ
-LslzyFFbG66FTiMRIfj8yJ510uM6Jr4sy3dtSZH/RA0wr7GTz0hL4rzKtmrPDIEK
-2P1zKmcLC/rHkRG/jXGkwiuETJg2fBYov+5dcz1hivoG8PTnLqICk9KQEeibBtUY
-9/iUB0okILkHdm4t71BtHAeyVxJCzp+oPexEdSRA7Mk/P3lunpR+x6+F+JjIGYr2
-L8r4vgboQjGvMga+p2G1myy75ptcn0YhtdFokYfoGT0DyDxegVfyOp524NYCcC4=
-=sWpI
+iQEcBAEBAgAGBQJVOktlAAoJEOSwlJ+u4HhpdaIH/A8kybw44GhsJbrdaYU+A/Fc
+4B67JeHOxiGG+haQqTTB6UKzk7WxvhjyTSPQOyHMTOH46zgI4uAZcF4brzOMt0A+
+64bKRSeJaAD5luX1Nmi4DWFPo6Cm7cqpUJzD34pc3iiw55MtknYWdjD9FJCkxtwo
+wzKQxMyXr+USpnh670iw9s+dBMOHbzxVK99Iaz0jHlTufke6Q4BDKezLN0EnmJpg
+adPkvps2vcCTCpPDHBAO0UOXLCu8fx2Isop8+TB73TH8Zp7gq7i5HnEFMcWnvBUA
+Y0XwNIB4jurxm2FAUzlsAWVVPcOnQpECDyj9HLj8ZvBZvEW/yDLgssS/a/45JOw=
+=jpU7
 -----END PGP SIGNATURE-----
