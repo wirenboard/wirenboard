@@ -1,0 +1,12 @@
+Source: wb-rules-system
+Section: unknown
+Priority: optional
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: <insert the upstream URL, if relevant>
+
+Package: wb-rules-system
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, wb-rules (>= 1.2.2)
+Description: Default system rules for Wiren Board
