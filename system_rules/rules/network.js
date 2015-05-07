@@ -9,7 +9,7 @@ defineVirtualDevice("network", {
             type: "text",
             value: false
         },
-        "PPP IP": {
+        "GPRS IP": {
             type: "text",
             value: ""
         }
@@ -35,7 +35,7 @@ function _system_update_ip(name, iface) {
 function _system_update_ip_all() {
     _system_update_ip("Ethernet IP", "eth0");
     _system_update_ip("Wi-Fi IP", "wlan0");
-    _system_update_ip("PPP IP", "ppp0");
+    _system_update_ip("GPRS IP", "ppp0");
 };
 
 _system_update_ip_all();
