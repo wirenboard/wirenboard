@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+PYTHON2=$(shell pyversions -vr)
+PYTHON3=$(shell py3versions -vr)
+
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+%:
+	dh $@
+
+override_dh_installchangelogs:
+	dh_installchangelogs ChangeLog.txt
+
+override_dh_auto_configure:
+	# Don't process CMake rules.
+
+override_dh_auto_test:
+
+override_dh_strip:
+	dh_strip --dbg-package=mosquitto-dbg
+
+override_dh_auto_install:
+	dh_auto_install
+	install -d debian/tmp/etc/mosquitto/conf.d/
+	install -m 644 debian/README-conf-d debian/tmp/etc/mosquitto/conf.d/README
+	install -d debian/tmp/etc/mosquitto/ca_certificates/
+	install -m 644 debian/README-ca_certificates debian/tmp/etc/mosquitto/ca_certificates/README
+	install -d debian/tmp/etc/mosquitto/certs/
+	install -m 644 debian/README-certs debian/tmp/etc/mosquitto/certs/README
+	install -m 644 debian/mosquitto.conf debian/tmp/etc/mosquitto/mosquitto.conf
