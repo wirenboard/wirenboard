@@ -35,12 +35,6 @@ case "$1" in
 	;;
 esac
 
-# Reload AppArmor profile
-APP_PROFILE="/etc/apparmor.d/usr.sbin.mosquitto"
-if [ -f "$APP_PROFILE" ] && aa-status --enabled 2>/dev/null; then
-       apparmor_parser -r "$APP_PROFILE" || true
-fi
-
 #DEBHELPER#
 
 exit 0
