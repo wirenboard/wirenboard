@@ -9,6 +9,10 @@ if [ "x$FORCE_WB_VERSION" = "x" ]; then
                 WB_VERSION=41;
                 break;
             ;;
+            "contactless,imx28-wirenboard50" )
+                WB_VERSION=50;
+                break;
+            ;;
             "contactless,imx23-wirenboard32" )
                 WB_VERSION=32;
                 break;
@@ -199,6 +203,25 @@ case "$WB_VERSION" in
         WB_GPIO_W1 WB_GPIO_W2 WB_GPIO_W3
 
     ;;
+
+    "50" )
+    WB_ADC_TYPE=3
+
+    WB_GPIO_RFM_IRQ=38;
+    WB_RFM_SPI_MINOR=; # FIXME: set right value
+
+
+    WB_GSM_POWER_TYPE=2
+    WB_GPIO_GSM_POWER=17;
+    WB_GPIO_GSM_PWRKEY=2;
+    WB_GPIO_GSM_STATUS=39;
+
+
+    export WB_ADC_TYPE WB_GPIO_RFM_IRQ WB_RFM_SPI_MINOR WB_GSM_POWER_TYPE WB_GPIO_GSM_POWER WB_GPIO_GSM_POWER WB_GPIO_GSM_PWRKEY  WB_GPIO_GSM_STATUS
+
+    ;;
+
+
 
     "28" )
     WB_GSM_POWER_TYPE=1
