@@ -1,17 +1,23 @@
 #!/bin/bash
 # need sudo apt-get install multipath-tools
 
-echo "USAGE: $0 <path to rootfs> <img file>"
-if [ $# -ne 2 ]
+echo "USAGE: $0 <path to rootfs> <path to u-boot> <img file>"
+if [ $# -ne 3 ]
 then
   exit 1
 fi
 
-IMGFILE="$2"
+IMGFILE="$3"
 ROOTFS="$1"
+UBOOT="$2"
+
+
 
 # create image file
-dd if=/dev/zero of=$IMGFILE bs=1M count=700
+DATASIZE=`sudo du -sm $ROOTFS | cut -f1`
+IMGSIZE=$((DATASIZE + 100)) # in megabytes
+
+dd if=/dev/zero of=$IMGFILE bs=1M count=$IMGSIZE
 sudo ./create_partitions.sh  $IMGFILE
 
 if [ -e /dev/mapper/loop0p1 ]; then
@@ -27,7 +33,10 @@ fi
 sudo kpartx -a $IMGFILE
 
 sudo ./create_fs.sh  /dev/mapper/loop0p2
-sudo dd if=../contrib/u-boot/u-boot.sb of=/dev/mapper/loop0p1 bs=512 seek=4
+
+
+
+sudo dd if=$UBOOT of=/dev/mapper/loop0p1 bs=512 seek=4
 
 MOUNTPOINT=`mktemp -d`
 sudo mount /dev/mapper/loop0p2 $MOUNTPOINT
