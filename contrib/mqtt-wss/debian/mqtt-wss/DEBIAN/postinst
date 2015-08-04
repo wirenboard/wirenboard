@@ -1,4 +1,0 @@
-#!/bin/sh
-
-update-rc.d mqtt-wss defaults
-invoke-rc.d mqtt-wss start
