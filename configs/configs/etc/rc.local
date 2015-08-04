@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 #
 # rc.local
 #
@@ -44,6 +44,9 @@ wb_firstboot()
     ROOT_FIRST_SECTOR=`fdisk -b 512 -l /dev/mmcblk0 | grep "/dev/mmcblk0p2" | awk '{print $2}'`
     ROOT_LAST_SECTOR=$(($TOTAL_SECTORS-1-$SWAP_SECTORS))
     SWAP_FIRST_SECTOR=$(($ROOT_LAST_SECTOR+1))
+
+    ROOT_SIZE_SECTORS=$(($ROOT_LAST_SECTOR+1-$ROOT_FIRST_SECTOR))
+
     fdisk -b 512 /dev/mmcblk0 <<EOF
 d
 2
@@ -62,7 +65,17 @@ t
 82
 w
 EOF
+
+    return 0
+}
+
+
+wb_prepare_fs()
+{
+    partx -a /dev/mmcblk0
+    echo "Creating swap filesystem..."
     mkswap /dev/mmcblk0p3
+    swapon -a
 
 
     echo "Resizing root filesystem..."
@@ -79,11 +92,27 @@ if [ ! -f $FLAG ]; then
 	exit $RC
     fi
 
-    touch /var/lib/wirenboard/firstboot.flag
+    touch $FLAG
 
     echo "Rebooting..."
     reboot
+    exit
 fi
+
+FS_FLAG="/var/lib/wirenboard/fs_ready.flag"
+if [ ! -f $FS_FLAG ]; then
+    wb_prepare_fs
+    RC=$?
+    if [ $RC -ne "0" ] ; then
+        echo "Error in WB fs script"
+        exit $RC
+    fi
+
+    touch $FS_FLAG
+
+fi
+
+
 
 
 exit 0
