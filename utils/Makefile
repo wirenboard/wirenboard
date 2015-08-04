@@ -24,6 +24,10 @@ install: $(BIN_NAME)
 
 	install -m 0755 gsm/wb-gsm $(DESTDIR)/$(prefix)/bin/wb-gsm
 
+	install -m 0755 gsm/rtc.sh $(DESTDIR)/$(prefix)/bin/wb-gsm-rtc
+
+	install -m 0755 gsm/rtc.init $(DESTDIR)/etc/init.d/wb-gsm-rtc
+	install -m 0755 board/board.init $(DESTDIR)/etc/init.d/wb-init
 
 
 
