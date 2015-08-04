@@ -1,3 +1,21 @@
+wb-utils (1.45) stable; urgency=medium
+
+  * add board-specific initscript
+
+ -- Evgeny Boger <boger@contactless.ru>  Sat, 25 Apr 2015 17:29:31 +0300
+
+wb-utils (1.44) stable; urgency=medium
+
+  * RFM69 params
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 24 Apr 2015 17:42:37 +0300
+
+wb-utils (1.43) stable; urgency=medium
+
+  * Save and restore time to built-in RTC in SIM900
+
+ -- Evgeny Boger <boger@contactless.ru>  Sun, 30 Nov 2014 04:03:16 +0300
+
 wb-utils (1.042) stable; urgency=medium
 
   * fix wb-gen-serial
