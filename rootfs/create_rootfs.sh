@@ -1,5 +1,5 @@
 #!/bin/bash
-ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial"
+ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial,memtester"
 REPO="http://ftp.debian.org/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
@@ -77,11 +77,6 @@ chroot ${OUTPUT}/ apt-get -y install  python3-minimal unzip minicom iw ppp libmo
 
 
 
-#echo "Add rtl8188 hostapd package"
-#RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-#cp ../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
-#chroot ${OUTPUT}/ dpkg -i ${RTL8188_DEB}
-#chroot ${OUTPUT}/ rm ${RTL8188_DEB}
 
 
 
@@ -110,7 +105,7 @@ chroot ${OUTPUT}/ apt-get update
 
 
 echo "Install packages from contactless repo"
-chroot ${OUTPUT}/ apt-get -y install cmux hubpower python-wb-io modbus-utils wb-utils
+chroot ${OUTPUT}/ apt-get -y install cmux hubpower python-wb-io modbus-utils wb-utils serial-tool busybox-syslogd
 chroot ${OUTPUT}/ apt-get -y install libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
 
 # mqtt
@@ -126,12 +121,42 @@ chroot ${OUTPUT}/ apt-get -y install linux-latest
 
 chroot ${OUTPUT}/ apt-get -y install  openssl ca-certificates
 
-chroot ${OUTPUT}/ apt-get -y install  mqtt-wss webfs wb-homa-webinterface
+chroot ${OUTPUT}/ apt-get -y install  mqtt-wss webfs mqtt-tools wb-mqtt-homeui
+
+chroot ${OUTPUT}/ locale-gen
+
+
+echo "Add  mosquitto package"
+MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
+cp ../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
+chroot ${OUTPUT}/ dpkg -i ${MOSQ_DEB}
+chroot ${OUTPUT}/ rm ${MOSQ_DEB}
+
 
 case "$BOARD" in
+    "4" )
+        # Wiren Board 4
+        FORCE_WB_VERSION=41 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system wb-mqtt-timestamper
+        chroot ${OUTPUT}/ apt-get -y install netplug
+
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard41.dtb" > ${OUTPUT}/boot/uEnv.txt
+
+
+        echo "Add rtl8188 hostapd package"
+        RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
+        cp ../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
+        chroot ${OUTPUT}/ dpkg -i ${RTL8188_DEB}
+        chroot ${OUTPUT}/ rm ${RTL8188_DEB}
+        echo "Overwrite configs"
+        sudo chroot ${OUTPUT}/ apt-get -o Dpkg::Options::="--force-overwrite" install wb-configs
+
+
+    ;;
+
     "32" )
         # WB Smart Home specific
-        FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install  wb-homa-drivers  wb-homa-ism-radio
+        FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system wb-mqtt-timestamper
+
         chroot ${OUTPUT}/ apt-get -y install netplug hostapd
 
         echo "fdt_file=/boot/dtbs/imx23-wirenboard32.dtb" > ${OUTPUT}/boot/uEnv.txt
@@ -143,10 +168,10 @@ case "$BOARD" in
 
     ;;
 
-    "KMON1" )
+    "MKA3" )
         # MKA3
         FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
-        chroot ${OUTPUT}/ apt-get -y install wb-dbic
+        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-dbic
 
         # https://github.com/contactless/wb-dbic
         cp ../../wb-dbic/set_confidential.sh ${OUTPUT}/
@@ -157,6 +182,22 @@ case "$BOARD" in
         echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" > ${OUTPUT}/boot/uEnv.txt
 
     ;;
+
+
+    "NETMON" )
+        # NETMON-1
+        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules  wb-mqtt-timestamper
+
+        chroot ${OUTPUT}/ apt-get -y install netplug
+
+
+        echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" > ${OUTPUT}/boot/uEnv.txt
+
+
+
+
+    ;;
+
 
 esac
 
