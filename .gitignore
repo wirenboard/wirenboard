@@ -25,3 +25,6 @@ utils/debian/wb-utils/
 wb-utils_*.deb
 wb-utils_*.changes
 
+configs/debian/wb-configs/
+wb-configs_*.deb
+wb-configs_*.changes
