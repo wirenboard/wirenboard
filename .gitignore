@@ -1,0 +1,10 @@
+*.swp
+
+**/debian/files
+**/debian/*.debhelper.log
+**/debian/*.substvars
+
+utils/debian/wb-utils/
+wb-utils_*.deb
+wb-utils_*.changes
+
