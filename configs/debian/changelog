@@ -1,3 +1,10 @@
+wb-configs (1.49) stable; urgency=medium
+
+  * add /etc/gai.conf
+  * minor fixes in chroot_this.sh
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Sun, 20 Sep 2015 20:56:01 +0000
+
 wb-configs (1.48) stable; urgency=medium
 
   * fix rc.local
