@@ -1,0 +1,7 @@
+# Machine-generated file - use "minicom -s" to change parameters.
+pu port             /dev/ttyNSC1
+pu baudrate         9600
+pu bits             8
+pu parity           N
+pu stopbits         1
+pu rtscts           No 

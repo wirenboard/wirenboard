@@ -1,0 +1,3 @@
+/dev/root        /           auto   errors=remount-ro,noatime   0   1
+/dev/mmcblk0p5   none        swap   errors=remount-ro           0   0
+/dev/mmcblk0p6   /mnt/data   auto   errors=remount-ro,noatime   0   2

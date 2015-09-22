@@ -1,0 +1,165 @@
+#!/bin/sh
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# Wiren board
+
+# Helper functions
+die()
+{
+    local ret=$?
+    >&2 echo "!!! $@"
+    [[ $ret == 0 ]] && exit 1 || exit $ret
+}
+
+info()
+{
+    >&2 echo ">>> $@"
+}
+
+# some constants for convenience
+STORAGE=/dev/mmcblk0
+SECTOR_SIZE=512
+MB=1024*1024
+
+# Generates single partition definition line for sfdisk.
+# Increments PART_START variable to point to the start of the next partition
+# (special case is Extended (5) fstype, which increments PART_START by 2048 sectors)
+# Args:
+# - partition number
+# - size in megabytes (or '' to use all remaining space to the end)
+# - filesystem type (looks like not really matters). when omitted, defaults to 83 (Linux)
+wb_partition()
+{
+    [[ -z "$2" ]] &&
+        local size=$[TOTAL_SECTORS-PART_START] ||
+        local size=$[$2*MB/SECTOR_SIZE]
+    local fstype=${3:-83}
+    echo "${STORAGE}p$1 : start=$PART_START, size=$size, type=$fstype"
+    [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
+}
+
+# Run mkfs.ext4 with custom options
+# Args:
+# - device file
+# - label (optional)
+wb_mkfs_ext4()
+{
+    local dev=$1
+    local label=$2
+    
+    info "Formatting $dev ($label)"
+    yes | mkfs.ext4 -E stride=2,stripe-width=1024 -b 4096 -L "$label" "$dev"
+}
+
+# Creates all the needed partitions
+wb_prepare_partitions()
+{
+    info "Preparing partitions"
+
+    PART_START=$[4*MB/SECTOR_SIZE]
+    TOTAL_SECTORS=$[`sfdisk -s $STORAGE`*2] ||
+        die "Unable to get total sectors count for $STORAGE"
+    {
+        wb_partition 1 16 53    # uboot
+        wb_partition 2 1024     # rootfs0
+        wb_partition 3 1024     # rootfs1
+        wb_partition 4 '' 5     # <extended>
+        wb_partition 5 256 82   # swap
+        wb_partition 6 ''       # data
+    } | sfdisk $STORAGE ||
+        die "Prepare partitions failed"
+
+    wb_mkfs_ext4 ${STORAGE}p3 rootfs1 || die "Failed"
+    wb_mkfs_ext4 ${STORAGE}p6 || die "Failed"
+    mount -a
+
+    info "Creating swap"
+    mkswap ${STORAGE}p5 || die "Failed"
+    swapon -a
+}
+
+wb_move_to_data()
+{
+    local dst="/mnt/data${2:-$1}"
+
+    if [[ -h "$1" ]]; then                  # is it a symlink already?
+        [[ "`readlink "$1"`" != "$dst" ]] &&  # symlink points to wrong destination?
+            ln -fs "$dst" "$1"              # fix it
+        [[ ! -e "$1" ]] && {                # is symlink broken?
+            mkdir -p `dirname "$dst"`
+            cp -a "${1}.default" "$dst"     # try to repair with saved default
+        }
+        # otherwise, assume that it points to a correct thing
+    elif [[ -e "$1" ]]; then        # is it a regular file/dir?
+        cp -a "$1" "${1}.default"   # save copy for possible future use
+        [[ -e "$dst" ]] && {        # already have something there?
+        rm -rf "$dst"
+        mkdir -p `dirname "$dst"`
+        mv "$1" "$dst"
+        ln -fs "$dst" "$1"
+    fi
+}
+
+wb_firstboot()
+{
+    wb_prepare_partitions
+
+    [[ -d "/var/lib/wirenboard" ]] || mkdir /var/lib/wirenboard
+
+    info "Get WB serial number"
+    wb-gen-serial > /var/lib/wirenboard/serial.conf || return 4
+
+    info "Moving files to /mnt/data"
+    # TODO: think what other important files to move
+    wb_move_to_data /etc/passwd
+    wb_move_to_data /etc/shadow
+    wb_move_to_data /etc/network/interfaces
+    wb_move_to_data /etc/resolv.conf
+    wb_move_to_data /etc/ssh
+    wb_move_to_data /etc/dnsmasq.conf
+    wb_move_to_data /etc/hostapd.conf
+    wb_move_to_data /var/lib/wirenboard
+    wb_move_to_data /var/cache/apt              # just fat, move it out
+    wb_move_to_data /var/www/uploads /uploads   # here will be firmware updates
+
+    info "Regenerating SSH host keys"
+    yes | ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa || return 1
+    yes | ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa || return 2
+    yes | ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa || return 3
+
+    info "Restarting up network interface"
+    if [ -e /etc/init.d/netplug ]; then
+        /etc/init.d/netplug stop
+    fi
+
+    ifdown eth0 ; ifdown eth0 ; ifup eth0
+
+    if [ -e /etc/init.d/netplug ]; then
+        /etc/init.d/netplug start
+    fi
+
+    return 0
+}
+
+FLAG="/var/lib/wirenboard/firstboot.flag"
+if [ ! -f $FLAG ]; then
+    wb_firstboot || die "Error in WB firstboot  script"
+
+    touch $FLAG
+
+    info "Rebooting..."
+    reboot
+    exit
+fi
+
+exit 0

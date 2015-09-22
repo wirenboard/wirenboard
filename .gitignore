@@ -18,6 +18,7 @@
 *.swp
 
 **/debian/files
+**/debian/*.debhelper
 **/debian/*.debhelper.log
 **/debian/*.substvars
 
@@ -26,5 +27,4 @@ wb-utils_*.deb
 wb-utils_*.changes
 
 configs/debian/wb-configs/
-wb-configs_*.deb
-wb-configs_*.changes
+wb-configs_*.*

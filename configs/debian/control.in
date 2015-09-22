@@ -2,13 +2,13 @@ Source: wb-configs
 Section: config
 Priority: extra
 Maintainer: Evgeny Boger <boger@contactless.ru>
-Build-Depends: debhelper (>= 8.0.0), config-package-dev (>= 5.0)
+Build-Depends: @cdbs@
 Standards-Version: 3.9.4
 Homepage: <insert the upstream URL, if relevant>
 
 Package: wb-configs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, wb-utils (>= 1.042)
+Depends: cdbs, ${misc:Depends}, wb-utils (>= 1.042)
 Provides: ${diverted-files}
-Conflicts: ${diverted-files}
+Conflicts: ${diverted-filesgT}
 Description: Default config files for Wiren Board rootfs

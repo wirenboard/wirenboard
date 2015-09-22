@@ -1,3 +1,11 @@
+wb-configs (1.50) UNRELEASED; urgency=medium
+
+  * added partitions for fwupdate and redundancy
+  * code cleanups
+  * migrate to config-package-dev
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Mon, 21 Sep 2015 11:11:44 +0000
+
 wb-configs (1.49) stable; urgency=medium
 
   * add /etc/gai.conf
