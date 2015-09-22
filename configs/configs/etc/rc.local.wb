@@ -35,16 +35,15 @@ MB=1024*1024
 # Increments PART_START variable to point to the start of the next partition
 # (special case is Extended (5) fstype, which increments PART_START by 2048 sectors)
 # Args:
-# - partition number
 # - size in megabytes (or '' to use all remaining space to the end)
 # - filesystem type (looks like not really matters). when omitted, defaults to 83 (Linux)
 wb_partition()
 {
-    [[ -z "$2" ]] &&
+    [[ -z "$1" ]] &&
         local size=$[TOTAL_SECTORS-PART_START] ||
         local size=$[$2*MB/SECTOR_SIZE]
-    local fstype=${3:-83}
-    echo "${STORAGE}p$1 : start=$PART_START, size=$size, type=$fstype"
+    local fstype=${2:-83}
+    echo "start=$PART_START, size=$size, type=$fstype"
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
 }
 
@@ -70,12 +69,12 @@ wb_prepare_partitions()
     TOTAL_SECTORS=$[`sfdisk -s $STORAGE`*2] ||
         die "Unable to get total sectors count for $STORAGE"
     {
-        wb_partition 1 16 53    # uboot
-        wb_partition 2 1024     # rootfs0
-        wb_partition 3 1024     # rootfs1
-        wb_partition 4 '' 5     # <extended>
-        wb_partition 5 256 82   # swap
-        wb_partition 6 ''       # data
+        wb_partition 16 53    # uboot
+        wb_partition 1024     # rootfs0
+        wb_partition 1024     # rootfs1
+        wb_partition '' 5     # <extended>
+        wb_partition 256 82   # swap
+        wb_partition ''       # data
     } | sfdisk $STORAGE ||
         die "Prepare partitions failed"
 
@@ -86,6 +85,9 @@ wb_prepare_partitions()
     info "Creating swap"
     mkswap ${STORAGE}p5 || die "Failed"
     swapon -a
+
+    info "Resizing root filesystem"
+    resize2fs ${STORAGE}p2
 }
 
 wb_move_to_data()
