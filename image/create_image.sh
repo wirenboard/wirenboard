@@ -1,48 +1,72 @@
 #!/bin/bash
 # need sudo apt-get install multipath-tools
 
-echo "USAGE: $0 <path to rootfs> <path to u-boot> <img file>"
-if [ $# -ne 3 ]
-then
-  exit 1
+if [ $# -ne 3 ]; then
+	echo "USAGE: $0 <path to rootfs> <path to u-boot> <img file>"
+	exit 1
 fi
 
-IMGFILE="$3"
 ROOTFS="$1"
 UBOOT="$2"
+IMGFILE="$3"
 
+if [ "$IMGFILE" == "/dev/sda" ]; then
+	echo "Attempt to rewrite sda part table";
+	exit 1
+fi
 
+PATH=/sbin:$PATH
+SECTOR_SIZE=512
+MB=1024*1024
 
 # create image file
 DATASIZE=`sudo du -sm $ROOTFS | cut -f1`
-IMGSIZE=$((DATASIZE + 100)) # in megabytes
+IMGSIZE=$[DATASIZE + 100] # in megabytes
+PART_START=$[4*MB/SECTOR_SIZE]
+TOTAL_SECTORS=$[IMGSIZE*MB/SECTOR_SIZE]
 
-dd if=/dev/zero of=$IMGFILE bs=1M count=$IMGSIZE
-sudo ./create_partitions.sh  $IMGFILE
+truncate -s ${IMGSIZE}M $IMGFILE
 
-if [ -e /dev/mapper/loop0p1 ]; then
-	echo "/dev/mapper/loop0p1 already exists"
-	exit 2;
-fi
+# Generates single partition definition line for sfdisk.
+# Increments PART_START variable to point to the start of the next partition
+# (special case is Extended (5) fstype, which increments PART_START by 2048 sectors)
+# Args:
+# - size in megabytes (or '' to use all remaining space to the end)
+# - filesystem type (looks like not really matters). when omitted, defaults to 83 (Linux)
+wb_partition()
+{
+    [[ -z "$1" ]] &&
+        local size=$[TOTAL_SECTORS-PART_START] ||
+        local size=$[$2*MB/SECTOR_SIZE]
+    local fstype=${2:-83}
+    echo "start=$PART_START, size=$size, type=$fstype"
+    [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
+}
 
-if [ -e /dev/mapper/loop0p2 ]; then
-	echo "/dev/mapper/loop0p2 already exists"
-	exit 2;
-fi
+dd if=/dev/zero of=$IMGFILE bs=1M count=5 conv=notrunc
+{
+	wb_partition 16 53
+	wb_partition
+} | sfdisk $IMGFILE
 
-sudo kpartx -a $IMGFILE
+DEV=/dev/mapper/`sudo kpartx -av ./tst_img | sed -rn 's#.* (loop0p).*#\1#p; q'`
 
-sudo ./create_fs.sh  /dev/mapper/loop0p2
+sudo dd if=$UBOOT of=${DEV}1 bs=$SECTOR_SIZE bs=$SECTOR_SIZE seek=4
 
-
-
-sudo dd if=$UBOOT of=/dev/mapper/loop0p1 bs=512 seek=4
-
+sudo mkfs.ext4 ${DEV}2 -E stride=2,stripe-width=1024 -b 4096 -L rootfs
 MOUNTPOINT=`mktemp -d`
-sudo mount /dev/mapper/loop0p2 $MOUNTPOINT
-sudo cp -rp $ROOTFS/. $MOUNTPOINT/
-sync
-sync
-sudo umount $MOUNTPOINT
-sudo rmdir $MOUNTPOINT
-sudo kpartx -d $IMGFILE
+sudo mount ${DEV}2 $MOUNTPOINT/
+
+cleanup() {
+	sudo umount $MOUNTPOINT
+	sudo rmdir $MOUNTPOINT
+	sync
+	sync
+	sudo kpartx -d $IMGFILE
+}
+trap cleanup EXIT
+
+sudo cp -a $ROOTFS/. $MOUNTPOINT/
+
+echo "Done!"
+exit 0
