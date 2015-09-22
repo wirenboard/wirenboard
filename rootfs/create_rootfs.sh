@@ -1,13 +1,31 @@
 #!/bin/bash
+set -e
 ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial,memtester,python-smbus"
 REPO="http://ftp.debian.org/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
 
+# directly download firmware-realtek from jessie non-free repo
+RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
+
 if [ $# -ne 2 ]
 then
-  echo "USAGE: $1 <path to rootfs> <BOARD>"
+  echo "USAGE: $0 <path to rootfs> <BOARD>"
   exit 1
+fi
+
+case "$2" in
+    4|32|28|MKA3|NETMON)
+        ;;
+    *)
+        echo "Unknown board"
+        ;;
+esac
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root"
+    exit 1
+    #exec sudo -E unshare -m "$0" "$@"
 fi
 
 OUTPUT=$1
@@ -18,199 +36,193 @@ if [ -e "$OUTPUT" ]; then
     exit 2;
 fi
 
-
 mkdir -p $OUTPUT
 
-
-
-if [ "$(id -u)" != "0" ]; then
-	echo "Sorry, you are not root."
-	echo "USAGE: sudo create_rootfs.sh"
-	exit 1
-fi
-
-# directly download firmware-realtek from jessie non-free repo
-RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
+export LC_ALL=C
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CONFIG_DIR="$SCRIPT_DIR/../configs/configs"
 
 echo "Install dependencies"
-apt-get install qemu-user-static binfmt-support
+#apt-get install qemu-user-static binfmt-support
 
 echo "Will create rootfs"
 debootstrap --include=${ADD_PACKAGES} --verbose --arch armel  --variant=minbase --foreign ${RELEASE} ${OUTPUT} ${REPO}
 
 echo "Copy qemu to rootfs"
-cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin
-
+cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
 modprobe binfmt_misc
-mkdir ${OUTPUT}/dev/pts
-mount -t devpts devpts ${OUTPUT}/dev/pts
-mount -t proc proc ${OUTPUT}/proc
+
+# a few shortcuts
+chr() {
+    chroot ${OUTPUT} "$@"
+}
+
+chr_apt() {
+    chr apt-get install -y "$@"
+}
+
+dbg() {
+    chr ls -l /dev/pts
+    chr ls -l /proc
+}
 
 echo "Second debootstrap stage"
-sudo chroot ${OUTPUT} /debootstrap/debootstrap --second-stage
+chr /debootstrap/debootstrap --second-stage
+
+# without devpts mount options you will likely end up looking why you can't open
+# new terminal window :)
+echo "Mount /proc, /sys, /dev, /dev/pts"
+mkdir -p ${OUTPUT}/{proc,sys,dev/pts}
+mount --bind /proc ${OUTPUT}/proc
+mount --bind /sys ${OUTPUT}/sys
+mount -t devpts devpts ${OUTPUT}/dev/pts -o "gid=5,mode=666,ptmxmode=0666,newinstance"
+rm -f ${OUTPUT}/dev/ptmx
+ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
+if [[ ! -L ${OUTPUT}/dev/ptmx ]]; then
+    if [[ -e ${OUTPUT}/dev/ptmx ]]; then
+        mount --bind ${OUTPUT}/dev/pts/ptmx ${OUTPUT}/dev/ptmx
+    else
+        ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
+    fi
+fi
+
+cleanup() {
+    echo "Umount proc,dev,dev/pts in rootfs"
+    [[ -L ${OUTPUT}/dev/ptmx ]] || umount ${OUTPUT}/dev/ptmx
+    umount ${OUTPUT}/dev/pts
+    umount ${OUTPUT}/proc
+    umount ${OUTPUT}/sys
+
+	echo "Killing all qemu-arm processes"
+	pkill -9 -f qemu-arm
+}
+trap cleanup EXIT
 
 echo "Set root password"
-sudo chroot ${OUTPUT}/ /bin/sh -c "echo root:wirenboard | chpasswd"
+chr /bin/sh -c "echo root:wirenboard | chpasswd"
 
 echo "Install initial repos"
-sudo cp ../configs/configs/etc/apt/sources.list ${OUTPUT}/etc/apt
+cp ${CONFIG_DIR}/etc/apt/sources.list.wb ${OUTPUT}/etc/apt/sources.list
+cp ${CONFIG_DIR}/etc/gai.conf.wb ${OUTPUT}/etc/gai.conf     # workaround for IPv6 lags
 
-echo "Overwrite configs"
-sudo chroot ${OUTPUT}/ apt-get -o Dpkg::Options::="--force-overwrite" install wb-configs
-sudo chroot ${OUTPUT}/ locale-gen
-
-
+echo "Install public key for contactless repo"
+chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 
 echo "Update&upgrade apt"
-sudo chroot ${OUTPUT}/ apt-get update
-sudo chroot ${OUTPUT}/ apt-get -y upgrade
+chr apt-get update
+chr apt-get -y upgrade
 
 echo "Setup locales"
-chroot ${OUTPUT}/ apt-get -y install apt-utils dialog locales
+chr_apt apt-utils dialog locales
 
-cp configs/etc/locale.gen ${OUTPUT}/etc/locale.gen
-chroot ${OUTPUT}/ /usr/sbin/locale-gen
-LANG=en_US.UTF-8 sudo chroot ${OUTPUT}/ update-locale
+cp ${CONFIG_DIR}/etc/locale.gen.wb ${OUTPUT}/etc/locale.gen
+chr /usr/sbin/locale-gen
+chr update-locale
 
 echo "Setup additional packages"
-chroot ${OUTPUT}/ apt-get -y install  python3-minimal unzip minicom iw ppp libmodbus5
-
-
-
-
-
+chr_apt  python3-minimal unzip minicom iw ppp libmodbus5
 
 echo "Install realtek firmware"
-chroot ${OUTPUT}/ wget ${RTL_FIRMWARE_DEB} -O rtl_firmware.deb
-chroot ${OUTPUT}/ dpkg -i rtl_firmware.deb
-chroot ${OUTPUT}/ rm rtl_firmware.deb
-
-echo "Overwrite configs one more time"
-chroot ${OUTPUT}/  apt-get -o Dpkg::Options::="--force-overwrite" -o Dpkg::Options::="--force-confnew"  install wb-configs
-
-
+chr wget ${RTL_FIRMWARE_DEB} -O rtl_firmware.deb
+chr dpkg -i rtl_firmware.deb
+chr rm rtl_firmware.deb
 
 echo "Install quick2wire"
-ORIG_DIR=`pwd`
-cd ${OUTPUT}/opt/
-wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip
+pushd ${OUTPUT}/opt/
+wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip -O master.zip
 unzip master.zip
-cd ${ORIG_DIR}
+popd
 
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
-echo "Install public key for contactless repo"
-chroot ${OUTPUT}/ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
-chroot ${OUTPUT}/ apt-get update
-
+# FIXME: this is a dirty hack until updated wb-configs get into repo
+chr_apt wb-utils
+cp ${SCRIPT_DIR}/../wb-configs_1.50_all.deb ${OUTPUT}/
+chr dpkg -i /wb-configs_1.50_all.deb
 
 echo "Install packages from contactless repo"
-chroot ${OUTPUT}/ apt-get -y install cmux hubpower python-wb-io modbus-utils wb-utils serial-tool busybox-syslogd
-chroot ${OUTPUT}/ apt-get -y install libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
+pkgs="cmux hubpower python-wb-io modbus-utils wb-utils serial-tool busybox-syslogd"
+pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
 
 # mqtt
-chroot ${OUTPUT}/ apt-get -y install libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto"
 
 # todo: should be in dependencies
-chroot ${OUTPUT}/ apt-get -y install  libjsoncpp0
-
+pkgs+=" libjsoncpp0"
 
 # kernel
-chroot ${OUTPUT}/ apt-get -y install linux-latest
+pkgs+=" linux-latest"
 
+pkgs+=" openssl ca-certificates"
 
-chroot ${OUTPUT}/ apt-get -y install  openssl ca-certificates
+pkgs+=" mqtt-wss nginx-extras mqtt-tools wb-mqtt-homeui"
 
-chroot ${OUTPUT}/ apt-get -y install  mqtt-wss webfs mqtt-tools wb-mqtt-homeui
+chr_apt $pkgs
 
-chroot ${OUTPUT}/ locale-gen
+#chr locale-gen
 
-
-echo "Add  mosquitto package"
+echo "Add mosquitto package"
 MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
 cp ../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
-chroot ${OUTPUT}/ dpkg -i ${MOSQ_DEB}
-chroot ${OUTPUT}/ rm ${MOSQ_DEB}
+chr dpkg -i ${MOSQ_DEB}
+rm ${OUTPUT}/${MOSQ_DEB}
 
+set_fdt() {
+    echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
+}
 
 case "$BOARD" in
     "4" )
         # Wiren Board 4
-        FORCE_WB_VERSION=41 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
-        chroot ${OUTPUT}/ apt-get -y install netplug
-
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard41.dtb" > ${OUTPUT}/boot/uEnv.txt
-
+        FORCE_WB_VERSION=41 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
+        chr_apt netplug
 
         echo "Add rtl8188 hostapd package"
         RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
         cp ../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
-        chroot ${OUTPUT}/ dpkg -i ${RTL8188_DEB}
-        chroot ${OUTPUT}/ rm ${RTL8188_DEB}
-        echo "Overwrite configs"
-        sudo chroot ${OUTPUT}/ apt-get -o Dpkg::Options::="--force-overwrite" install wb-configs
+        chr dpkg -i ${RTL8188_DEB}
+        rm ${OUTPUT}/${RTL8188_DEB}
 
-
+        set_fdt imx23-wirenboard41
     ;;
 
     "32" )
         # WB Smart Home specific
-        FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
+        FORCE_WB_VERSION=32 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
 
-        chroot ${OUTPUT}/ apt-get -y install netplug hostapd
+        chr_apt netplug hostapd
 
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard32.dtb" > ${OUTPUT}/boot/uEnv.txt
-
+        set_fdt imx23-wirenboard32
     ;;
+
     "28" )
-
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard28.dtb" >  ${OUTPUT}/boot/uEnv.txt
-
+        set_fdt imx23-wirenboard28
     ;;
 
     "MKA3" )
         # MKA3
-        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
-        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-dbic
+        FORCE_WB_VERSION=KMON1 chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
+        FORCE_WB_VERSION=KMON1 chr_apt wb-dbic
 
         # https://github.com/contactless/wb-dbic
         cp ../../wb-dbic/set_confidential.sh ${OUTPUT}/
-        chroot ${OUTPUT}/ /set_confidential.sh
+        chr /set_confidential.sh
         rm ${OUTPUT}/set_confidential.sh
 
-
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" > ${OUTPUT}/boot/uEnv.txt
-
+        set_fdt imx23-wirenboard-kmon1
     ;;
 
 
     "NETMON" )
         # NETMON-1
-        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
+        FORCE_WB_VERSION=KMON1 chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
 
-        chroot ${OUTPUT}/ apt-get -y install netplug
+        chr_apt netplug
 
-
-        echo "fdt_file=/boot/dtbs/imx23-wirenboard-kmon1.dtb" > ${OUTPUT}/boot/uEnv.txt
-
-
-
-
+        set_fdt imx23-wirenboard-kmon1.dtb
     ;;
-
-
 esac
 
+chr apt-get clean
 
-
-
-
-
-
-chroot ${OUTPUT}/ apt-get clean
-
-echo "Umount proc,dev,dev/pts in rootfs"
-umount ${OUTPUT}/proc
-umount ${OUTPUT}/dev/pts
-umount ${OUTPUT}/dev
-#umount ${OUTPUT}/sys
+exit 0
