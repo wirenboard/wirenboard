@@ -1,0 +1,74 @@
+#!/bin/bash
+set -e
+#set -x
+
+FIT=`readlink -f $1`
+TMPDIR="/dev/shm"
+
+# Some handy functions, usable in install script
+die() {
+	local ret=$?
+	local msg=${*:-"Failed"}
+	>&2 echo "!!! $@"
+	[[ $? == 0 ]] && exit 1 || exit $?
+}
+
+info() {
+	>&2 echo ">>> $@"
+}
+
+fit_prop() {
+	local node=$1
+	local prop=$2
+
+	local tmp=`fit_info -f $FIT -n $node -p $prop`
+	local len=`sed -rn 's#LEN: (.*)#\1#p' <<< "$tmp"`
+	local off=`sed -rn 's#OFF: (.*)#\1#p' <<< "$tmp"`
+	[[ -n "$len" && -n "$off" ]] || return 1
+	#dd if=$FIT skip=$off count=$len iflag=skip_bytes,count_bytes 2>/dev/null
+	dd if=$FIT bs=$off skip=1 2>/dev/null | head -c $len 2>/dev/null
+}
+
+fit_blob_data() {
+	fit_prop "/images/$1" data
+}
+
+fit_blob_hash() {
+	fit_prop "/images/$1/hash@1" value | xxd -ps
+}
+
+fit_blob_verify_hash() {
+	local name=$1
+	local sha1_expected=`fit_blob_hash $name`
+
+	info "Checking SHA1 hash of $name"
+	local sha1_calculated=`fit_blob_data $name | sha1sum | cut -f1 -d' '`
+	[[ "$sha1_expected" == "$sha1_calculated" ]] &&
+		info "SHA1 hash of $name ok" ||
+		die "SHA1 of $name doesn't match (expected $sha1_expected, got $sha1_calculated)"
+}
+
+[[ $EUID != 0 ]] && die "Need root privileges to install update"
+
+>&2 cat <<EOF
+===============================================================================
+Description:         $(fit_prop / description)
+Compatible device:   $(fit_prop / compatible)
+Firmware version:    $(fit_prop / firmware-version)
+Firmware compatible: $(fit_prop / firmware-compatible)
+Time of creation:    $(date -d @$[0x$(fit_prop / timestamp | xxd -ps)])
+===============================================================================
+
+EOF
+
+fit_blob_verify_hash install
+
+info "Extracting install script"
+INSTALL_SCRIPT=`mktemp -p $TMPDIR`
+fit_blob_data install > "$INSTALL_SCRIPT" || die
+
+info "Running install script"
+source "$INSTALL_SCRIPT"
+
+rm -f "$INSTALL_SCRIPT"
+
