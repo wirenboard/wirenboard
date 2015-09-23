@@ -1,6 +1,6 @@
 #!/bin/bash
 # need sudo apt-get install multipath-tools
-
+set -e
 if [ $# -ne 3 ]; then
 	echo "USAGE: $0 <path to rootfs> <path to u-boot> <img file>"
 	exit 1
@@ -13,6 +13,11 @@ IMGFILE="$3"
 if [ "$IMGFILE" == "/dev/sda" ]; then
 	echo "Attempt to rewrite sda part table";
 	exit 1
+fi
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root"
+    exit 1
 fi
 
 PATH=/sbin:$PATH
@@ -37,9 +42,9 @@ wb_partition()
 {
     [[ -z "$1" ]] &&
         local size=$[TOTAL_SECTORS-PART_START] ||
-        local size=$[$2*MB/SECTOR_SIZE]
+        local size=$[$1*MB/SECTOR_SIZE]
     local fstype=${2:-83}
-    echo "start=$PART_START, size=$size, type=$fstype"
+    echo "$PART_START $size $fstype"
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
 }
 
@@ -49,9 +54,9 @@ dd if=/dev/zero of=$IMGFILE bs=1M count=5 conv=notrunc
 	wb_partition
 } | sfdisk $IMGFILE
 
-DEV=/dev/mapper/`sudo kpartx -av ./tst_img | sed -rn 's#.* (loop0p).*#\1#p; q'`
+DEV=/dev/mapper/`sudo kpartx -av $IMGFILE | sed -rn 's#.* (loop[0-9]+p).*#\1#p; q'`
 
-sudo dd if=$UBOOT of=${DEV}1 bs=$SECTOR_SIZE bs=$SECTOR_SIZE seek=4
+sudo dd if=$UBOOT of=${DEV}1 bs=$SECTOR_SIZE seek=4
 
 sudo mkfs.ext4 ${DEV}2 -E stride=2,stripe-width=1024 -b 4096 -L rootfs
 MOUNTPOINT=`mktemp -d`
