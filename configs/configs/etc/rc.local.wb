@@ -133,11 +133,15 @@ wb_move_to_data()
             local f=`readlink -f "$src"`
             if [[ "$f" != "$dst" ]]; then
                 [[ -z "$nosave" ]] && mv "$src" "${src}.default"
-                mkdir -p `dirname "$dst"`
-                cp -aH "$f" "$dst"
+                if [[ -e "$dst" ]]; then      # is there already a file in /mnt/data?
+                    info "$src: replaced with symlink to existing $dst"
+                else
+                    mkdir -p `dirname "$dst"`
+                    cp -aH "$f" "$dst"
+                    info "$src: copyed $f to $dst, replaced symlink"
+                fi
                 rm -rf "$src"
                 ln -Tfs "$dst" "$src"
-                info "$src: copyed $f to $dst, replaced symlink"
             else
                 info "$src: good symlink, not touching"
             fi
