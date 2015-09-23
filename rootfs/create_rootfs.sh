@@ -135,13 +135,19 @@ popd
 
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
-# FIXME: this is a dirty hack until updated wb-configs get into repo
-chr_apt wb-utils
-cp ${SCRIPT_DIR}/../wb-configs_1.50_all.deb ${OUTPUT}/
-chr dpkg -i /wb-configs_1.50_all.deb
+# FIXME: this is a dirty hack until updated packages get into repo
+for deb in \
+    ${SCRIPT_DIR}/../../u-boot-tools_*_armel.deb \
+    ${SCRIPT_DIR}/../wb-utils_*_armel.deb \
+    ${SCRIPT_DIR}/../wb-configs_*_all.deb
+do
+    cp "$deb" $OUTPUT/
+    chr dpkg -i /`basename $deb`
+    rm ${OUTPUT}/`basename $deb`
+done
 
 echo "Install packages from contactless repo"
-pkgs="cmux hubpower python-wb-io modbus-utils wb-utils serial-tool busybox-syslogd"
+pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
 pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
 
 # mqtt
