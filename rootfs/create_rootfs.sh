@@ -25,7 +25,8 @@ esac
 if [ "$(id -u)" != "0" ]; then
     echo "This script must be run as root"
     exit 1
-    #exec sudo -E unshare -m "$0" "$@"
+    # TODO: run everything in separate namespace to not mess host mounts & processes
+    #exec sudo -E unshare -m -p "$0" "$@"
 fi
 
 OUTPUT=$1
@@ -42,16 +43,6 @@ export LC_ALL=C
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIG_DIR="$SCRIPT_DIR/../configs/configs"
 
-echo "Install dependencies"
-#apt-get install qemu-user-static binfmt-support
-
-echo "Will create rootfs"
-debootstrap --include=${ADD_PACKAGES} --verbose --arch armel  --variant=minbase --foreign ${RELEASE} ${OUTPUT} ${REPO}
-
-echo "Copy qemu to rootfs"
-cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-modprobe binfmt_misc
-
 # a few shortcuts
 chr() {
     chroot ${OUTPUT} "$@"
@@ -65,6 +56,18 @@ dbg() {
     chr ls -l /dev/pts
     chr ls -l /proc
 }
+
+
+echo "Install dependencies"
+apt-get install qemu-user-static binfmt-support || true
+
+echo "Will create rootfs"
+debootstrap --include=${ADD_PACKAGES} --verbose --arch armel  --variant=minbase --foreign ${RELEASE} ${OUTPUT} ${REPO}
+
+echo "Copy qemu to rootfs"
+cp /usr/bin/qemu-static-arm ${OUTPUT}/usr/bin ||
+cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+modprobe binfmt_misc
 
 echo "Second debootstrap stage"
 chr /debootstrap/debootstrap --second-stage
@@ -165,11 +168,9 @@ pkgs+=" mqtt-wss nginx-extras mqtt-tools wb-mqtt-homeui"
 
 chr_apt $pkgs
 
-#chr locale-gen
-
 echo "Add mosquitto package"
 MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
-cp ../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
+cp ${SCRIPT_DIR}/../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
 chr dpkg -i ${MOSQ_DEB}
 rm ${OUTPUT}/${MOSQ_DEB}
 
@@ -185,7 +186,7 @@ case "$BOARD" in
 
         echo "Add rtl8188 hostapd package"
         RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-        cp ../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
+        cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
         chr dpkg -i ${RTL8188_DEB}
         rm ${OUTPUT}/${RTL8188_DEB}
 
@@ -211,7 +212,7 @@ case "$BOARD" in
         FORCE_WB_VERSION=KMON1 chr_apt wb-dbic
 
         # https://github.com/contactless/wb-dbic
-        cp ../../wb-dbic/set_confidential.sh ${OUTPUT}/
+        cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
         chr /set_confidential.sh
         rm ${OUTPUT}/set_confidential.sh
 
@@ -230,5 +231,6 @@ case "$BOARD" in
 esac
 
 chr apt-get clean
+chr rm -rf /run/*
 
 exit 0
