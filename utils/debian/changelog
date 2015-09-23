@@ -1,3 +1,9 @@
+wb-utils (1.48) stable; urgency=medium
+
+  * reset 'bootcount' uboot variable on boot
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Wed, 23 Sep 2015 09:26:48 +0000
+
 wb-utils (1.47) stable; urgency=medium
 
   * add WB5.2

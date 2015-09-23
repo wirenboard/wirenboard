@@ -60,6 +60,7 @@ do_start()
         ;;
     esac
 
+    fw_setenv bootcount 0
 
     return 0
 }
