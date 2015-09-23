@@ -100,3 +100,5 @@ mkimage -v \
 	-f "$ITS" \
 	-r -k ./ -c "wtf" \
 	"$OUTPUT"
+
+echo -en "\n__WB_UPDATE_FIT_END__" >> "$OUTPUT"
