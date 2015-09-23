@@ -1,0 +1,17 @@
+*.build
+*.deb
+*.tar.gz
+*.dsc
+*.changes
+*.debhelper.log
+*.debhelper
+*.substvars
+*.o
+*/debian/libmosquitto-dev/*
+*/debian/libmosquitto1/*
+*/debian/libmosquittopp-dev/*
+*/debian/libmosquittopp1/*
+*/debian/mosquitto-clients/*
+*/debian/mosquitto-dbg/*
+*/debian/mosquitto-dev/*
+*/debian/mosquitto/*
