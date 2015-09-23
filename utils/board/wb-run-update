@@ -6,10 +6,16 @@ FIT=`readlink -f $1`
 TMPDIR="/dev/shm"
 
 # Some handy functions, usable in install script
+rm_fit() {
+	info "Removing FIT $FIT"
+	rm -f "$FIT"
+}
+
 die() {
 	local ret=$?
 	local msg=${*:-"Failed"}
 	>&2 echo "!!! $@"
+	#rm_fit
 	[[ $? == 0 ]] && exit 1 || exit $?
 }
 
@@ -52,6 +58,8 @@ fit_blob_verify_hash() {
 
 >&2 cat <<EOF
 ===============================================================================
+`date`: started update from $FIT
+===============================================================================
 Description:         $(fit_prop / description)
 Compatible device:   $(fit_prop / compatible)
 Firmware version:    $(fit_prop / firmware-version)
@@ -71,4 +79,3 @@ info "Running install script"
 source "$INSTALL_SCRIPT"
 
 rm -f "$INSTALL_SCRIPT"
-

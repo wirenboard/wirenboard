@@ -1,3 +1,9 @@
+wb-utils (1.50) stable; urgency=medium
+
+  * add wb-watch-update
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Wed, 23 Sep 2015 20:33:28 +0000
+
 wb-utils (1.49) stable; urgency=medium
 
   * add wb-run-update

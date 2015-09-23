@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e
+set -x
+
+WATCH_DIR="/var/www/uploads"
+UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
+UPDATE_LOG="/var/log/update.log"
+
+check_fully_received() {
+	local sig_len=`echo -n "$UPDATE_FIT_END_SIGNATURE" | wc -c`
+	local sig=`tail -c $sig_len $1`
+	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
+}
+
+cleanup_watch_dir() {
+	find $WATCH_DIR/ -maxdepth 1 -type f "$@" -delete
+}
+
+LAST_FIT=''
+inotifywait -m -r \
+	--exclude $WATCH_DIR/state/ \
+	--event close_write $WATCH_DIR/ \
+| while read EVENT_DIR EVENT_TYPE EVENT_FILE; do
+	FIT="${EVENT_DIR}${EVENT_FILE}"
+	echo "Got $EVENT_TYPE for $FIT"
+
+	# Ensure that image was received completely
+	check_fully_received $FIT || continue
+
+	# Prevent endless loop
+	[[ "$FIT" != "$LAST_FIT" ]] || continue
+	LAST_FIT=$FIT
+
+	# Remove old updates, we won't run it anyway
+	cleanup_watch_dir -not -name ${EVENT_FILE}
+
+	wb-run-update $FIT 2>&1 | tee -a "$UPDATE_LOG" ||
+		rm -f $FIT
+done
