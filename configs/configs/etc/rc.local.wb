@@ -210,6 +210,7 @@ wb_firstboot()
     wb_move_to_data /etc/hostapd.conf
     wb_move_to_data /var/lib/wirenboard
     wb_move_to_data /var/lib/mosquitto
+    wb_move_to_data nosave /var/log
     wb_move_to_data nosave /var/cache/apt              # just fat, move it out
     wb_move_to_data nosave /var/www/uploads /uploads   # here will be firmware updates
 
