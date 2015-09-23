@@ -231,6 +231,6 @@ case "$BOARD" in
 esac
 
 chr apt-get clean
-chr rm -rf /run/*
+chr rm -rf /run/* /var/cache/apt/* /var/lib/apt/lists/*
 
 exit 0
