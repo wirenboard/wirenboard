@@ -16,6 +16,7 @@
 */debian/mosquitto-dev/*
 */debian/mosquitto/*
 *.swp
+*.un~
 
 **/debian/files
 **/debian/*.debhelper
