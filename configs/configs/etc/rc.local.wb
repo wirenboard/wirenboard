@@ -100,23 +100,47 @@ wb_mkfs_ext4()
 
 wb_prepare_filesystems()
 {
-    info "Resizing root filesystem"
-    resize2fs ${STORAGE}p2
+    local active_part=`fw_printenv mmcpart | sed 's#.*=##'`
+    case "$active_part" in
+    	2)
+    		other_part=3
+    		;;
+    	3)
+    		other_part=2
+    		;;
+    	*)
+    		die "Unable to determine second rootfs partition (current is $active_part)"
+    		;;
+    esac
+    active_part=${STORAGE}p${active_part}
+    other_part=${STORAGE}p${other_part}
 
-    wb_mkfs_ext4 ${STORAGE}p3 rootfs || die "Failed"
-    wb_mkfs_ext4 ${STORAGE}p6 data || die "Failed"
+    info "Resizing root filesystem"
+    resize2fs ${active_part}
+
+    local mnt_rootfs_dst=`mktemp -d`
+
+    mount ${other_part} ${mnt_rootfs_dst} || {
+        wb_mkfs_ext4 ${other_part} rootfs || die "Failed"
+        
+        info "Copying active rootfs to redundant partition"
+        local mnt_rootfs_src=`mktemp -d`
+        mount --bind / $mnt_rootfs_src
+        cp -a $mnt_rootfs_src/. $mnt_rootfs_dst
+        umount $mnt_rootfs_src
+    }
+    umount ${mnt_rootfs_dst}
+
+    grep ${STORAGE}p6 /proc/mounts 2>&1 >/dev/nulll || {
+        wb_mkfs_ext4 ${STORAGE}p6 data || die "Failed"
+    }
     mount -a
 
-    info "Creating swap"
-    mkswap ${STORAGE}p5 || die "Failed"
-    swapon -a
-
-    info "Copying rootfs to redundant partition"
-    local mnt_rootfs_src=`mktemp -d`
-    local mnt_rootfs_dst=`mktemp -d`
-    mount --bind / $mnt_rootfs_src
-    mount ${STORAGE}p3 $mnt_rootfs_dst
-    cp -a $mnt_rootfs_src/. $mnt_rootfs_dst
+    grep ${STORAGE}p5 /proc/swaps 2>&1 >/dev/null || {
+        info "Creating swap"
+        mkswap ${STORAGE}p5 || die "Failed"
+        swapon -a
+    }
 }
 
 wb_move_to_data()
@@ -229,12 +253,15 @@ wb_firstboot()
     return 0
 }
 
-# TODO: Move all firstboot actions to rcS/99firstboot
+# TODO: Move all firstboot actions to /etc/rcS.d/99firstboot
 # This will significantly speed-up initialization
 
-[[ ! -e ${STORAGE}p3 ]] && wb_prepare_partitions
-
-grep ${STORAGE}p6 /proc/mounts >/dev/null || wb_prepare_filesystems
+# Check for /dev/mmcblk0 before trying to do something with partitions and
+# filesystems in order to not try to create partitions from chroot.
+[[ -e ${STORAGE} ]] && {
+    [[ ! -e ${STORAGE}p3 ]] && wb_prepare_partitions
+    wb_prepare_filesystems
+}
 
 FLAG="/var/lib/wirenboard/firstboot.flag"
 if [ ! -f $FLAG ]; then
@@ -242,9 +269,10 @@ if [ ! -f $FLAG ]; then
 
     touch $FLAG
 
-    info "Rebooting..."
-    reboot
-    exit
+    [[ -e /run/initctl ]] && {
+        info "Rebooting..."
+        reboot
+    }
 fi
 
 exit 0

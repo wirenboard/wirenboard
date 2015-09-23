@@ -1,3 +1,9 @@
+wb-configs (1.52) stable; urgency=medium
+
+  * fix rc.local to flawless run in chroot
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Wed, 23 Sep 2015 20:32:02 +0000
+
 wb-configs (1.51) stable; urgency=medium
 
   * fix a few bugs in rc.local
