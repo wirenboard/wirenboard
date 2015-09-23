@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # rc.local
 #
@@ -10,6 +10,7 @@
 # bits.
 #
 # By default this script does nothing.
+set -e
 
 # Wiren board
 
@@ -30,6 +31,8 @@ info()
 STORAGE=/dev/mmcblk0
 SECTOR_SIZE=512
 MB=1024*1024
+PART_START=0
+TOTAL_SECTORS=0
 
 # Generates single partition definition line for sfdisk.
 # Increments PART_START variable to point to the start of the next partition
@@ -41,10 +44,45 @@ wb_partition()
 {
     [[ -z "$1" ]] &&
         local size=$[TOTAL_SECTORS-PART_START] ||
-        local size=$[$2*MB/SECTOR_SIZE]
+        local size=$[$1*MB/SECTOR_SIZE]
     local fstype=${2:-83}
-    echo "start=$PART_START, size=$size, type=$fstype"
+    echo "$PART_START $size $fstype"
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
+}
+
+# Creates all the needed partitions
+wb_prepare_partitions()
+{
+    info "Preparing partitions"
+
+    PART_START=$[4*MB/SECTOR_SIZE]
+    TOTAL_SECTORS=$[`sfdisk -s $STORAGE`*2] ||
+        die "Unable to get total sectors count for $STORAGE"
+
+    sfdisk --no-reread --Linux --in-order -u S --dump > /tmp/partitions_backup
+    dd if=/dev/zero of=$STORAGE bs=512 count=1
+    {
+        wb_partition 16 53    # uboot
+        wb_partition 1024     # rootfs0
+        wb_partition 1024     # rootfs1
+        wb_partition '' 5     # <extended>
+        wb_partition 256 82   # swap
+        wb_partition ''       # data
+    } | sfdisk --no-reread --Linux --in-order -u S $STORAGE || true
+    # FIXME: sfdisk succesfully writes partition table, but returns error
+    # because it can't reread partitions on mounted disk, so just bypass error
+    # handling.
+    #{
+    #    info "Failed, sfdisk returned $?"
+    #    info "Restoring old partition table"
+    #    sfdisk --no-reread --Linux --in-order -u S $STORAGE < /tmp/partitions_backup
+    #    rm -f /tmp/partitions_backup
+    #    die "Prepare partitions failed"
+    #}
+    rm -f /tmp/partitions_backup
+
+    info "Partition table changed, reboot needed"
+    reboot
 }
 
 # Run mkfs.ext4 with custom options
@@ -60,66 +98,96 @@ wb_mkfs_ext4()
     yes | mkfs.ext4 -E stride=2,stripe-width=1024 -b 4096 -L "$label" "$dev"
 }
 
-# Creates all the needed partitions
-wb_prepare_partitions()
+wb_prepare_filesystems()
 {
-    info "Preparing partitions"
+    info "Resizing root filesystem"
+    resize2fs ${STORAGE}p2
 
-    PART_START=$[4*MB/SECTOR_SIZE]
-    TOTAL_SECTORS=$[`sfdisk -s $STORAGE`*2] ||
-        die "Unable to get total sectors count for $STORAGE"
-    {
-        wb_partition 16 53    # uboot
-        wb_partition 1024     # rootfs0
-        wb_partition 1024     # rootfs1
-        wb_partition '' 5     # <extended>
-        wb_partition 256 82   # swap
-        wb_partition ''       # data
-    } | sfdisk $STORAGE ||
-        die "Prepare partitions failed"
-
-    wb_mkfs_ext4 ${STORAGE}p3 rootfs1 || die "Failed"
-    wb_mkfs_ext4 ${STORAGE}p6 || die "Failed"
+    wb_mkfs_ext4 ${STORAGE}p3 rootfs || die "Failed"
+    wb_mkfs_ext4 ${STORAGE}p6 data || die "Failed"
     mount -a
 
     info "Creating swap"
     mkswap ${STORAGE}p5 || die "Failed"
     swapon -a
 
-    info "Resizing root filesystem"
-    resize2fs ${STORAGE}p2
+    info "Copying rootfs to redundant partition"
+    local mnt_rootfs_src=`mktemp -d`
+    local mnt_rootfs_dst=`mktemp -d`
+    mount --bind / $mnt_rootfs_src
+    mount ${STORAGE}p3 $mnt_rootfs_dst
+    cp -a $mnt_rootfs_src/. $mnt_rootfs_dst
 }
 
 wb_move_to_data()
 {
+    [[ "$1" == "nosave" ]] && {
+        local nosave=1
+        shift
+    }
+    local src=$1
     local dst="/mnt/data${2:-$1}"
 
-    if [[ -h "$1" ]]; then                  # is it a symlink already?
-        [[ "`readlink "$1"`" != "$dst" ]] &&  # symlink points to wrong destination?
-            ln -fs "$dst" "$1"              # fix it
-        [[ ! -e "$1" ]] && {                # is symlink broken?
+    if [[ -h "$src" ]]; then                  # is it a symlink already?
+        if [[ -e "$src" ]]; then
+            local f=`readlink -f "$src"`
+            if [[ "$f" != "$dst" ]]; then
+                [[ -z "$nosave" ]] && mv "$src" "${src}.default"
+                mkdir -p `$dirname "$dst"`
+                cp -aH "$f" "$dst"
+                ln -fs "$dst" "$src"
+                info "$src: copyed $f to $dst, replaced symlink"
+            else
+                info "$src: good symlink, not touching"
+            fi
+        else
+            local f=''
+            if [[ -e "$dst" ]]; then
+                f=$dst
+            elif [[ -e "${src}.default" ]]; then
+                f="${src}.default"
+            elif [[ -e "${src}.wb" ]]; then
+                f="${src}.wb"
+                [[ -z "$nosave" ]] && ln -sf "$f" "${src}.default"
+            fi
+
+            if [[ -n "$f" ]]; then
+                mkdir -p `$dirname "$dst"`
+                [[ "$f" != "$dst" ]] && cp -aH "$f" "$dst"
+                ln -fs "$dst" "$src"
+                info "$src: broken symlink, repaired using existing file $f"
+            else
+                info "$src: WARNING: broken symlink, and unable to repair"
+            fi
+        fi
+    elif [[ -e "$src" ]]; then        # is it a regular file/dir?
+        [[ -z "$nosave" ]] && cp -a "$src" "${src}.default" # save copy for possible future use
+        if [[ -e "$dst" ]]; then      # is there already a file in /mnt/data?
+            info "$src: replaced with symlink to existing $dst"
+        else
             mkdir -p `dirname "$dst"`
-            cp -a "${1}.default" "$dst"     # try to repair with saved default
-        }
-        # otherwise, assume that it points to a correct thing
-    elif [[ -e "$1" ]]; then        # is it a regular file/dir?
-        cp -a "$1" "${1}.default"   # save copy for possible future use
-        [[ -e "$dst" ]] && {        # already have something there?
-        rm -rf "$dst"
-        mkdir -p `dirname "$dst"`
-        mv "$1" "$dst"
-        ln -fs "$dst" "$1"
+            mv "$src" "$dst"
+            info "$src: copyed to $dst, replaced with symlink"
+        fi
+        ln -fs "$dst" "$src"
+    else
+        info "$src: WARNING: is neither symlink or regular file, don't touch"
     fi
 }
 
 wb_firstboot()
 {
-    wb_prepare_partitions
-
     [[ -d "/var/lib/wirenboard" ]] || mkdir /var/lib/wirenboard
 
-    info "Get WB serial number"
-    wb-gen-serial > /var/lib/wirenboard/serial.conf || return 4
+    [[ -f "/var/lib/wirenboard/serial.conf" ]] || {
+        info "Get WB serial number"
+        wb-gen-serial > /var/lib/wirenboard/serial.conf || return 4
+    }
+
+    info "Regenerating SSH host keys"
+    yes | ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa || return 1
+    yes | ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa || return 2
+    yes | ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa || return 3
 
     info "Moving files to /mnt/data"
     # TODO: think what other important files to move
@@ -131,13 +199,9 @@ wb_firstboot()
     wb_move_to_data /etc/dnsmasq.conf
     wb_move_to_data /etc/hostapd.conf
     wb_move_to_data /var/lib/wirenboard
-    wb_move_to_data /var/cache/apt              # just fat, move it out
-    wb_move_to_data /var/www/uploads /uploads   # here will be firmware updates
+    wb_move_to_data nosave /var/cache/apt              # just fat, move it out
+    wb_move_to_data nosave /var/www/uploads /uploads   # here will be firmware updates
 
-    info "Regenerating SSH host keys"
-    yes | ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa || return 1
-    yes | ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa || return 2
-    yes | ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa || return 3
 
     info "Restarting up network interface"
     if [ -e /etc/init.d/netplug ]; then
@@ -152,6 +216,10 @@ wb_firstboot()
 
     return 0
 }
+
+[[ ! -e ${STORAGE}p3 ]] && wb_prepare_partitions
+
+grep ${STORAGE}p6 /proc/mounts || wb_prepare_filesystems
 
 FLAG="/var/lib/wirenboard/firstboot.flag"
 if [ ! -f $FLAG ]; then

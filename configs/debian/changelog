@@ -1,10 +1,11 @@
-wb-configs (1.50) UNRELEASED; urgency=medium
+wb-configs (1.50) stable; urgency=medium
 
   * added partitions for fwupdate and redundancy
+  * move some configs to /mnt/data and create symlink from /etc/rc.local
   * code cleanups
   * migrate to config-package-dev
 
- -- Alexey Ignatov <lexszero@gmail.com>  Mon, 21 Sep 2015 11:11:44 +0000
+ -- Alexey Ignatov <lexszero@gmail.com>  Wed, 23 Sep 2015 08:20:07 +0000
 
 wb-configs (1.49) stable; urgency=medium
 
