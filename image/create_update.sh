@@ -1,4 +1,5 @@
 #!/bin/bash
+this=`readlink -f "$0"`
 
 usage() {
 	echo "USAGE: $0 <path to rootfs> <update file>"
@@ -30,7 +31,7 @@ append_tarball() {
 	local src=$2
 	
 	pushd "$src"
-	sudo tar cjp ./ | pv | append_blob $tag || {
+	sudo tar cjvp ./ | append_blob $tag || {
 		ret=$?
 		echo "!!! tarball creation failed"
 		exit $ret
@@ -39,7 +40,7 @@ append_tarball() {
 }
 
 {
-	cat install_update.sh
+	cat `dirname $this`/install_update.sh
 	echo "exit 0"
 	append_tarball ROOTFS $ROOTFS
 	# maybe we want to include into update other parts, such as u-boot or separate /var

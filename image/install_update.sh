@@ -1,5 +1,5 @@
 #!/bin/bash -x
-this="`pwd`/$0"
+this="`readlink -f $0`"
 
 die() {
 	>&2 echo "!!! $@"
@@ -30,8 +30,8 @@ extract_blob_body() {
 		}' "$this"
 }
 
-extract_blob() {
-	# find blob boundaries and md5 in file, extract body, check md5 and write to stdout
+# Find blob boundaries and expected MD5
+find_blob() {
 	local tag=$1
 
 	local tmp=`awk '
@@ -47,26 +47,42 @@ extract_blob() {
 	local md5_expected="${end#* }"
 	end="${end% *}"
 
+	[[ -n "$begin" && -n "$end" && -n "$md5_expected" ]] && {
+		echo "$tag $begin $end $md5_expected"
+	} || {
+		die "Blob $tag not found"
+	}
+}
+
+verify_blob() {
+	local tag=$1
+	local begin=$2
+	local end=$3
+	local md5_expected=$4
+
 	info "Checking MD5 checksum of $tag"
 	local md5_calculated=`extract_blob_body $begin $end | md5sum | cut -f1 -d' '`
-	[[ "$md5_expected" != "$md5_calculated" ]] && {
+	[[ "$md5_expected" == "$md5_calculated" ]] &&
+		info "MD5 checksum of $tag ok" ||
 		die "MD5 of $tag doesn't match (expected $md5_expected, got $md5_calculated)"
-	}
-	info "MD5 checksum of $tag ok"
-	extract_blob_body $begin $end
 }
 
 extract_tarball() {
 	local tag=$1
-	local dst=$2
+	local begin=$2
+	local end=$3
+	local dst=$5
 
 	info "Unpacking $tag into $dst"
 	pushd $dst
-	extract_blob $tag | tar xjp
+	extract_blob_body $begin $end | tar xjvp
 	popd
 }
 
 [[ $EUID != 0 ]] && die "Need root privileges to install update"
+
+blob=`find_blob ROOTFS`
+verify_blob $blob
 
 info "Installing firmware update"
 
@@ -78,7 +94,9 @@ declare -a partitions=(
 	'uboot'
 	'rootfs0'
 	'rootfs1'
-	'var'
+	''
+	'swap'
+	'data'
 )
 
 root_dev='mmcblk0'
@@ -92,23 +110,20 @@ case "$part" in
 		part=2
 		;;
 	*)
-		die "Unable to determine rootfs partition (current is $part)"
+		die "Unable to determine second rootfs partition (current is $part)"
 		;;
 esac
 root_part=/dev/${root_dev}p${part}
 info "Will install to $root_part"
-}
-#########################################################
-part=2
-root_part="test_part"
+
 umount -f $root_part 2&>1 >/dev/null || true # just for sure
 info "Formatting $root_part"
-mkfs.ext4 -L "${partitions[$part]}" -E stride=2,stripe-width=1024 -b 4096 "$root_part" <<< y || die "mkfs.ext4 failed"
+yes | mkfs.ext4 -L "${partitions[$part]}" -E stride=2,stripe-width=1024 -b 4096 "$root_part" || die "mkfs.ext4 failed"
 
 info "Mounting $root_part to $mnt"
 rm -rf "$mnt" && mkdir "$mnt" || die "Unable to create mountpoint $mnt"
 mount -t ext4 "$root_part" "$mnt" || die "Unable to mount just created filesystem"
 
-extract_tarball ROOTFS "$mnt"
+extract_tarball $blob "$mnt"
 
 info "Done"
