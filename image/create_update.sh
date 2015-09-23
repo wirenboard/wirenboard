@@ -1,48 +1,102 @@
 #!/bin/bash
+set -e
 this=`readlink -f "$0"`
-
-usage() {
-	echo "USAGE: $0 <path to rootfs> <update file>"
-	exit 1
-}
-
-[[ $# != 2 ]] && usage
 
 ROOTFS=$1
 OUTPUT=$2
+INSTALL_SCRIPT="`dirname $this`/install_update.sh"
 
-[[ ! -d "$ROOTFS" ]] && {
-	echo "$ROOTFS is not a directory"
-	usage
+usage() {
+	cat <<EOF
+USAGE: $0 <path to rootfs> <update file>"
+rootfs can be either a directory (which will be packed to .tar.xz) 
+or just anything suitable for $(dirname $0)/install_update.sh.sh
+EOF
+	exit 1
 }
 
-append_blob() {
-	local md5=`mktemp`
-
-	echo "__BLOB_BEGIN__:$tag:"
-	tee >( md5sum | cut -f1 -d' ' > "$md5" )
-	echo
-	echo "__BLOB_END__:$tag:`cat $md5`"
-	rm "$md5"
+die() {
+	local ret=$?
+	>&2 echo "!!! $@"
+	exit $ret
 }
 
-append_tarball() {
-	local tag=$1
-	local src=$2
-	
-	pushd "$src"
-	sudo tar cjvp ./ | append_blob $tag || {
-		ret=$?
-		echo "!!! tarball creation failed"
-		exit $ret
+info() {
+	>&2 echo ">>> $@"
+}
+
+[[ $# != 2 ]] && usage
+[[ -e "$ROOTFS" ]] || die "$ROOTFS not found"
+
+create_tarball() {
+	local src=$1
+	local tarball=`mktemp`
+
+	pushd "$src" >/dev/null
+	sudo tar cJvp ./ > "$tarball" || {
+		rm -f "$tarball"
+		die "tarball of $src creation failed"
 	}
-	popd
+	popd >/dev/null
+	echo "$tarball"
 }
+
+include() {
+	local name=$1
+	local fpath=$2
+	local imagetype=$3
+	local description=$4
+
+	cat <<EOF
+		$name {
+			description = "$description";
+			data = /incbin/("$fpath");
+			compression = "none";
+
+			hash@1 {
+				algo = "sha1";
+			};
+		};
+EOF
+}
+
+if [[ -d "$ROOTFS" ]]; then
+	ROOTFS_TARBALL=`create_tarball $ROOTFS`
+elif [[ -e "$ROOTFS" ]]; then
+	ROOTFS_TARBALL=$ROOTFS
+fi
+ITS=`mktemp`
+
+cleanup() {
+	rm -f "$ITS"
+	[[ "$ROOTFS_TARBALL" == "$ROOTFS" ]] || rm -f "$ROOTFS_TARBALL"
+}
+trap cleanup EXIT
 
 {
-	cat `dirname $this`/install_update.sh
-	echo "exit 0"
-	append_tarball ROOTFS $ROOTFS
-	# maybe we want to include into update other parts, such as u-boot or separate /var
-} > "$OUTPUT"
-chmod +x $OUTPUT
+cat <<EOF
+/dts-v1/;
+
+/ {
+	description = "WirenBoard firmware update";
+	compatible = "imx23-wirenboard41contactless";
+	firmware-version = "unknown";
+	firmware-compatible = "unknown";
+	#address-cells = <1>;
+	images {
+EOF
+	include install $INSTALL_SCRIPT "Installation script (bash)"
+	include rootfs $ROOTFS_TARBALL "Root filesystem tarball"
+cat <<EOF
+	};
+	configurations {
+	};
+};
+EOF
+} > "$ITS"
+
+mkimage -v \
+	-D "-I dts -O dtb -p 2000" \
+	-f "$ITS" \
+	-r -k ./ -c "wtf" \
+	"$OUTPUT"
