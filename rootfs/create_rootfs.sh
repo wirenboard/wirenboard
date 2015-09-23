@@ -48,6 +48,10 @@ chr() {
     chroot ${OUTPUT} "$@"
 }
 
+chr_nofail() {
+    chroot ${OUTPUT} "$@" || true
+}
+
 chr_apt() {
     chr apt-get install -y "$@"
 }
@@ -146,15 +150,19 @@ popd
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
 # FIXME: this is a dirty hack until updated packages get into repo
+chr_apt inotify-tools mosquitto mqtt-wss mqtt-tools
+chr /etc/init.d/mosquitto start
 for deb in \
     ${SCRIPT_DIR}/../../u-boot-tools_*_armel.deb \
     ${SCRIPT_DIR}/../wb-utils_*_armel.deb \
-    ${SCRIPT_DIR}/../wb-configs_*_all.deb
+    ${SCRIPT_DIR}/../wb-configs_*_all.deb \
+    ${SCRIPT_DIR}/../../wb-mqtt-homeui_*_all.deb
 do
     cp "$deb" $OUTPUT/
     chr dpkg -i /`basename $deb`
     rm ${OUTPUT}/`basename $deb`
 done
+chr /etc/init.d/mosquitto stop
 
 echo "Install packages from contactless repo"
 pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
@@ -194,7 +202,7 @@ case "$BOARD" in
         echo "Add rtl8188 hostapd package"
         RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
         cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
-        chr dpkg -i ${RTL8188_DEB}
+        chr_nofail dpkg -i ${RTL8188_DEB}
         rm ${OUTPUT}/${RTL8188_DEB}
 
         set_fdt imx23-wirenboard41
@@ -238,6 +246,6 @@ case "$BOARD" in
 esac
 
 chr apt-get clean
-chr rm -rf /run/* /var/cache/apt/* /var/lib/apt/lists/*
+rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/* ${OUTPUT}/var/lib/apt/lists/*
 
 exit 0
