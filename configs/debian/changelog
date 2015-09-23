@@ -1,3 +1,9 @@
+wb-configs (1.51) stable; urgency=medium
+
+  * fix a few bugs in rc.local
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Wed, 23 Sep 2015 11:06:41 +0000
+
 wb-configs (1.50) stable; urgency=medium
 
   * added partitions for fwupdate and redundancy

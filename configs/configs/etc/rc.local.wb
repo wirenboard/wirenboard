@@ -133,9 +133,10 @@ wb_move_to_data()
             local f=`readlink -f "$src"`
             if [[ "$f" != "$dst" ]]; then
                 [[ -z "$nosave" ]] && mv "$src" "${src}.default"
-                mkdir -p `$dirname "$dst"`
+                mkdir -p `dirname "$dst"`
                 cp -aH "$f" "$dst"
-                ln -fs "$dst" "$src"
+                rm -rf "$src"
+                ln -Tfs "$dst" "$src"
                 info "$src: copyed $f to $dst, replaced symlink"
             else
                 info "$src: good symlink, not touching"
@@ -148,13 +149,17 @@ wb_move_to_data()
                 f="${src}.default"
             elif [[ -e "${src}.wb" ]]; then
                 f="${src}.wb"
-                [[ -z "$nosave" ]] && ln -sf "$f" "${src}.default"
+                [[ -z "$nosave" ]] && {
+                    rm -rf "${src}.default"
+                    ln -Tfs "$f" "${src}.default"
+                }
             fi
 
             if [[ -n "$f" ]]; then
-                mkdir -p `$dirname "$dst"`
+                mkdir -p `dirname "$dst"`
                 [[ "$f" != "$dst" ]] && cp -aH "$f" "$dst"
-                ln -fs "$dst" "$src"
+                rm -rf "$src"
+                ln -Tfs "$dst" "$src"
                 info "$src: broken symlink, repaired using existing file $f"
             else
                 info "$src: WARNING: broken symlink, and unable to repair"
@@ -169,7 +174,8 @@ wb_move_to_data()
             mv "$src" "$dst"
             info "$src: copyed to $dst, replaced with symlink"
         fi
-        ln -fs "$dst" "$src"
+        rm -rf "$src"
+        ln -Tfs "$dst" "$src"
     else
         info "$src: WARNING: is neither symlink or regular file, don't touch"
     fi
@@ -177,7 +183,7 @@ wb_move_to_data()
 
 wb_firstboot()
 {
-    [[ -d "/var/lib/wirenboard" ]] || mkdir /var/lib/wirenboard
+    [[ -e "/var/lib/wirenboard" ]] || mkdir /var/lib/wirenboard
 
     [[ -f "/var/lib/wirenboard/serial.conf" ]] || {
         info "Get WB serial number"
@@ -199,6 +205,7 @@ wb_firstboot()
     wb_move_to_data /etc/dnsmasq.conf
     wb_move_to_data /etc/hostapd.conf
     wb_move_to_data /var/lib/wirenboard
+    wb_move_to_data /var/lib/mosquitto
     wb_move_to_data nosave /var/cache/apt              # just fat, move it out
     wb_move_to_data nosave /var/www/uploads /uploads   # here will be firmware updates
 
@@ -217,9 +224,12 @@ wb_firstboot()
     return 0
 }
 
+# TODO: Move all firstboot actions to rcS/99firstboot
+# This will significantly speed-up initialization
+
 [[ ! -e ${STORAGE}p3 ]] && wb_prepare_partitions
 
-grep ${STORAGE}p6 /proc/mounts || wb_prepare_filesystems
+grep ${STORAGE}p6 /proc/mounts >/dev/null || wb_prepare_filesystems
 
 FLAG="/var/lib/wirenboard/firstboot.flag"
 if [ ! -f $FLAG ]; then
