@@ -89,15 +89,22 @@ if [[ ! -L ${OUTPUT}/dev/ptmx ]]; then
     fi
 fi
 
+# This disables startin services when installing packages
+echo exit 101 > ${OUTPUT}/usr/sbin/policy-rc.d
+chmod +x ${OUTPUT}/usr/sbin/policy-rc.d
+
 cleanup() {
+    local ret=$?
+
     echo "Umount proc,dev,dev/pts in rootfs"
     [[ -L ${OUTPUT}/dev/ptmx ]] || umount ${OUTPUT}/dev/ptmx
     umount ${OUTPUT}/dev/pts
     umount ${OUTPUT}/proc
     umount ${OUTPUT}/sys
 
-	echo "Killing all qemu-arm processes"
-	pkill -9 -f qemu-arm
+    rm -f ${OUTPUT}/usr/sbin/policy-rc.d
+
+    return $ret
 }
 trap cleanup EXIT
 
