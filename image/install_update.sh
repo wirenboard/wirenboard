@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 fit_blob_verify_hash rootfs
 
@@ -41,14 +40,6 @@ yes | mkfs.ext4 -L "${partitions[$PART]}" -E stride=2,stripe-width=1024 -b 4096 
 
 cleanup() {
 	set +e
-	info "Unmounting chroot mounts"
-	umount $MNT/mnt/data
-	[[ -L $MNT/dev/ptmx ]] || umount $MNT/dev/ptmx
-	umount $MNT/dev/pts
-	umount $MNT/dev
-	umount $MNT/sys
-	umount $MNT/proc
-	
 	info "Unmounting new rootfs"
 	umount $MNT
 	sync
@@ -64,21 +55,11 @@ pushd "$MNT"
 fit_blob_data rootfs | tar xJp
 popd
 
-info "Preparing chroot mounts"
-mount -t proc procfs $MNT/proc
-mount --bind /sys $MNT/sys
-mount --bind /dev $MNT/dev
-mount -t devpts devpts $MNT/dev/pts -o "gid=5,mode=620,ptmxmode=666,newinstance"
-[[ -L $MNT/dev/ptmx ]] || mount -o bind $MNT/dev/pts/ptmx $MNT/dev/ptmx
-mount --bind /mnt/data $MNT/mnt/data
-
-info "Running rc.local script in new rootfs"
-chroot $MNT /etc/rc.local
-
 cleanup
 
 info "Switching to new rootfs"
 fw_setenv mmcpart $PART
 
-info "Done, rebooting"
+info "Done, removing firmware image and rebooting"
+rm_fit
 reboot
