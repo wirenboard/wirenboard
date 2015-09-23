@@ -1,0 +1,7 @@
+#!/bin/sh
+
+update-rc.d wb-gsm-rtc defaults
+invoke-rc.d wb-gsm-rtc start
+
+update-rc.d wb-init defaults
+invoke-rc.d wb-init start
