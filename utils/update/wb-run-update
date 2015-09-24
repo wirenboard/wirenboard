@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -e
 #set -x
 
 FIT=`readlink -f $1`
@@ -11,16 +11,26 @@ rm_fit() {
 	rm -f "$FIT"
 }
 
+mqtt_status() {
+	mosquitto_pub -t /firmware/status -m "$*" 2>&1 >/dev/null || true
+}
+
+mqtt_progress() {
+	mosquitto_pub -t /firmware/progress -m "$*" 2>&1 >/dev/null || true
+}
+
 die() {
 	local ret=$?
 	local msg=${*:-"Failed"}
-	>&2 echo "!!! $@"
+	>&2 echo "!!! $msg"
+	mqtt_status "ERROR $msg"
 	#rm_fit
 	[[ $? == 0 ]] && exit 1 || exit $?
 }
 
 info() {
-	>&2 echo ">>> $@"
+	>&2 echo ">>> $*"
+	mqtt_status "OK $*"
 }
 
 fit_prop() {
@@ -33,6 +43,11 @@ fit_prop() {
 	[[ -n "$len" && -n "$off" ]] || return 1
 	#dd if=$FIT skip=$off count=$len iflag=skip_bytes,count_bytes 2>/dev/null
 	dd if=$FIT bs=$off skip=1 2>/dev/null | head -c $len 2>/dev/null
+}
+
+fit_blob_size() {
+	local tmp=`fit_info -f $FIT -n /images/$1 -p data`
+	sed -rn 's#LEN: (.*)#\1#p' <<< "$tmp"
 }
 
 fit_blob_data() {

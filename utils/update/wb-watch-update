@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -x
 WATCH_DIR="/var/www/uploads"
 UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
 UPDATE_LOG="/var/log/update.log"
@@ -19,6 +20,18 @@ cleanup_watch_dir() {
 	find $WATCH_DIR/ -maxdepth 1 -type f "$@" -delete
 }
 
+log() {
+	logger -t wb-watch-update "$*"
+}
+
+mqtt_status() {
+	mosquitto_pub -t /firmware/status -m "$*"
+}
+
+mqtt_log() {
+	mosquitto_pub -t /firmware/log -m "$*"
+}
+
 LAST_FIT=''
 
 (
@@ -37,15 +50,24 @@ while read EVENT_DIR EVENT_TYPE EVENT_FILE; do
 
 	# Ensure that image was received completely
 	check_fully_received $FIT || {
-		logger -t wb-watch-update "Received incomplete update FIT $FIT, don't starting update"
+		msg="Received incomplete update FIT $FIT, don't starting update"
+		log "$msg"
+		mqtt_status "ERROR $msg"
+		mqtt_status "DONE"
 		continue
 	}
 
 	# Remove old updates, we won't run it anyway
 	cleanup_watch_dir -not -name ${EVENT_FILE}
 
-	logger -t wb-watch-update "Received good update FIT $FIT, starting update"
-	wb-run-update $FIT 2>&1 | tee -a "$UPDATE_LOG" ||
-		rm -f $FIT
+	msg="Received good update FIT $FIT, starting update"
+	log "$msg"
+	mqtt_log "$msg"
+
+	wb-run-update $FIT 2>&1 | tee -a "$UPDATE_LOG" | while read x; do
+		mqtt_log "$x"
+	done || rm -f $FIT
+
+	mqtt_status "DONE"
 done
 }
