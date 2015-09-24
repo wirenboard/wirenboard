@@ -1,12 +1,21 @@
+import json
 import gspread
+from oauth2client.client import SignedJwtAssertionCredentials
+
+
 
 
 class GSheetsLog(object):
     IMEI_COL = 3
-    def __init__(self, url, login = 'robot@contactless.ru', password = 'dPg6Ndw9JUA8'):
-        self.gc = gspread.login(login, password)
-        self.wks = self.gc.open_by_url(url)
-        self.worksheet = self.wks.get_worksheet(0)
+    def __init__(self, url, key_fname):
+		json_key = json.load(open(key_fname))
+		scope = ['https://spreadsheets.google.com/feeds']
+
+		credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
+		self.gc = gspread.authorize(credentials)
+
+		self.wks = self.gc.open_by_url(url)
+		self.worksheet = self.wks.get_worksheet(0)
 
     def find_row(self, imei):
         imei_sn = str(imei)

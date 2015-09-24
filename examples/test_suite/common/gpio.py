@@ -10,6 +10,9 @@ class GPIOHandler(object):
     BOTH = "both"
     NONE = "none"
 
+    HIGH = True
+    LOW = False
+
     def __init__(self):
         self.event_callbacks = {}
         self.gpio_fds = {}
@@ -40,6 +43,9 @@ class GPIOHandler(object):
     def export(self, gpio):
         open('/sys/class/gpio/export','wt').write("%d\n" % gpio)
 
+    def unexport(self, gpio):
+        open('/sys/class/gpio/unexport','wt').write("%d\n" % gpio)
+
     def setup(self, gpio, direction):
         self.export(gpio)
         open('/sys/class/gpio/gpio%d/direction' % gpio, 'wt').write("%s\n" % direction)
@@ -52,6 +58,12 @@ class GPIOHandler(object):
         if gpio not in self.gpio_fds:
             self._open(gpio)
 
+    def output(self, gpio, value):
+        self._check_open(gpio)
+
+        self.gpio_fds[gpio].seek(0)
+        self.gpio_fds[gpio].write('1' if value else '0')
+        self.gpio_fds[gpio].flush()
 
 
     def input(self, gpio):

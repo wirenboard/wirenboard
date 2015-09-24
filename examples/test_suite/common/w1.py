@@ -9,6 +9,7 @@ def test():
 
 
 class TestW1(unittest.TestCase):
+    NUMBER_REQUIRED = 1
     def setUp(self):
         pass
 
@@ -16,6 +17,6 @@ class TestW1(unittest.TestCase):
         entries = os.listdir("/sys/bus/w1/devices/")
         devices = [x for x in entries if ('-' in x)]
 
-        self.assertTrue(bool(devices ))
+        self.assertEquals(len(devices), self.NUMBER_REQUIRED)
 
 
