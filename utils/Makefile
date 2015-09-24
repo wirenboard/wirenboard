@@ -17,9 +17,6 @@ install: $(BIN_NAME)
 	$(MAKE) -C adc/injection install
 	install -m 0644 board/wb_env.sh $(DESTDIR)/etc/wb_env.sh
 	install -m 0755 board/wb-gen-serial $(DESTDIR)/$(prefix)/bin/wb-gen-serial
-	install -m 0755 board/wb-run-update $(DESTDIR)/$(prefix)/bin/wb-run-update
-	install -m 0755 board/wb-watch-update $(DESTDIR)/$(prefix)/bin/wb-watch-update
-	install -m 0755 board/wb-watch-update.init $(DESTDIR)/etc/init.d/wb-watch-update
 
 	install -m 0755 adc/wb-adc-get-value $(DESTDIR)/$(prefix)/bin/wb-adc-get-value
 	install -m 0755 adc/wb-adc-read-channel $(DESTDIR)/$(prefix)/bin/wb-adc-read-channel
@@ -31,6 +28,10 @@ install: $(BIN_NAME)
 
 	install -m 0755 gsm/rtc.init $(DESTDIR)/etc/init.d/wb-gsm-rtc
 	install -m 0755 board/board.init $(DESTDIR)/etc/init.d/wb-init
+
+	install -m 0755 update/wb-run-update $(DESTDIR)/$(prefix)/bin/wb-run-update
+	install -m 0755 update/wb-watch-update $(DESTDIR)/$(prefix)/bin/wb-watch-update
+	install -m 0755 update/wb-watch-update.init $(DESTDIR)/etc/init.d/wb-watch-update
 
 
 clean:
