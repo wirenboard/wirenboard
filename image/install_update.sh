@@ -59,6 +59,7 @@ cleanup
 
 info "Switching to new rootfs"
 fw_setenv mmcpart $PART
+fw_setenv upgrade_available 1
 
 info "Done, removing firmware image and rebooting"
 rm_fit
