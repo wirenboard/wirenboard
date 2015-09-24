@@ -1,3 +1,9 @@
+wb-utils (1.52) stable; urgency=medium
+
+  * add wb-prepare init script
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Thu, 24 Sep 2015 07:28:33 +0000
+
 wb-utils (1.51) stable; urgency=medium
 
   * move update stuff into separate directory to postpone the heat death of the universe

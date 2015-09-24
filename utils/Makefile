@@ -28,6 +28,7 @@ install: $(BIN_NAME)
 
 	install -m 0755 gsm/rtc.init $(DESTDIR)/etc/init.d/wb-gsm-rtc
 	install -m 0755 board/board.init $(DESTDIR)/etc/init.d/wb-init
+	install -m 0755 board/prepare.init $(DESTDIR)/etc/init.d/wb-prepare
 
 	install -m 0755 update/wb-run-update $(DESTDIR)/$(prefix)/bin/wb-run-update
 	install -m 0755 update/wb-watch-update $(DESTDIR)/$(prefix)/bin/wb-watch-update

@@ -5,7 +5,6 @@ export DH_VERBOSE = 1
 DEB_DISPLACE_EXTENSION = .wb
 DEB_DISPLACE_FILES_wb-configs += \
 	/root/.bashrc.wb \
-	/etc/rc.local.wb \
 	/etc/locale.gen.wb \
 	/etc/hostname.wb \
 	/etc/modules.wb \

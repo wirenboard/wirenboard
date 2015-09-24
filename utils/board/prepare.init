@@ -1,0 +1,422 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          wb-prepare
+# Default-Start:     S
+# Default-Stop:
+# Required-Start:    $local_fs
+# Required-Stop:
+# Short-Description:  prepare partitions & rootfs
+# Description:        prepare partitions & rootfs
+### END INIT INFO
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="prepare partitions & rootfs"
+NAME=wb-prepare
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+VERBOSE="yes"
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+. /etc/wb_env.sh
+
+# some constants for convenience
+STORAGE=/dev/mmcblk0
+SECTOR_SIZE=512
+MB=1024*1024
+PART_START=0
+TOTAL_SECTORS=0
+
+wb_check_mounted()
+{
+    grep "$1" /proc/mounts 2>&1 >/dev/null
+}
+
+# Generates single partition definition line for sfdisk.
+# Increments PART_START variable to point to the start of the next partition
+# (special case is Extended (5) fstype, which increments PART_START by 2048 sectors)
+# Args:
+# - size in megabytes (or '' to use all remaining space to the end)
+# - filesystem type (looks like not really matters). when omitted, defaults to 83 (Linux)
+wb_partition()
+{
+    [[ -z "$1" ]] &&
+        local size=$[TOTAL_SECTORS-PART_START] ||
+        local size=$[$1*MB/SECTOR_SIZE]
+    local fstype=${2:-83}
+    echo "$PART_START $size $fstype"
+    [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
+}
+
+# Creates all the needed partitions
+wb_prepare_partitions()
+{
+    [[ -e ${STORAGE}p3 && -e ${STORAGE}p5 && -e ${STORAGE}p6 ]] && {
+        log_success_msg "Partition table is good"
+        return 0
+    }
+
+    log_action_msg "Preparing partitions"
+
+    PART_START=$[4*MB/SECTOR_SIZE]
+    TOTAL_SECTORS=$[`sfdisk -s $STORAGE`*2] || {
+        log_failure_msg "Unable to get total sectors count for $STORAGE"
+        return 1
+    }
+
+    sfdisk --no-reread --Linux --in-order -u S --dump > /tmp/partitions_backup
+    dd if=/dev/zero of=$STORAGE bs=512 count=1
+    {
+        wb_partition 16 53    # uboot
+        wb_partition 1024     # rootfs0
+        wb_partition 1024     # rootfs1
+        wb_partition '' 5     # <extended>
+        wb_partition 256 82   # swap
+        wb_partition ''       # data
+    } | sfdisk --no-reread --Linux --in-order -u S $STORAGE || true
+    # FIXME: sfdisk succesfully writes partition table, but returns error
+    # because it can't reread partitions on mounted disk, so just bypass error
+    # handling.
+    #{
+    #    info "Failed, sfdisk returned $?"
+    #    info "Restoring old partition table"
+    #    sfdisk --no-reread --Linux --in-order -u S $STORAGE < /tmp/partitions_backup
+    #    rm -f /tmp/partitions_backup
+    #    die "Prepare partitions failed"
+    #}
+    rm -f /tmp/partitions_backup
+
+    log_success_msg "Partition table changed, reboot needed"
+    fw_setenv bootcount 0
+    reboot
+}
+
+# Run mkfs.ext4 with custom options
+# Args:
+# - device file
+# - label (optional)
+wb_mkfs_ext4()
+{
+    local dev=$1
+    local label=$2
+    
+    [[ -e "$dev" ]] || {
+        log_failure_msg "Device $dev not found"
+        return 1
+    }
+
+    log_action_begin_msg "Formatting $dev ($label)"
+    yes | mkfs.ext4 -E stride=2,stripe-width=1024 -b 4096 -L "$label" "$dev"
+    log_end_msg $?
+}
+
+wb_check_alt_rootfs()
+{
+    local ret=0
+    local active_part=`fw_printenv mmcpart | sed 's#.*=##'`
+    [[ -n "$active_part" ]] || {
+        log_failure_msg "Unable to determine active rootfs partition"
+        return 1
+    }
+
+    case "$active_part" in
+        2)
+            alt_part=3
+            ;;
+        3)
+            alt_part=2
+            ;;
+        *)
+            log_failure_msg "Unable to determine second rootfs partition (current is $active_part)"
+            return 1
+            ;;
+    esac
+    active_part=${STORAGE}p${active_part}
+    alt_part=${STORAGE}p${alt_part}
+
+    local mnt_rootfs_dst=`mktemp -d`
+
+    mount ${alt_part} ${mnt_rootfs_dst} 2>&1 >/dev/null && {
+        log_action_msg "Alternative rootfs seems good"
+        umount ${mnt_rootfs_dst}
+    } || {
+        log_warning_msg "Alternative rootfs is unusable, disabling rootfs switching"
+        fw_setenv upgrade_available 0
+    }
+#        wb_mkfs_ext4 ${alt_part} rootfs || return $?
+#
+#        mount ${alt_part} ${mnt_rootfs_dst} || {
+#            log_failure_msg "Unable to mount ${alt_part}"
+#            return 1
+#        }
+#
+#        log_action_begin_msg "Copying active rootfs to alternative partition"
+#        local mnt_rootfs_src=`mktemp -d`
+#        mount --bind / $mnt_rootfs_src &&
+#        cp -a $mnt_rootfs_src/. $mnt_rootfs_dst &&
+#        umount $mnt_rootfs_src
+#        rm -rf $mnt_rootfs_src
+#        log_end_msg $?
+#        ret=$?
+#    }
+    rm -rf ${mnt_rootfs_dst}
+
+    return $ret
+}
+
+wb_check_swap()
+{
+    local swap=${STORAGE}p5
+    grep ${swap} /proc/swaps 2>&1 >/dev/null && return 0
+
+    [[ -e "${swap}" ]] || {
+        log_failure_msg "Swap device $swap not found"
+        return 1
+    }
+    
+    log_action_begin_msg "Creating swap"
+    mkswap ${STORAGE}p5 &&
+    swapon -a
+    log_end_msg $?
+}
+
+wb_check_data()
+{
+    local data=${STORAGE}p6
+    wb_check_mounted ${data} && {
+        return 0
+    }
+    
+    wb_mkfs_ext4 ${data} data || return $?
+    mount ${data} /mnt/data || {
+        log_failure_msg "Can't mount ${data}"
+        return 1
+    }
+    return 0
+}
+
+wb_prepare_filesystems()
+{
+    log_action_msg "Preparing filesystems"
+
+    log_action_begin_msg "Resizing root filesystem"
+    resize2fs /dev/root >/dev/null
+    log_end_msg $?
+
+    wb_check_swap
+
+    wb_check_alt_rootfs
+}
+
+wb_move_to_data()
+{
+    [[ "$1" == "nosave" ]] && {
+        local nosave=1
+        shift
+    }
+    local src=$1
+    local dst="/mnt/data${2:-$1}"
+
+    if [[ -h "$src" ]]; then                  # is it a symlink already?
+        if [[ -e "$src" ]]; then
+            local f=`readlink -f "$src"`
+            if [[ "$f" != "$dst" ]]; then
+                [[ -z "$nosave" ]] && mv "$src" "${src}.default"
+                if [[ -e "$dst" ]]; then      # is there already a file in /mnt/data?
+                    log_action_msg "$src: replaced with symlink to existing $dst"
+                else
+                    mkdir -p `dirname "$dst"`
+                    cp -aH "$f" "$dst"
+                    log_action_msg "$src: copyed $f to $dst, replaced symlink"
+                fi
+                rm -rf "$src"
+                ln -Tfs "$dst" "${src%/}"
+            else
+                log_action_msg "$src: good symlink, not touching"
+            fi
+        else
+            local f=''
+            if [[ -e "$dst" ]]; then
+                f=$dst
+            elif [[ -e "${src}.default" ]]; then
+                f="${src}.default"
+            elif [[ -e "${src}.wb" ]]; then
+                f="${src}.wb"
+                [[ -z "$nosave" ]] && {
+                    rm -rf "${src}.default"
+                    ln -Tfs "$f" "${src%/}.default"
+                }
+            elif [[ "${src%/}" != "$src" ]]; then
+                mkdir -p "$dst"
+                f=$dst
+            fi
+
+            if [[ -n "$f" ]]; then
+                mkdir -p `dirname "$dst"`
+                [[ "$f" != "$dst" ]] && cp -aH "$f" "$dst"
+                rm -rf "$src"
+                ln -Tfs "$dst" "${src%/}"
+                log_action_msg "$src: broken symlink, repaired using existing file $f"
+            else
+                log_warning_msg "$src: broken symlink and unable to repair"
+            fi
+        fi
+    elif [[ -e "$src" ]]; then        # is it a regular file/dir?
+        [[ -z "$nosave" ]] && cp -a "$src" "${src}.default" # save copy for possible future use
+        if [[ -e "$dst" ]]; then      # is there already a file in /mnt/data?
+            log_action_msg "$src: replaced with symlink to existing $dst"
+        else
+            mkdir -p `dirname "$dst"`
+            mv "$src" "$dst"
+            log_action_msg "$src: copyed to $dst, replaced with symlink"
+        fi
+        rm -rf "$src"
+        ln -Tfs "$dst" "${src%/}"
+    else
+        log_warning_msg "$src: is neither symlink or regular file, don't touch"
+    fi
+}
+
+# This function should be called only on first boot of the rootfs
+wb_firstboot()
+{
+    local flag="/var/lib/firstboot_done.flag"
+    [[ -f $flag ]] && return 0
+
+    log_action_msg "Preparing rootfs for the first boot"
+
+    [[ ! -d "/var/lib/wirenboard" ]] && {
+        rm -rf /var/lib/wirenboard
+        mkdir -p /var/lib/wirenboard
+    }
+
+    [[ ! -f "/var/lib/wirenboard/serial.conf" ]] && {
+        log_action_begin_msg "Get WB serial number"
+        wb-gen-serial > /var/lib/wirenboard/serial.conf
+        log_end_msg $? || return $?
+    }
+
+    [[ ! -h /etc/ssh && -d /etc/ssh ]] && {
+        log_action_msg "Regenerating SSH host keys"
+        for keytype in ecdsa dsa rsa; do
+            log_action_begin_msg "  $keytype"
+            yes | ssh-keygen -f /etc/ssh/ssh_host_${keytype}_key -N '' -t ${keytype} >/dev/null
+            log_end_msg $? || return $?
+        done
+    }
+
+    touch $flag
+    return 0
+}
+
+wb_check_symlinks()
+{
+    wb_check_data || {
+        log_warning_msg "/mnt/data not mounted, skipping symlinks check"
+        return 1
+    }
+
+    local md5_interfaces=`md5sum /etc/network/interfaces`
+
+    log_action_msg "Checking symlinks to /mnt/data"
+    # TODO: think what other important files to move
+    wb_move_to_data /etc/passwd
+    wb_move_to_data /etc/shadow
+    wb_move_to_data /etc/network/interfaces
+    wb_move_to_data /etc/resolv.conf
+    wb_move_to_data /etc/ssh
+    wb_move_to_data /etc/dnsmasq.conf
+    wb_move_to_data /etc/hostapd.conf
+    wb_move_to_data /var/lib/wirenboard
+    wb_move_to_data /var/lib/mosquitto
+    wb_move_to_data nosave /var/log/
+    wb_move_to_data nosave /var/cache/apt/             # just fat, move it out
+    wb_move_to_data nosave /var/www/uploads/ /uploads  # here will be firmware updates
+
+    for f in wb-homa-adc.conf wb-homa-gpio.conf wb-homa-modbus.conf wb-rules; do
+        wb_move_to_data /etc/${f}
+    done
+
+    [[ "${md5_interfaces}" != "`md5sum /etc/network/interfaces`" ||
+       "`cat /sys/class/net/eth0/address`" != "`/var/lib/wirenboard/serial.conf`" ]] && {
+        log_action_msg "Network configuration changed, restarting"
+        if [ -e /etc/init.d/netplug ]; then
+            /etc/init.d/netplug stop
+        fi
+    
+        ifdown eth0 ; ifconfig eth0 down ; ifup eth0
+    
+        if [ -e /etc/init.d/netplug ]; then
+            /etc/init.d/netplug start
+        fi
+    }
+}
+
+#
+# Function that starts the daemon/service
+#
+
+do_start()
+{
+    wb_firstboot || return $?
+
+    wb_prepare_partitions
+    wb_prepare_filesystems
+    wb_check_symlinks
+
+    return 0
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+
+    return 0;
+
+}
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  status)
+	 exit 0;
+	;;
+
+
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|status}" >&2
+	exit 3
+	;;
+esac
+
+:

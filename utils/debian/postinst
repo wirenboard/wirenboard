@@ -1,4 +1,5 @@
 #!/bin/sh
+update-rc.d wb-prepare start 10 S
 
 update-rc.d wb-gsm-rtc defaults
 invoke-rc.d wb-gsm-rtc start

@@ -2,6 +2,7 @@
 set -e
 
 if [ "$1" = "purge" ] ; then
+	update-rc.d wb-prepare remove >/dev/null
 	update-rc.d wb-gsm-rtc remove >/dev/null
 	update-rc.d wb-init remove >/dev/null
 	update-rc.d wb-watch-update remove >/dev/null
