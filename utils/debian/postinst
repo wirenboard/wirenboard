@@ -5,3 +5,6 @@ invoke-rc.d wb-gsm-rtc start
 
 update-rc.d wb-init defaults
 invoke-rc.d wb-init start
+
+update-rc.d wb-watch-update defaults
+invoke-rc.d wb-watch-update start

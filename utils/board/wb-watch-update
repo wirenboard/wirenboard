@@ -1,10 +1,13 @@
 #!/bin/bash
-set -e
-set -x
-
 WATCH_DIR="/var/www/uploads"
 UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
 UPDATE_LOG="/var/log/update.log"
+
+PID_FILE="/var/run/wb-watch-update.pid"
+cleanup() {
+	[[ -f "$PID_FILE" ]] && kill `cat "$PID_FILE"` 2>/dev/null
+	rm -f "$PID_FILE"
+}
 
 check_fully_received() {
 	local sig_len=`echo -n "$UPDATE_FIT_END_SIGNATURE" | wc -c`
@@ -17,23 +20,32 @@ cleanup_watch_dir() {
 }
 
 LAST_FIT=''
-inotifywait -m -r \
-	--exclude $WATCH_DIR/state/ \
-	--event close_write $WATCH_DIR/ \
-| while read EVENT_DIR EVENT_TYPE EVENT_FILE; do
-	FIT="${EVENT_DIR}${EVENT_FILE}"
-	echo "Got $EVENT_TYPE for $FIT"
 
-	# Ensure that image was received completely
-	check_fully_received $FIT || continue
+(
+	echo "$BASHPID" > "$PID_FILE"
+	2>/dev/null exec inotifywait -m -r \
+		--exclude $WATCH_DIR/state/ \
+		--event close_write $WATCH_DIR/ \
+) | {
+trap cleanup EXIT
+while read EVENT_DIR EVENT_TYPE EVENT_FILE; do
+	FIT="${EVENT_DIR}${EVENT_FILE}"
 
 	# Prevent endless loop
 	[[ "$FIT" != "$LAST_FIT" ]] || continue
 	LAST_FIT=$FIT
 
+	# Ensure that image was received completely
+	check_fully_received $FIT || {
+		logger -t wb-watch-update "Received incomplete update FIT $FIT, don't starting update"
+		continue
+	}
+
 	# Remove old updates, we won't run it anyway
 	cleanup_watch_dir -not -name ${EVENT_FILE}
 
+	logger -t wb-watch-update "Received good update FIT $FIT, starting update"
 	wb-run-update $FIT 2>&1 | tee -a "$UPDATE_LOG" ||
 		rm -f $FIT
 done
+}
