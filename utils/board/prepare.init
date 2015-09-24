@@ -347,7 +347,7 @@ wb_check_symlinks()
     done
 
     [[ "${md5_interfaces}" != "`md5sum /etc/network/interfaces`" ||
-       "`cat /sys/class/net/eth0/address`" != "`/var/lib/wirenboard/serial.conf`" ]] && {
+       "`cat /sys/class/net/eth0/address`" != "`cat /var/lib/wirenboard/serial.conf`" ]] && {
         log_action_msg "Network configuration changed, restarting"
         if [ -e /etc/init.d/netplug ]; then
             /etc/init.d/netplug stop
