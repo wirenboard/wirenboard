@@ -22,6 +22,8 @@ PIDFILE=/var/run/$NAME.pid
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
 
+VERBOSE=yes
+
 # Define LSB log_* functions.
 # Depend on lsb-base (>= 3.2-14) to ensure that this file is present
 # and status_of_proc is working.

@@ -56,6 +56,9 @@ fit_blob_verify_hash() {
 
 [[ $EUID != 0 ]] && die "Need root privileges to install update"
 
+echo trigger > /sys/class/leds/green/trigger || true
+echo mmc0 > /sys/class/leds/red/trigger || true
+
 >&2 cat <<EOF
 ===============================================================================
 `date`: started update from $FIT

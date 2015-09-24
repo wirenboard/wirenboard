@@ -62,4 +62,5 @@ fw_setenv mmcpart $PART
 
 info "Done, removing firmware image and rebooting"
 rm_fit
+echo 255 > /sys/class/leds/green/brightness || true
 reboot
