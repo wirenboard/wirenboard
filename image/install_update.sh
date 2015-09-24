@@ -52,7 +52,7 @@ mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount just created filesyste
 
 info "Extracting files to new rootfs"
 pushd "$MNT"
-fit_blob_data rootfs | tar xJp
+fit_blob_data rootfs | tar xzp
 popd
 
 cleanup
