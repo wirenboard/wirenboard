@@ -63,7 +63,16 @@ fit_blob_verify_hash() {
 	local sha1_expected=`fit_blob_hash $name`
 
 	info "Checking SHA1 hash of $name"
-	local sha1_calculated=`fit_blob_data $name | sha1sum | cut -f1 -d' '`
+	
+	local blob_size=`fit_blob_size rootfs`
+	local f=`mktemp`
+	( fit_blob_data $name | pv -n -s "$blob_size" | sha1sum | cut -f1 -d' ' > $f ) 2>&1 \
+	| while read x; do
+		mqtt_progress "$x"
+	done
+
+	local sha1_calculated=`cat $f`
+	rm $f
 	[[ "$sha1_expected" == "$sha1_calculated" ]] &&
 		info "SHA1 hash of $name ok" ||
 		die "SHA1 of $name doesn't match (expected $sha1_expected, got $sha1_calculated)"
