@@ -1,3 +1,9 @@
+wb-utils (1.53) stable; urgency=medium
+
+  * move config symlinks management to wb-configs package
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Fri, 25 Sep 2015 15:28:02 +0000
+
 wb-utils (1.52) stable; urgency=medium
 
   * add wb-prepare init script

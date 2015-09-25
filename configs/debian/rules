@@ -5,3 +5,6 @@ export DH_VERBOSE = 1
 
 %:
 	dh $@ --with config-package
+
+override_dh_installinit:
+	dh_installinit -- start 11 S

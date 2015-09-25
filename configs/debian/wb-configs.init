@@ -1,0 +1,218 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          wb-configs
+# Default-Start:     S
+# Default-Stop:
+# Required-Start:    $local_fs wb-prepare
+# Required-Stop:
+# Short-Description:  move config files to shared partition
+# Description:        move config files to shared partition
+### END INIT INFO
+
+# Do NOT "set -e"
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="move config files to shared partition"
+NAME=wb-configs
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+VERBOSE="yes"
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+STORAGE=/dev/mmcblk0
+MNT=/mnt/data
+
+wb_check_mounted()
+{
+    grep "$1" /proc/mounts 2>&1 >/dev/null
+}
+
+# Run mkfs.ext4 with custom options
+# Args:
+# - device file
+# - label (optional)
+wb_mkfs_ext4()
+{
+    local dev=$1
+    local label=$2
+    
+    [[ -e "$dev" ]] || {
+        log_failure_msg "Device $dev not found"
+        return 1
+    }
+
+    log_action_begin_msg "Formatting $dev ($label)"
+    yes | mkfs.ext4 -E stride=2,stripe-width=1024 -b 4096 -L "$label" "$dev"
+    log_end_msg $?
+}
+
+wb_check_data()
+{
+    local data=${STORAGE}p6
+    wb_check_mounted ${data} && {
+        return 0
+    }
+    
+    wb_mkfs_ext4 ${data} data || return $?
+    mount ${data} $MNT || {
+        log_failure_msg "Can't mount ${data}"
+        return 1
+    }
+    return 0
+}
+
+wb_move()
+{
+    local src_orig=$1
+    local src=${src%/}
+    local dst="$MNT${2:-$1}"
+
+    if [[ -h "$src" ]]; then                  # is it a symlink already?
+        if [[ -e "$src" ]]; then
+            local f=`readlink -f "$src"`
+            if [[ "$f" != "$dst" ]]; then
+                mv "$src" "${src}.default"
+                if [[ -e "$dst" ]]; then      # is there already a file in $MNT?
+                    log_action_msg "$src: replaced with symlink to existing $dst"
+                else
+                    mkdir -p `dirname "$dst"`
+                    cp -aH "$f" "$dst"
+                    log_action_msg "$src: copyed $f to $dst, replaced symlink"
+                fi
+                rm -rf "$src"
+                ln -Tfs "$dst" "$src"
+            else
+                log_action_msg "$src: good symlink, not touching"
+            fi
+        else
+            local f=''
+            if [[ -e "$dst" ]]; then
+                f=$dst
+            elif [[ -e "${src}.default" ]]; then
+                f="${src}.default"
+            elif [[ -e "${src}.wb" ]]; then
+                f="${src}.wb"
+                rm -rf "${src}.default"
+                ln -Tfs "$f" "${src}.default"
+            elif [[ "${src_orig}" != "$src" ]]; then
+                mkdir -p "$dst"
+                f=$dst
+            fi
+
+            if [[ -n "$f" ]]; then
+                mkdir -p `dirname "$dst"`
+                [[ "$f" != "$dst" ]] && cp -aH "$f" "$dst"
+                rm -rf "$src"
+                ln -Tfs "$dst" "${src}"
+                log_action_msg "$src: broken symlink, repaired using existing file $f"
+            else
+                log_warning_msg "$src: broken symlink and unable to repair"
+            fi
+        fi
+    elif [[ -e "$src" ]]; then        # is it a regular file/dir?
+        if [[ -e "$dst" ]]; then      # is there already a file in $MNT?
+            log_action_msg "$src: replaced with symlink to existing $dst"
+        else
+            mkdir -p `dirname "$dst"`
+            mv "$src" "${src}.default"
+            cp -aH "$src" "$dst"
+            [[ -n "$nosavefiles" ]] && find "${src}.default" -type f -delete
+            log_action_msg "$src: copyed to $dst, replaced with symlink"
+        fi
+        rm -rf "$src"
+        ln -Tfs "$dst" "${src}"
+    else
+        log_warning_msg "$src: is neither symlink or regular file, don't touch"
+    fi
+}
+
+wb_move_nosavefiles() {
+    nosavefiles=1 wb_move "$@"
+}
+#
+# Function that starts the daemon/service
+#
+
+do_start()
+{
+    wb_check_data || {
+        log_warning_msg "$MNT not mounted, skipping symlinks check"
+        return 1
+    }
+
+    local md5_interfaces=`md5sum /etc/network/interfaces`
+
+    log_action_msg "Checking symlinks to $MNT"
+    for item in /etc/wb-configs.d/*; do
+        source "$item"
+    done
+
+    [[ "${md5_interfaces}" != "`md5sum /etc/network/interfaces`" ||
+       "`cat /sys/class/net/eth0/address`" != "`cat /var/lib/wirenboard/serial.conf`" ]] && {
+        log_action_msg "Network configuration changed, restarting"
+        if [ -e /etc/init.d/netplug ]; then
+            /etc/init.d/netplug stop
+        fi
+    
+        ifdown eth0 ; ifconfig eth0 down ; ifup eth0
+    
+        if [ -e /etc/init.d/netplug ]; then
+            /etc/init.d/netplug start
+        fi
+    }
+
+    return 0
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   other if a failure occurred
+
+    return 0;
+
+}
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  status)
+	 exit 0;
+	;;
+
+
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|status}" >&2
+	exit 3
+	;;
+esac
+
+:

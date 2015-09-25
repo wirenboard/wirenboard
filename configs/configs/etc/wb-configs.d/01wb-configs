@@ -1,0 +1,26 @@
+# List of files which is symlinked to /mnt/data
+#
+# This file is just a bash a bash script that is sourced by wb-configs init script
+#
+# Following functions are available:
+#
+# wb_move - basic variant, moves ${1} to /mnt/data/${2:-1}, saving backups to ${1}.default
+# wb_move_nosave - do the same, but don't backup files, only directory structure and symlinks
+
+wb_move /etc/passwd
+wb_move /etc/shadow
+wb_move /etc/network/interfaces
+wb_move /etc/resolv.conf
+wb_move /etc/ssh
+wb_move /etc/dnsmasq.conf
+wb_move /etc/hostapd.conf
+wb_move /var/lib/wirenboard
+wb_move /var/lib/mosquitto
+wb_move_nosavefiles /var/log/
+wb_move_nosavefiles /var/cache/apt/             # just fat, move it out
+wb_move_nosavefiles /var/www/uploads/ /uploads  # here will be firmware updates
+
+for f in wb-homa-adc.conf wb-homa-gpio.conf wb-homa-modbus.conf wb-rules; do
+    wb_move /etc/${f}
+done
+

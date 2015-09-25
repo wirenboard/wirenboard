@@ -1,3 +1,10 @@
+wb-configs (1.55) stable; urgency=medium
+
+  * add init script, move symlink management from wb-utils
+  * /etc/wb-configs.d/ for lists of files to move to shared partition 
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Fri, 25 Sep 2015 15:38:39 +0000
+
 wb-configs (1.54) stable; urgency=medium
 
   * don't use cdbs

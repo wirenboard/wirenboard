@@ -217,75 +217,6 @@ wb_prepare_filesystems()
     wb_check_alt_rootfs
 }
 
-wb_move_to_data()
-{
-    [[ "$1" == "nosave" ]] && {
-        local nosave=1
-        shift
-    }
-    local src=$1
-    local dst="/mnt/data${2:-$1}"
-
-    if [[ -h "$src" ]]; then                  # is it a symlink already?
-        if [[ -e "$src" ]]; then
-            local f=`readlink -f "$src"`
-            if [[ "$f" != "$dst" ]]; then
-                [[ -z "$nosave" ]] && mv "$src" "${src}.default"
-                if [[ -e "$dst" ]]; then      # is there already a file in /mnt/data?
-                    log_action_msg "$src: replaced with symlink to existing $dst"
-                else
-                    mkdir -p `dirname "$dst"`
-                    cp -aH "$f" "$dst"
-                    log_action_msg "$src: copyed $f to $dst, replaced symlink"
-                fi
-                rm -rf "$src"
-                ln -Tfs "$dst" "${src%/}"
-            else
-                log_action_msg "$src: good symlink, not touching"
-            fi
-        else
-            local f=''
-            if [[ -e "$dst" ]]; then
-                f=$dst
-            elif [[ -e "${src}.default" ]]; then
-                f="${src}.default"
-            elif [[ -e "${src}.wb" ]]; then
-                f="${src}.wb"
-                [[ -z "$nosave" ]] && {
-                    rm -rf "${src}.default"
-                    ln -Tfs "$f" "${src%/}.default"
-                }
-            elif [[ "${src%/}" != "$src" ]]; then
-                mkdir -p "$dst"
-                f=$dst
-            fi
-
-            if [[ -n "$f" ]]; then
-                mkdir -p `dirname "$dst"`
-                [[ "$f" != "$dst" ]] && cp -aH "$f" "$dst"
-                rm -rf "$src"
-                ln -Tfs "$dst" "${src%/}"
-                log_action_msg "$src: broken symlink, repaired using existing file $f"
-            else
-                log_warning_msg "$src: broken symlink and unable to repair"
-            fi
-        fi
-    elif [[ -e "$src" ]]; then        # is it a regular file/dir?
-        [[ -z "$nosave" ]] && cp -a "$src" "${src}.default" # save copy for possible future use
-        if [[ -e "$dst" ]]; then      # is there already a file in /mnt/data?
-            log_action_msg "$src: replaced with symlink to existing $dst"
-        else
-            mkdir -p `dirname "$dst"`
-            mv "$src" "$dst"
-            log_action_msg "$src: copyed to $dst, replaced with symlink"
-        fi
-        rm -rf "$src"
-        ln -Tfs "$dst" "${src%/}"
-    else
-        log_warning_msg "$src: is neither symlink or regular file, don't touch"
-    fi
-}
-
 # This function should be called only on first boot of the rootfs
 wb_firstboot()
 {
@@ -318,49 +249,6 @@ wb_firstboot()
     return 0
 }
 
-wb_check_symlinks()
-{
-    wb_check_data || {
-        log_warning_msg "/mnt/data not mounted, skipping symlinks check"
-        return 1
-    }
-
-    local md5_interfaces=`md5sum /etc/network/interfaces`
-
-    log_action_msg "Checking symlinks to /mnt/data"
-    # TODO: think what other important files to move
-    wb_move_to_data /etc/passwd
-    wb_move_to_data /etc/shadow
-    wb_move_to_data /etc/network/interfaces
-    wb_move_to_data /etc/resolv.conf
-    wb_move_to_data /etc/ssh
-    wb_move_to_data /etc/dnsmasq.conf
-    wb_move_to_data /etc/hostapd.conf
-    wb_move_to_data /var/lib/wirenboard
-    wb_move_to_data /var/lib/mosquitto
-    wb_move_to_data nosave /var/log/
-    wb_move_to_data nosave /var/cache/apt/             # just fat, move it out
-    wb_move_to_data nosave /var/www/uploads/ /uploads  # here will be firmware updates
-
-    for f in wb-homa-adc.conf wb-homa-gpio.conf wb-homa-modbus.conf wb-rules; do
-        wb_move_to_data /etc/${f}
-    done
-
-    [[ "${md5_interfaces}" != "`md5sum /etc/network/interfaces`" ||
-       "`cat /sys/class/net/eth0/address`" != "`cat /var/lib/wirenboard/serial.conf`" ]] && {
-        log_action_msg "Network configuration changed, restarting"
-        if [ -e /etc/init.d/netplug ]; then
-            /etc/init.d/netplug stop
-        fi
-    
-        ifdown eth0 ; ifconfig eth0 down ; ifup eth0
-    
-        if [ -e /etc/init.d/netplug ]; then
-            /etc/init.d/netplug start
-        fi
-    }
-}
-
 #
 # Function that starts the daemon/service
 #
@@ -371,7 +259,6 @@ do_start()
 
     wb_prepare_partitions
     wb_prepare_filesystems
-    wb_check_symlinks
 
     return 0
 }
