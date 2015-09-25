@@ -2,27 +2,6 @@
 # -*- makefile -*-
 
 export DH_VERBOSE = 1
-DEB_DISPLACE_EXTENSION = .wb
-DEB_DISPLACE_FILES_wb-configs += \
-	/root/.bashrc.wb \
-	/etc/locale.gen.wb \
-	/etc/hostname.wb \
-	/etc/modules.wb \
-	/etc/inittab.wb \
-	/etc/fstab.wb \
-	/etc/gai.conf.wb \
-	/etc/default/rcS.wb \
-	/etc/apt/sources.list.wb \
-	\
-	/etc/network/interfaces.wb \
-	/etc/dnsmasq.conf.wb \
-	/etc/hostapd.conf.wb \
-	/etc/default/hostapd.wb \
-	\
-	/etc/ppp/chap-secrets.wb \
-	\
-	/etc/nginx/sites-available/default.wb \
-	/etc/nfc/libnfc.conf
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/rules/config-package.mk
+%:
+	dh $@ --with config-package

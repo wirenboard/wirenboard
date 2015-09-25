@@ -1,3 +1,9 @@
+wb-configs (1.54) stable; urgency=medium
+
+  * don't use cdbs
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Fri, 25 Sep 2015 15:16:45 +0000
+
 wb-configs (1.53) stable; urgency=medium
 
   * remove rc.local
