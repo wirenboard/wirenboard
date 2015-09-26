@@ -16,7 +16,7 @@ mqtt_status() {
 }
 
 mqtt_progress() {
-	mosquitto_pub -t /firmware/progress -m "$*" 2>&1 >/dev/null || true
+	mosquitto_pub -t /firmware/progress -l 2>&1 >/dev/null || true
 }
 
 die() {
@@ -65,14 +65,12 @@ fit_blob_verify_hash() {
 	info "Checking SHA1 hash of $name"
 	
 	local blob_size=`fit_blob_size rootfs`
-	local f=`mktemp`
-	( fit_blob_data $name | pv -n -s "$blob_size" | sha1sum | cut -f1 -d' ' > $f ) 2>&1 \
-	| while read x; do
-		mqtt_progress "$x"
-	done
+	local tmp=`mktemp`
+	( fit_blob_data $name | pv -n -s "$blob_size" | sha1sum | cut -f1 -d' ' > $tmp ) 2>&1 \
+	| mqtt_progress "$x"
+	local sha1_calculated=`cat $tmp`
+	rm $tmp
 
-	local sha1_calculated=`cat $f`
-	rm $f
 	[[ "$sha1_expected" == "$sha1_calculated" ]] &&
 		info "SHA1 hash of $name ok" ||
 		die "SHA1 of $name doesn't match (expected $sha1_expected, got $sha1_calculated)"

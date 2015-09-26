@@ -1,3 +1,9 @@
+wb-utils (1.55) stable; urgency=medium
+
+  * improve update status reporting
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Sat, 26 Sep 2015 20:36:20 +0000
+
 wb-utils (1.54) stable; urgency=medium
 
   * fixes
