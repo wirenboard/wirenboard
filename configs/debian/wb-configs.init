@@ -72,8 +72,8 @@ wb_check_data()
 wb_move()
 {
     local src_orig=$1
-    local src=${src%/}
-    local dst="$MNT${2:-$1}"
+    local src=${1%/}
+    local dst="$MNT${2:-$src}"
 
     if [[ -h "$src" ]]; then                  # is it a symlink already?
         if [[ -e "$src" ]]; then
