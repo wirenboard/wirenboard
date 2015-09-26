@@ -57,6 +57,13 @@ wb_partition()
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
 }
 
+wb_partition_clean()
+{
+    # FIXME: something broken here
+    dd if=/dev/zero of=$STORAGE seek=$PART_START bs=$SECTOR_SIZE count=$[1*MB/SECTOR_SIZE] 2>&1 >/dev/null
+    wb_partition "$@"
+}
+
 # Creates all the needed partitions
 wb_prepare_partitions()
 {
@@ -73,18 +80,16 @@ wb_prepare_partitions()
         return 1
     }
 
+    # TODO: erase newly created partitions
     sfdisk --no-reread --Linux --in-order -u S --dump > /tmp/partitions_backup
     dd if=/dev/zero of=$STORAGE bs=512 count=1
     local erase_sectors=''
     {
         wb_partition 16 53    # uboot
         wb_partition 1024     # rootfs0
-        erase_sectors="$erase_sectors $PART_START"
         wb_partition 1024     # rootfs1
         wb_partition '' 5     # <extended>
-        erase_sectors="$erase_sectors $PART_START"
         wb_partition 256 82   # swap
-        erase_sectors="$erase_sectors $PART_START"
         wb_partition ''       # data
     } | sfdisk --no-reread --Linux --in-order -u S $STORAGE || true
     # FIXME: sfdisk succesfully writes partition table, but returns error
@@ -99,14 +104,14 @@ wb_prepare_partitions()
     #}
     rm -f /tmp/partitions_backup
 
-    # Junk begginings of some partitions to ensure there are no correct filesystems
-    local erase_count=$[1*MB/SECTOR_SIZE]
-    for sector in $erase_sectors; do
-        log_action_begin_msg "Zeroing $erase_count sectors starting from $sector"
-        dd if=/dev/zero of=$STORAGE seek=$sector bs=$SECTOR_SIZE count=$erase_count
-        log_end_msg $?
-    done
-
+# FIXME: dd broken?
+#    # Junk begginings of some partitions to ensure there are no correct filesystems
+#    local erase_count=$[1*MB/SECTOR_SIZE]
+#    for sector in $erase_sectors; do
+#        log_action_begin_msg "Zeroing $erase_count sectors starting from $sector"
+#        dd if=/dev/zero of=$STORAGE seek=$sector bs=$SECTOR_SIZE count=$erase_count
+#        log_end_msg $?
+#    done
     log_success_msg "Partition table changed, reboot needed"
     fw_setenv bootcount 0
     reboot
