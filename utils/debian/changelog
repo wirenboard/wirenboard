@@ -1,3 +1,9 @@
+wb-utils (1.56) stable; urgency=medium
+
+  * wb-prepare: erase created partitions superblocks
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Sat, 26 Sep 2015 20:36:24 +0000
+
 wb-utils (1.55) stable; urgency=medium
 
   * improve update status reporting

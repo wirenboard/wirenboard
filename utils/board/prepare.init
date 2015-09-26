@@ -57,11 +57,15 @@ wb_partition()
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
 }
 
-wb_partition_clean()
+wb_erase_partition()
 {
-    # FIXME: something broken here
-    dd if=/dev/zero of=$STORAGE seek=$PART_START bs=$SECTOR_SIZE count=$[1*MB/SECTOR_SIZE] 2>&1 >/dev/null
-    wb_partition "$@"
+    local part=${STORAGE}p$1
+    local start=`fdisk -u sectors -l $STORAGE |
+        sed -rn "s#^${part}\\s+([0-9]+).*#\\1#p"`
+
+    log_action_begin_msg "Erasing partition $part"
+    dd if=/dev/zero of=$STORAGE seek=$start bs=$SECTOR_SIZE count=$[1*MB/SECTOR_SIZE] 2>&1 >/dev/null
+    log_end_msg $?
 }
 
 # Creates all the needed partitions
@@ -80,9 +84,8 @@ wb_prepare_partitions()
         return 1
     }
 
-    # TODO: erase newly created partitions
-    sfdisk --no-reread --Linux --in-order -u S --dump > /tmp/partitions_backup
-    dd if=/dev/zero of=$STORAGE bs=512 count=1
+    sfdisk --no-reread --Linux --in-order -u S --dump $STORAGE > /tmp/partitions_backup
+    dd if=/dev/zero of=$STORAGE bs=512 count=1 2>&1 >/dev/null
     local erase_sectors=''
     {
         wb_partition 16 53    # uboot
@@ -104,14 +107,9 @@ wb_prepare_partitions()
     #}
     rm -f /tmp/partitions_backup
 
-# FIXME: dd broken?
-#    # Junk begginings of some partitions to ensure there are no correct filesystems
-#    local erase_count=$[1*MB/SECTOR_SIZE]
-#    for sector in $erase_sectors; do
-#        log_action_begin_msg "Zeroing $erase_count sectors starting from $sector"
-#        dd if=/dev/zero of=$STORAGE seek=$sector bs=$SECTOR_SIZE count=$erase_count
-#        log_end_msg $?
-#    done
+    wb_erase_partition 3
+    wb_erase_partition 6
+
     log_success_msg "Partition table changed, reboot needed"
     fw_setenv bootcount 0
     reboot
