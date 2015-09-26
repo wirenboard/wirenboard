@@ -7,6 +7,6 @@ Build-Depends: debhelper (>= 9), pkg-config
 
 Package: wb-utils
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, u-boot-tools (>= 2015.07+wb-3), inotify-tools
+Depends: ${shlibs:Depends}, ${misc:Depends}, u-boot-tools (>= 2015.07+wb-3), inotify-tools, pv
 Conflicts: wb-configs (<= 1.54)
 Description: Wiren Board command-line utils
