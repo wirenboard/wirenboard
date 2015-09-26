@@ -53,7 +53,7 @@ mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount just created filesyste
 info "Extracting files to new rootfs"
 pushd "$MNT"
 blob_size=`fit_blob_size rootfs`
-( fit_blob_data rootfs | pv -n -s "$blob_size" | cat >/dev/null ) 2>&1 \
+( fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp ) 2>&1 \
 | while read x; do
 	mqtt_progress "$x"
 done
@@ -68,5 +68,5 @@ fw_setenv upgrade_available 1
 info "Done, removing firmware image and rebooting"
 rm_fit
 echo 255 > /sys/class/leds/green/brightness || true
-mqtt_status DONE
+mqtt_status REBOOT
 reboot

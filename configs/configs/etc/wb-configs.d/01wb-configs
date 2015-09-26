@@ -5,7 +5,7 @@
 # Following functions are available:
 #
 # wb_move - basic variant, moves ${1} to /mnt/data/${2:-1}, saving backups to ${1}.default
-# wb_move_nosave - do the same, but don't backup files, only directory structure and symlinks
+# wb_move_nosavefiles - do the same, but don't backup files, only directory structure and symlinks
 
 wb_move /etc/passwd
 wb_move /etc/shadow

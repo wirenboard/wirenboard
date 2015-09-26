@@ -1,3 +1,9 @@
+wb-configs (1.56) stable; urgency=medium
+
+  * fixes
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Fri, 25 Sep 2015 18:47:34 +0000
+
 wb-configs (1.55) stable; urgency=medium
 
   * add init script, move symlink management from wb-utils
