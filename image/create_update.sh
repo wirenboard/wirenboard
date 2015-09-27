@@ -33,7 +33,7 @@ create_tarball() {
 	local tarball=`mktemp`
 
 	pushd "$src" >/dev/null
-	sudo tar czvp --numeric-owner ./ > "$tarball" || {
+	sudo tar czp --numeric-owner ./ > "$tarball" || {
 		rm -f "$tarball"
 		die "tarball of $src creation failed"
 	}

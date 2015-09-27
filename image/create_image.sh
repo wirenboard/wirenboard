@@ -71,6 +71,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# remove some usual development garbage
+chroot $ROOTFS apt-get clean || true
+rm -rf $ROOTFS/run/* $ROOTFS/var/cache/apt/* $ROOTFS/var/lib/apt/lists/* \
+	$ROOTFS/usr/sbin/policy-rc.d \
+	$ROOTFS/*.deb
+
 sudo cp -a $ROOTFS/. $MOUNTPOINT/
 
 echo "Done!"
