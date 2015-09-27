@@ -22,12 +22,15 @@ case "$2" in
         ;;
 esac
 
-if [ "$(id -u)" != "0" ]; then
-    echo "This script must be run as root"
-    exit 1
-    # TODO: run everything in separate namespace to not mess host mounts & processes
-    #exec sudo -E unshare -m -p "$0" "$@"
-fi
+[[ -n "$__unshared" ]] || {
+	[[ $EUID == 0 ]] || {
+		exec sudo -E "$0" "$@"
+	}
+
+	# Jump into separate namespace
+	export __unshared=1
+	exec unshare -umipf "$0" "$@"
+}
 
 OUTPUT=$1
 BOARD=$2
@@ -40,8 +43,10 @@ fi
 mkdir -p $OUTPUT
 
 export LC_ALL=C
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 CONFIG_DIR="$SCRIPT_DIR/../configs/configs"
+
+DEBOOTSTRAP_SRC_TARBALL="${OUTPUT}/../debootstrap_src.tgz"
 
 # a few shortcuts
 chr() {
@@ -65,11 +70,25 @@ dbg() {
 echo "Install dependencies"
 apt-get install qemu-user-static binfmt-support || true
 
+DEBOOTSTRAP_ARGS="
+	--include=${ADD_PACKAGES}
+	--verbose
+	--arch armel
+	--variant=minbase
+	--foreign
+	${RELEASE} ${OUTPUT} ${REPO}
+"
+
+[[ -e "$DEBOOTSTRAP_SRC_TARBALL" ]] || {
+	echo "No $DEBOOTSTRAP_SRC_TARBALL found, will create one for later use"
+	debootstrap --make-tarball=$DEBOOTSTRAP_SRC_TARBALL $DEBOOTSTRAP_ARGS
+}
+
 echo "Will create rootfs"
-debootstrap --include=${ADD_PACKAGES} --verbose --arch armel  --variant=minbase --foreign ${RELEASE} ${OUTPUT} ${REPO}
+debootstrap --unpack-tarball=$DEBOOTSTRAP_SRC_TARBALL $DEBOOTSTRAP_ARGS
 
 echo "Copy qemu to rootfs"
-cp /usr/bin/qemu-static-arm ${OUTPUT}/usr/bin ||
+cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
 modprobe binfmt_misc
 
@@ -93,10 +112,6 @@ if [[ ! -L ${OUTPUT}/dev/ptmx ]]; then
     fi
 fi
 
-# This disables startin services when installing packages
-echo exit 101 > ${OUTPUT}/usr/sbin/policy-rc.d
-chmod +x ${OUTPUT}/usr/sbin/policy-rc.d
-
 cleanup() {
     local ret=$?
 
@@ -111,6 +126,10 @@ cleanup() {
     return $ret
 }
 trap cleanup EXIT
+
+# This disables startin services when installing packages
+echo exit 101 > ${OUTPUT}/usr/sbin/policy-rc.d
+chmod +x ${OUTPUT}/usr/sbin/policy-rc.d
 
 echo "Set root password"
 chr /bin/sh -c "echo root:wirenboard | chpasswd"
