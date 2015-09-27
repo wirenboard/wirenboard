@@ -169,13 +169,14 @@ popd
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
 # FIXME: this is a dirty hack until updated packages get into repo
-chr_apt inotify-tools mosquitto mqtt-wss mqtt-tools
+chr_apt inotify-tools mosquitto mqtt-wss mqtt-tools nginx-extras pv python-pyparsing python-netaddr
 chr /etc/init.d/mosquitto start
 for deb in \
     ${SCRIPT_DIR}/../../u-boot-tools_*_armel.deb \
     ${SCRIPT_DIR}/../wb-utils_*_armel.deb \
     ${SCRIPT_DIR}/../wb-configs_*_all.deb \
-    ${SCRIPT_DIR}/../../wb-mqtt-homeui_*_all.deb
+    ${SCRIPT_DIR}/../../wb-mqtt-homeui_*_all.deb \
+    ${SCRIPT_DIR}/../../wb-mqtt-confed_*_armel.deb
 do
     cp "$deb" $OUTPUT/
     chr dpkg -i /`basename $deb`
