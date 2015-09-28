@@ -236,27 +236,36 @@ wb_prepare_filesystems()
 wb_firstboot()
 {
     local flag="/var/lib/firstboot_done.flag"
+    local wb_dir="/var/lib/wirenboard"
+    local serial="$wb_dir/serial.conf"
     [[ -f $flag ]] && return 0
 
     log_action_msg "Preparing rootfs for the first boot"
 
-    [[ ! -d "/var/lib/wirenboard" ]] && {
-        rm -rf /var/lib/wirenboard
-        mkdir -p /var/lib/wirenboard
+    [[ ! -d "$wb_dir" ]] && {
+        rm -rf $wb_dir
+        mkdir -p $wb_dir
     }
 
-    [[ ! -f "/var/lib/wirenboard/serial.conf" ]] && {
+    [[ ! -f "$serial" ]] && {
         log_action_begin_msg "Get WB serial number"
-        wb-gen-serial > /var/lib/wirenboard/serial.conf
+        wb-gen-serial > $serial
         log_end_msg $? || return $?
     }
 
     [[ ! -h /etc/ssh && -d /etc/ssh ]] && {
         log_action_msg "Regenerating SSH host keys"
+        wb_check_data && local data_mounted=1
         for keytype in ecdsa dsa rsa; do
             log_action_begin_msg "  $keytype"
-            yes | ssh-keygen -f /etc/ssh/ssh_host_${keytype}_key -N '' -t ${keytype} >/dev/null
-            log_end_msg $? || return $?
+            local keyfile=/etc/ssh_host_${keytype}_key
+            [[ -n "$data_mounted" && -e "/mnt/data/$keyfile" ]] &&
+            cp "/mnt/data/${keyfile}" "$keyfile" 2>/dev/null &&
+            log_action_end_msg "from shared partition" \
+            || {
+                yes | ssh-keygen -f /etc/ssh/ssh_host_${keytype}_key -N '' -t ${keytype} >/dev/null
+                log_end_msg $? || return $?
+            }
         done
     }
 

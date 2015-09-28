@@ -1,3 +1,9 @@
+wb-utils (1.58) stable; urgency=medium
+
+  * wb-prepare: try to use existing SSH host keys for speed
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Mon, 28 Sep 2015 07:56:26 +0000
+
 wb-utils (1.57) stable; urgency=medium
 
   * change update status messages
