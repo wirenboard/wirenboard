@@ -25,7 +25,7 @@ log() {
 }
 
 mqtt_status() {
-	mosquitto_pub -t /firmware/status -m "$*"
+	mosquitto_pub -r -t /firmware/status -m "$*"
 }
 
 mqtt_log() {
@@ -45,6 +45,9 @@ LAST_FIT=''
 		--event close_write $WATCH_DIR/ \
 ) | {
 trap cleanup EXIT
+
+mqtt_status "IDLE"
+
 while read EVENT_DIR EVENT_TYPE EVENT_FILE; do
 	FIT="${EVENT_DIR}${EVENT_FILE}"
 
@@ -57,7 +60,8 @@ while read EVENT_DIR EVENT_TYPE EVENT_FILE; do
 		msg="Received incomplete update FIT $FIT, don't starting update"
 		log "$msg"
 		mqtt_status "ERROR $msg"
-		mqtt_status "DONE"
+		mqtt_status "IDLE"
+		rm -f $FIT
 		continue
 	}
 

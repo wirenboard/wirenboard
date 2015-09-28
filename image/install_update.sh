@@ -38,13 +38,6 @@ umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
 info "Formatting $ROOT_PART"
 yes | mkfs.ext4 -L "${partitions[$PART]}" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
 
-cleanup() {
-	set +e
-	info "Unmounting new rootfs"
-	umount $MNT
-	sync
-}
-trap cleanup EXIT
 
 info "Mounting $ROOT_PART at $MNT"
 rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
@@ -53,13 +46,15 @@ mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount just created filesyste
 info "Extracting files to new rootfs"
 pushd "$MNT"
 blob_size=`fit_blob_size rootfs`
-( fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp ) 2>&1 \
-| while read x; do
-	mqtt_progress "$x"
-done
+(
+	echo 0
+	fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp
+) 2>&1 | mqtt_progress "$x"
 popd
 
-cleanup
+info "Unmounting new rootfs"
+umount $MNT
+sync; sync
 
 info "Switching to new rootfs"
 fw_setenv mmcpart $PART
@@ -69,4 +64,6 @@ info "Done, removing firmware image and rebooting"
 rm_fit
 echo 255 > /sys/class/leds/green/brightness || true
 mqtt_status REBOOT
+trap EXIT
 reboot
+exit 0

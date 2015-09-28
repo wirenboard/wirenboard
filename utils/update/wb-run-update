@@ -12,7 +12,7 @@ rm_fit() {
 }
 
 mqtt_status() {
-	mosquitto_pub -t /firmware/status -m "$*" 2>&1 >/dev/null || true
+	mosquitto_pub -t /firmware/status -r -m "$*" 2>&1 >/dev/null || true
 }
 
 mqtt_progress() {
@@ -24,13 +24,14 @@ die() {
 	local msg=${*:-"Failed"}
 	>&2 echo "!!! $msg"
 	mqtt_status "ERROR $msg"
-	#rm_fit
+	mqtt_status "IDLE"
+	rm_fit
 	[[ $? == 0 ]] && exit 1 || exit $?
 }
 
 info() {
 	>&2 echo ">>> $*"
-	mqtt_status "OK $*"
+	mqtt_status "INFO $*"
 }
 
 fit_prop() {
@@ -66,8 +67,10 @@ fit_blob_verify_hash() {
 	
 	local blob_size=`fit_blob_size rootfs`
 	local tmp=`mktemp`
-	( fit_blob_data $name | pv -n -s "$blob_size" | sha1sum | cut -f1 -d' ' > $tmp ) 2>&1 \
-	| mqtt_progress "$x"
+	(
+		echo 0
+		fit_blob_data $name | pv -n -s "$blob_size" | sha1sum | cut -f1 -d' ' > $tmp
+	) 2>&1 | mqtt_progress "$x"
 	local sha1_calculated=`cat $tmp`
 	rm $tmp
 
