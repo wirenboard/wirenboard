@@ -1,3 +1,9 @@
+wb-configs (1.57) stable; urgency=medium
+
+  * move repo to /etc/apt/sources.list.d
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Mon, 28 Sep 2015 05:57:28 +0000
+
 wb-configs (1.56) stable; urgency=medium
 
   * fixes

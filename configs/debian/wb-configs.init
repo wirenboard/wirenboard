@@ -134,15 +134,18 @@ wb_move()
     fi
 }
 
-wb_move_nosavefiles() {
+wb_move_nosavefiles()
+{
     nosavefiles=1 wb_move "$@"
 }
+
 #
 # Function that starts the daemon/service
 #
 
 do_start()
 {
+    echo
     wb_check_data || {
         log_warning_msg "$MNT not mounted, skipping symlinks check"
         return 1

@@ -6,7 +6,6 @@
 /etc/fstab.wb
 /etc/gai.conf.wb
 /etc/default/rcS.wb
-/etc/apt/sources.list.wb
 
 /etc/network/interfaces.wb
 /etc/dnsmasq.conf.wb
