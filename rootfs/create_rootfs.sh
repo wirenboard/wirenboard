@@ -1,7 +1,13 @@
 #!/bin/bash
 set -e
-ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial,memtester,python-smbus"
-REPO="http://ftp.debian.org/debian"
+set -x
+ADD_PACKAGES=netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,\
+net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,\
+wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,\
+python-serial,memtester,apt-utils,dialog,locales,python3-minimal,unzip,minicom,\
+iw,ppp,libmodbus5,python-smbus
+#REPO="http://ftp.debian.org/debian"
+REPO="http://mirror.yandex.ru/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
 
@@ -29,7 +35,7 @@ esac
 
 	# Jump into separate namespace
 	export __unshared=1
-	exec unshare -umipf "$0" "$@"
+	exec unshare -umi "$0" "$@"
 }
 
 OUTPUT=$1
@@ -46,7 +52,7 @@ export LC_ALL=C
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 CONFIG_DIR="$SCRIPT_DIR/../configs/configs"
 
-DEBOOTSTRAP_SRC_TARBALL="${OUTPUT}/../debootstrap_src.tgz"
+DEBOOTSTRAP_SRC_TARBALL="$(readlink -f ${OUTPUT}/../debootstrap_src.tgz)"
 
 # a few shortcuts
 chr() {
@@ -75,7 +81,6 @@ DEBOOTSTRAP_ARGS="
 	--verbose
 	--arch armel
 	--variant=minbase
-	--foreign
 	${RELEASE} ${OUTPUT} ${REPO}
 "
 
@@ -85,7 +90,7 @@ DEBOOTSTRAP_ARGS="
 }
 
 echo "Will create rootfs"
-debootstrap --unpack-tarball=$DEBOOTSTRAP_SRC_TARBALL $DEBOOTSTRAP_ARGS
+debootstrap --unpack-tarball=$DEBOOTSTRAP_SRC_TARBALL --foreign $DEBOOTSTRAP_ARGS
 
 echo "Copy qemu to rootfs"
 cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
@@ -135,7 +140,8 @@ echo "Set root password"
 chr /bin/sh -c "echo root:wirenboard | chpasswd"
 
 echo "Install initial repos"
-cp ${CONFIG_DIR}/etc/apt/sources.list.wb ${OUTPUT}/etc/apt/sources.list
+cp ${CONFIG_DIR}/etc/apt/sources.list.d/contactless.list ${OUTPUT}/etc/apt/sources.list.d/
+echo "deb [arch=armel,all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
 cp ${CONFIG_DIR}/etc/gai.conf.wb ${OUTPUT}/etc/gai.conf     # workaround for IPv6 lags
 
 echo "Install public key for contactless repo"
@@ -146,19 +152,14 @@ chr apt-get update
 chr apt-get -y upgrade
 
 echo "Setup locales"
-chr_apt apt-utils dialog locales
-
 cp ${CONFIG_DIR}/etc/locale.gen.wb ${OUTPUT}/etc/locale.gen
 chr /usr/sbin/locale-gen
 chr update-locale
 
-echo "Setup additional packages"
-chr_apt  python3-minimal unzip minicom iw ppp libmodbus5
-
 echo "Install realtek firmware"
-chr wget ${RTL_FIRMWARE_DEB} -O rtl_firmware.deb
+wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
 chr dpkg -i rtl_firmware.deb
-chr rm rtl_firmware.deb
+rm ${OUTPUT}/rtl_firmware.deb
 
 echo "Install quick2wire"
 pushd ${OUTPUT}/opt/
@@ -168,22 +169,6 @@ popd
 
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
-# FIXME: this is a dirty hack until updated packages get into repo
-chr_apt inotify-tools mosquitto mqtt-wss mqtt-tools nginx-extras pv python-pyparsing python-netaddr
-chr /etc/init.d/mosquitto start
-for deb in \
-    ${SCRIPT_DIR}/../../u-boot-tools_*_armel.deb \
-    ${SCRIPT_DIR}/../wb-utils_*_armel.deb \
-    ${SCRIPT_DIR}/../wb-configs_*_all.deb \
-    ${SCRIPT_DIR}/../../wb-mqtt-homeui_*_all.deb \
-    ${SCRIPT_DIR}/../../wb-mqtt-confed_*_armel.deb
-do
-    cp "$deb" $OUTPUT/
-    chr dpkg -i /`basename $deb`
-    rm ${OUTPUT}/`basename $deb`
-done
-chr /etc/init.d/mosquitto stop
-
 echo "Install packages from contactless repo"
 pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
 pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
@@ -191,23 +176,19 @@ pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
 # mqtt
 pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto"
 
-# todo: should be in dependencies
-pkgs+=" libjsoncpp0"
-
-# kernel
-pkgs+=" linux-latest"
-
 pkgs+=" openssl ca-certificates"
+chr_apt --force-yes $pkgs
 
-pkgs+=" mqtt-wss nginx-extras mqtt-tools wb-mqtt-homeui"
+chr /etc/init.d/mosquitto start
+chr_apt --force-yes linux-latest wb-mqtt-homeui wb-mqtt-confed
+chr /etc/init.d/mosquitto stop
 
-chr_apt $pkgs
 
-echo "Add mosquitto package"
-MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
-cp ${SCRIPT_DIR}/../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
-chr dpkg -i ${MOSQ_DEB}
-rm ${OUTPUT}/${MOSQ_DEB}
+#echo "Add mosquitto package"
+#MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
+#cp ${SCRIPT_DIR}/../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
+#chr dpkg -i ${MOSQ_DEB}
+#rm ${OUTPUT}/${MOSQ_DEB}
 
 set_fdt() {
     echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
@@ -216,8 +197,7 @@ set_fdt() {
 case "$BOARD" in
     "4" )
         # Wiren Board 4
-        FORCE_WB_VERSION=41 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
-        chr_apt netplug
+        FORCE_WB_VERSION=41 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
         echo "Add rtl8188 hostapd package"
         RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
