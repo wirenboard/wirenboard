@@ -1,5 +1,5 @@
 #!/bin/bash
-ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial,memtester"
+ADD_PACKAGES="netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,python-serial,memtester,python-smbus"
 REPO="http://ftp.debian.org/debian"
 OUTPUT="rootfs"
 RELEASE=wheezy
@@ -136,7 +136,7 @@ chroot ${OUTPUT}/ rm ${MOSQ_DEB}
 case "$BOARD" in
     "4" )
         # Wiren Board 4
-        FORCE_WB_VERSION=41 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system wb-mqtt-timestamper
+        FORCE_WB_VERSION=41 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
         chroot ${OUTPUT}/ apt-get -y install netplug
 
         echo "fdt_file=/boot/dtbs/imx23-wirenboard41.dtb" > ${OUTPUT}/boot/uEnv.txt
@@ -155,7 +155,7 @@ case "$BOARD" in
 
     "32" )
         # WB Smart Home specific
-        FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system wb-mqtt-timestamper
+        FORCE_WB_VERSION=32 chroot ${OUTPUT}/ apt-get -y install wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
 
         chroot ${OUTPUT}/ apt-get -y install netplug hostapd
 
@@ -186,7 +186,7 @@ case "$BOARD" in
 
     "NETMON" )
         # NETMON-1
-        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules  wb-mqtt-timestamper
+        FORCE_WB_VERSION=KMON1 chroot ${OUTPUT}/ apt-get -y install wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
 
         chroot ${OUTPUT}/ apt-get -y install netplug
 
