@@ -36,6 +36,12 @@ if [ "x$FORCE_WB_VERSION" = "x" ]; then
                 WB_VERSION="RCTERM1";
                 break;
             ;;
+
+            "contactless,imx23-wirenboard-cqc10" )
+                WB_VERSION="CQC10";
+                break;
+            ;;
+
         esac
     done;
 else
@@ -307,7 +313,7 @@ case "$WB_VERSION" in
         WB_MUX_NAMES_3 WB_MUX_NAMES_4 WB_MUX_NAMES_5 \
         WB_MUX_NAMES_6 WB_MUX_NAMES_7
 
-    break;
+
     ;;
 
     "KMON1" )
@@ -426,6 +432,16 @@ case "$WB_VERSION" in
         WB_FET_COUNT WB_GPIO_TFT_RESET WB_GPIO_TFT_BACKLIGHT
 
     ;;
+
+
+    "CQC10" )
+        WB_ADC_TYPE=0
+        WB_GSM_POWER_TYPE=0
+
+        export WB_ADC_TYPE WB_GSM_POWER_TYPE;
+    ;;
+
+
 
     * )
     ;;
