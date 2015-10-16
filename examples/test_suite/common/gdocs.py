@@ -37,7 +37,8 @@ class GSheetsLog(object):
             cell.value = row[i]
         self.worksheet.update_cells(cell_range)
 
-    def split_imei(self, imei):
+    @staticmethod
+    def split_imei(imei):
         imei = str(imei)
         if not imei.isdigit():
             raise RuntimeError("imei is not a numberical")
