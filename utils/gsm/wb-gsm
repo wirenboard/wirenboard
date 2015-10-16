@@ -35,6 +35,11 @@ function gpio_export() {
 }
 
 function init() {
+	if [ "$WB_GSM_POWER_TYPE" = "0" ]; then
+		echo "No GSM modem present, exiting"
+		exit 1
+	fi
+	
     gpio_export $WB_GPIO_GSM_PWRKEY
     gpio_set_dir $WB_GPIO_GSM_PWRKEY out
 
