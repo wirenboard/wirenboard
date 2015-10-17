@@ -179,6 +179,9 @@ pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquit
 pkgs+=" openssl ca-certificates"
 chr_apt --force-yes $pkgs
 
+# stop mosquitto on host
+service mosquitto stop || /bin/true
+
 chr /etc/init.d/mosquitto start
 chr_apt --force-yes linux-latest wb-mqtt-homeui wb-mqtt-confed
 chr /etc/init.d/mosquitto stop
@@ -247,5 +250,9 @@ esac
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/* ${OUTPUT}/var/lib/apt/lists/*
+
+
+# (re-)start mosquitto on host
+service mosquitto start || /bin/true
 
 exit 0
