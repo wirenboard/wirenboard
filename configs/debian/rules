@@ -8,3 +8,6 @@ export DH_VERBOSE = 1
 
 override_dh_installinit:
 	dh_installinit -- start 11 S
+
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
