@@ -211,6 +211,20 @@ case "$BOARD" in
         set_fdt imx23-wirenboard41
     ;;
 
+    "CQC10" )
+        # CQC10 device
+        FORCE_WB_VERSION=CQC10 chr_apt wb-homa-w1 wb-homa-gpio wb-rules wb-mqtt-spl-meter
+
+        echo "Add wb-mqtt-tcs34725 package"
+
+        TCS_DEB=/home/boger/work/board/cinema/wb-mqtt-tcs34725_1.0_all.deb
+        cp TCS_DEB ${OUTPUT}/
+        chr_nofail dpkg -i `basename ${TCS_DEB}`
+        rm ${OUTPUT}/`basename ${TCS_DEB}`
+
+        set_fdt imx23-wirenboard-cqc10
+
+
     "32" )
         # WB Smart Home specific
         FORCE_WB_VERSION=32 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
