@@ -6,7 +6,7 @@
 /etc/fstab.wb
 /etc/gai.conf.wb
 /etc/default/rcS.wb
-
+/etc/hosts.wb
 /etc/network/interfaces.wb
 /etc/dnsmasq.conf.wb
 /etc/hostapd.conf.wb
