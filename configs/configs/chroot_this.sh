@@ -15,17 +15,21 @@ echo $DIR
 	exec unshare -umipf "$0" "$@"
 }
 
-mkdir -p "$DIR/{proc,sys,dev/pts}"
-mount -t proc proc $DIR/proc
-mount --bind /sys $DIR/sys
-mount --bind /dev $DIR/dev
+mkdir -p $DIR/proc
+mkdir -p $DIR/sys
+mkdir -p $DIR/dev/pts
+
+mount -t proc none $DIR/proc
+mount -t sysfs none $DIR/sys
+#mount --bind /dev $DIR/dev
 mount -t devpts devpts $DIR/dev/pts -o "gid=5,mode=620,ptmxmode=666,newinstance"
 [[ -L $DIR/dev/ptmx ]] || mount --bind $DIR/dev/pts/ptmx $DIR/dev/ptmx
 
 cleanup_mounts() {
-	umount -R "$DIR/dev"
 	umount "$DIR/proc"
 	umount "$DIR/sys"
+    umount -R "$DIR/dev/pts"
+	#~ umount -R "$DIR/dev"
 }
 trap cleanup_mounts EXIT
 
