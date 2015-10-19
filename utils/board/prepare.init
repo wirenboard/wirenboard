@@ -35,6 +35,9 @@ SECTOR_SIZE=512
 MB=1024*1024
 PART_START=0
 TOTAL_SECTORS=0
+ROOTFS_SIZE_MB=1024
+
+ROOTFS_SIZE_BYTES=$[${ROOTFS_SIZE_MB}*1024*1024]
 
 wb_check_mounted()
 {
@@ -84,13 +87,22 @@ wb_prepare_partitions()
         return 1
     }
 
+    CURRENT_ROOTFS_BLOCK_SIZE=`tune2fs -l /dev/root  | grep "Block size" | awk '{print $3}'`
+    CURRENT_ROOTFS_BLOCK_COUNT=`tune2fs -l /dev/root  | grep "Block count" | awk '{print $3}'`
+    CURRENT_ROOTFS_SIZE_BYTES=$[${CURRENT_ROOTFS_BLOCK_SIZE}*${CURRENT_ROOTFS_BLOCK_COUNT}]
+
+    [[ ${CURRENT_ROOTFS_SIZE_BYTES} -lt ${ROOTFS_SIZE_BYTES} ]] ||  {
+        log_failure_msg "Current rootfs size is greater than new partition size, aborting"
+        return 1
+    }
+
     sfdisk --no-reread --Linux --in-order -u S --dump $STORAGE > /tmp/partitions_backup
     dd if=/dev/zero of=$STORAGE bs=512 count=1 2>&1 >/dev/null
     local erase_sectors=''
     {
         wb_partition 16 53    # uboot
-        wb_partition 1024     # rootfs0
-        wb_partition 1024     # rootfs1
+        wb_partition ${ROOTFS_SIZE_MB}     # rootfs0
+        wb_partition ${ROOTFS_SIZE_MB}     # rootfs1
         wb_partition '' 5     # <extended>
         wb_partition 256 82   # swap
         wb_partition ''       # data
@@ -123,7 +135,7 @@ wb_mkfs_ext4()
 {
     local dev=$1
     local label=$2
-    
+
     [[ -e "$dev" ]] || {
         log_failure_msg "Device $dev not found"
         return 1
@@ -197,7 +209,7 @@ wb_check_swap()
         log_failure_msg "Swap device $swap not found"
         return 1
     }
-    
+
     log_action_begin_msg "Creating swap"
     mkswap ${STORAGE}p5 &&
     swapon -a
@@ -210,7 +222,7 @@ wb_check_data()
     wb_check_mounted ${data} && {
         return 0
     }
-    
+
     wb_mkfs_ext4 ${data} data || return $?
     mount ${data} /mnt/data || {
         log_failure_msg "Can't mount ${data}"
