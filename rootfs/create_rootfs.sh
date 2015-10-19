@@ -224,7 +224,7 @@ case "$BOARD" in
 
         set_fdt imx23-wirenboard-cqc10
 
-
+    ;;
     "32" )
         # WB Smart Home specific
         FORCE_WB_VERSION=32 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
@@ -265,6 +265,8 @@ esac
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/* ${OUTPUT}/var/lib/apt/lists/*
 
+# removing SSH host keys
+rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
 
 # (re-)start mosquitto on host
 service mosquitto start || /bin/true

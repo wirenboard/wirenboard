@@ -266,18 +266,25 @@ wb_firstboot()
     }
 
     [[ ! -h /etc/ssh && -d /etc/ssh ]] && {
-        log_action_msg "Regenerating SSH host keys"
+        log_action_msg "Generating SSH host keys"
         wb_check_data && local data_mounted=1
         for keytype in ecdsa dsa rsa; do
             log_action_begin_msg "  $keytype"
             local keyfile=/etc/ssh_host_${keytype}_key
             [[ -n "$data_mounted" && -e "/mnt/data/$keyfile" ]] &&
             cp "/mnt/data/${keyfile}" "$keyfile" 2>/dev/null &&
-            log_action_end_msg "from shared partition" \
+            log_action_cont_msg "from shared partition" &&
+            log_action_end_msg $? \
             || {
-                yes | ssh-keygen -f /etc/ssh/ssh_host_${keytype}_key -N '' -t ${keytype} >/dev/null
-                log_end_msg $? || return $?
+                [[ -f /etc/ssh/ssh_host_${keytype}_key ]] && {
+                    log_action_cont_msg " already present, keep it"
+                    log_action_end_msg $? || return $?
+                } || {
+                    yes | ssh-keygen -f /etc/ssh/ssh_host_${keytype}_key -N '' -t ${keytype} >/dev/null
+                    log_end_msg $? || return $?
+                }
             }
+
         done
     }
 
@@ -316,7 +323,7 @@ do_stop()
 
 case "$1" in
   start)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME" && echo
 	do_start
 	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
