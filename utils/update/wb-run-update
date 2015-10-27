@@ -2,8 +2,9 @@
 #set -e
 #set -x
 
-FIT=`readlink -f $1`
 TMPDIR="/dev/shm"
+FIT=""
+FLAGS=""
 
 # Some handy functions, usable in install script
 rm_fit() {
@@ -32,6 +33,10 @@ die() {
 info() {
 	>&2 echo ">>> $*"
 	mqtt_status "INFO $*"
+}
+
+flag_set() {
+	grep "--$1 " <<< "$FLAGS" 2>&1 > /dev/null
 }
 
 fit_prop() {
@@ -80,6 +85,21 @@ fit_blob_verify_hash() {
 }
 
 [[ $EUID != 0 ]] && die "Need root privileges to install update"
+
+while [[ -n "$1" ]]; do
+	case "$1" in
+		--*|-*)
+			FLAGS+="$1 "
+			;;
+		*)
+			[[ -n "$FIT" ]] && die "Bad arguments"
+			FIT=`readlink -f $1`
+			;;
+	esac
+	shift
+done
+
+[[ -n "$FIT" ]] || die "FIT $FIT not found"
 
 echo trigger > /sys/class/leds/green/trigger || true
 echo mmc0 > /sys/class/leds/red/trigger || true
