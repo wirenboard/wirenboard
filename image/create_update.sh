@@ -79,6 +79,8 @@ unset DTB
 
 [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
 
+VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
+
 ITS=`mktemp`
 
 cleanup() {
@@ -94,7 +96,7 @@ cat <<EOF
 / {
 	description = "WirenBoard firmware update";
 	compatible = "$COMPATIBLE";
-	firmware-version = "unknown";
+	firmware-version = "$VERSION";
 	firmware-compatible = "unknown";
 	#address-cells = <1>;
 	images {

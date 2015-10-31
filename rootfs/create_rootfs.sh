@@ -219,6 +219,7 @@ chr /etc/init.d/mosquitto start
 chr_apt --force-yes linux-latest wb-mqtt-homeui wb-mqtt-confed
 chr /etc/init.d/mosquitto stop
 
+date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
 #echo "Add mosquitto package"
 #MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
