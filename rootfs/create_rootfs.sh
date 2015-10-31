@@ -97,6 +97,10 @@ cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
 modprobe binfmt_misc
 
+# kludge to fix ssmtp configure that breaks when FQDN is unknown
+cp ${CONFIG_DIR}/etc/hosts.wb ${OUTPUT}/etc/hosts
+echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
+
 echo "Second debootstrap stage"
 chr /debootstrap/debootstrap --second-stage
 
@@ -267,6 +271,9 @@ rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/* ${OUTPUT}/var/lib/apt/lists/*
 
 # removing SSH host keys
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
+
+# reverting ssmtp kludge
+sed "/$(hostname)/d" -i ${OUTPUT}/etc/hosts
 
 # (re-)start mosquitto on host
 service mosquitto start || /bin/true
