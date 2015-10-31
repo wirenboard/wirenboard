@@ -41,10 +41,13 @@ esac
 OUTPUT=$1
 BOARD=$2
 
-if [ -e "$OUTPUT" ]; then
-    echo "output rootfs folder $OUTPUT already exists, exiting"
-    exit 2;
-fi
+die() {
+	local ret=$?
+	>&2 echo "!!! $@"
+	[[ $ret == 0 ]] && exit 1 || exit $ret
+}
+
+[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 mkdir -p $OUTPUT
 
@@ -52,7 +55,52 @@ export LC_ALL=C
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 CONFIG_DIR="$SCRIPT_DIR/../configs/configs"
 
-DEBOOTSTRAP_SRC_TARBALL="$(readlink -f ${OUTPUT}/../debootstrap_src.tgz)"
+ROOTFS_BASE_TARBALL="$(dirname ${OUTPUT})/rootfs_base.tar.gz"
+
+services_disable() {
+    # This disables startin services when installing packages
+    echo exit 101 > ${OUTPUT}/usr/sbin/policy-rc.d
+    chmod +x ${OUTPUT}/usr/sbin/policy-rc.d
+}
+
+services_enable() {
+    rm -f ${OUTPUT}/usr/sbin/policy-rc.d
+}
+
+cleanup_chroot() {
+    local ret=$?
+
+    echo "Umount proc,dev,dev/pts in rootfs"
+    [[ -L ${OUTPUT}/dev/ptmx ]] || umount ${OUTPUT}/dev/ptmx
+    umount ${OUTPUT}/dev/pts
+    umount ${OUTPUT}/proc
+    umount ${OUTPUT}/sys
+
+    services_enable
+
+    return $ret
+}
+
+prepare_chroot() {
+	# without devpts mount options you will likely end up looking why you can't open
+	# new terminal window :)
+	echo "Mount /proc, /sys, /dev, /dev/pts"
+	mkdir -p ${OUTPUT}/{proc,sys,dev/pts}
+	mount --bind /proc ${OUTPUT}/proc
+	mount --bind /sys ${OUTPUT}/sys
+	mount -t devpts devpts ${OUTPUT}/dev/pts -o "gid=5,mode=666,ptmxmode=0666,newinstance"
+	rm -f ${OUTPUT}/dev/ptmx
+	ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
+	if [[ ! -L ${OUTPUT}/dev/ptmx ]]; then
+	    if [[ -e ${OUTPUT}/dev/ptmx ]]; then
+	        mount --bind ${OUTPUT}/dev/pts/ptmx ${OUTPUT}/dev/ptmx
+	    else
+	        ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
+	    fi
+	fi
+
+	trap cleanup_chroot EXIT
+}
 
 # a few shortcuts
 chr() {
@@ -64,7 +112,7 @@ chr_nofail() {
 }
 
 chr_apt() {
-    chr apt-get install -y "$@"
+    chr apt-get install -y --force-yes "$@"
 }
 
 dbg() {
@@ -72,104 +120,85 @@ dbg() {
     chr ls -l /proc
 }
 
-
 echo "Install dependencies"
 apt-get install qemu-user-static binfmt-support || true
 
-DEBOOTSTRAP_ARGS="
-	--include=${ADD_PACKAGES}
-	--verbose
-	--arch armel
-	--variant=minbase
-	${RELEASE} ${OUTPUT} ${REPO}
-"
+if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
+	echo "Using existing $ROOTFS_BASE_TARBALL"
+	rm -rf $OUTPUT
+	mkdir -p $OUTPUT
+	pushd ${OUTPUT}
+	tar xpf $ROOTFS_BASE_TARBALL
+	popd
 
-[[ -e "$DEBOOTSTRAP_SRC_TARBALL" ]] || {
-	echo "No $DEBOOTSTRAP_SRC_TARBALL found, will create one for later use"
-	debootstrap --make-tarball=$DEBOOTSTRAP_SRC_TARBALL $DEBOOTSTRAP_ARGS
-}
+	prepare_chroot
+	services_disable
 
-echo "Will create rootfs"
-debootstrap --unpack-tarball=$DEBOOTSTRAP_SRC_TARBALL --foreign $DEBOOTSTRAP_ARGS
+	echo "Updating"
+	chr apt-get update
+	chr apt-get -y upgrade
+else
+	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
+	exit
+	debootstrap \
+		--foreign \
+		--include=${ADD_PACKAGES} \
+		--verbose \
+		--arch armel \
+		--variant=minbase \
+		${RELEASE} ${OUTPUT} ${REPO}
 
-echo "Copy qemu to rootfs"
-cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
-cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-modprobe binfmt_misc
+	echo "Copy qemu to rootfs"
+	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
+	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+	modprobe binfmt_misc
+	
+	# kludge to fix ssmtp configure that breaks when FQDN is unknown
+	cp ${CONFIG_DIR}/etc/hosts.wb ${OUTPUT}/etc/hosts
+	echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
+	
+	echo "Second debootstrap stage"
+	chr /debootstrap/debootstrap --second-stage
 
-# kludge to fix ssmtp configure that breaks when FQDN is unknown
-cp ${CONFIG_DIR}/etc/hosts.wb ${OUTPUT}/etc/hosts
-echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
+	prepare_chroot
+	services_disable
 
-echo "Second debootstrap stage"
-chr /debootstrap/debootstrap --second-stage
+	echo "Set root password"
+	chr /bin/sh -c "echo root:wirenboard | chpasswd"
+	
+	echo "Install initial repos"
+	cp ${CONFIG_DIR}/etc/apt/sources.list.d/contactless.list ${OUTPUT}/etc/apt/sources.list.d/
+	#echo "deb [arch=armel,all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
+	cp ${CONFIG_DIR}/etc/gai.conf.wb ${OUTPUT}/etc/gai.conf     # workaround for IPv6 lags
+	
+	echo "Install public key for contactless repo"
+	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+	
+	echo "Update&upgrade apt"
+	chr apt-get update
+	chr apt-get -y upgrade
+	
+	echo "Setup locales"
+	cp ${CONFIG_DIR}/etc/locale.gen.wb ${OUTPUT}/etc/locale.gen
+	chr /usr/sbin/locale-gen
+	chr update-locale
+	
+	echo "Install realtek firmware"
+	wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
+	chr dpkg -i rtl_firmware.deb
+	rm ${OUTPUT}/rtl_firmware.deb
+	
+	echo "Install quick2wire"
+	pushd ${OUTPUT}/opt/
+	wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip -O master.zip
+	unzip master.zip
+	popd
 
-# without devpts mount options you will likely end up looking why you can't open
-# new terminal window :)
-echo "Mount /proc, /sys, /dev, /dev/pts"
-mkdir -p ${OUTPUT}/{proc,sys,dev/pts}
-mount --bind /proc ${OUTPUT}/proc
-mount --bind /sys ${OUTPUT}/sys
-mount -t devpts devpts ${OUTPUT}/dev/pts -o "gid=5,mode=666,ptmxmode=0666,newinstance"
-rm -f ${OUTPUT}/dev/ptmx
-ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
-if [[ ! -L ${OUTPUT}/dev/ptmx ]]; then
-    if [[ -e ${OUTPUT}/dev/ptmx ]]; then
-        mount --bind ${OUTPUT}/dev/pts/ptmx ${OUTPUT}/dev/ptmx
-    else
-        ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
-    fi
+	echo "Creating $ROOTFS_BASE_TARBALL"
+	pushd ${OUTPUT}
+	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
+	popd
 fi
-
-cleanup() {
-    local ret=$?
-
-    echo "Umount proc,dev,dev/pts in rootfs"
-    [[ -L ${OUTPUT}/dev/ptmx ]] || umount ${OUTPUT}/dev/ptmx
-    umount ${OUTPUT}/dev/pts
-    umount ${OUTPUT}/proc
-    umount ${OUTPUT}/sys
-
-    rm -f ${OUTPUT}/usr/sbin/policy-rc.d
-
-    return $ret
-}
-trap cleanup EXIT
-
-# This disables startin services when installing packages
-echo exit 101 > ${OUTPUT}/usr/sbin/policy-rc.d
-chmod +x ${OUTPUT}/usr/sbin/policy-rc.d
-
-echo "Set root password"
-chr /bin/sh -c "echo root:wirenboard | chpasswd"
-
-echo "Install initial repos"
-cp ${CONFIG_DIR}/etc/apt/sources.list.d/contactless.list ${OUTPUT}/etc/apt/sources.list.d/
-#echo "deb [arch=armel,all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
-cp ${CONFIG_DIR}/etc/gai.conf.wb ${OUTPUT}/etc/gai.conf     # workaround for IPv6 lags
-
-echo "Install public key for contactless repo"
-chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
-
-echo "Update&upgrade apt"
-chr apt-get update
-chr apt-get -y upgrade
-
-echo "Setup locales"
-cp ${CONFIG_DIR}/etc/locale.gen.wb ${OUTPUT}/etc/locale.gen
-chr /usr/sbin/locale-gen
-chr update-locale
-
-echo "Install realtek firmware"
-wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
-chr dpkg -i rtl_firmware.deb
-rm ${OUTPUT}/rtl_firmware.deb
-
-echo "Install quick2wire"
-pushd ${OUTPUT}/opt/
-wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip -O master.zip
-unzip master.zip
-popd
 
 #~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
@@ -268,6 +297,8 @@ esac
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/* ${OUTPUT}/var/lib/apt/lists/*
+
+rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
 
 # removing SSH host keys
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
