@@ -1,3 +1,9 @@
+wb-rules-system (1.2) stable; urgency=medium
+
+  * add virt.dev. 'system' for uptime, fw version, etc
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Sun, 01 Nov 2015 11:42:53 +0000
+
 wb-rules-system (1.1) stable; urgency=medium
 
   * add uptime rule
