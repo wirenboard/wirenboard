@@ -21,7 +21,7 @@ then
 fi
 
 case "$2" in
-    4|32|28|MKA3|NETMON)
+    5|4|32|28|MKA3|NETMON)
         ;;
     *)
         echo "Unknown board"
@@ -232,9 +232,24 @@ set_fdt() {
 }
 
 case "$BOARD" in
+    "5" )
+        # Wiren Board 5
+        export FORCE_WB_VERSION=52
+        chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
+
+        echo "Add rtl8188 hostapd package"
+        RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
+        cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
+        chr_nofail dpkg -i ${RTL8188_DEB}
+        rm ${OUTPUT}/${RTL8188_DEB}
+
+        set_fdt imx28-wirenboard52
+    ;;
+
     "4" )
         # Wiren Board 4
-        FORCE_WB_VERSION=41 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
+        export FORCE_WB_VERSION=41
+        chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
         echo "Add rtl8188 hostapd package"
         RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
@@ -247,7 +262,8 @@ case "$BOARD" in
 
     "CQC10" )
         # CQC10 device
-        FORCE_WB_VERSION=CQC10 chr_apt wb-homa-w1 wb-homa-gpio wb-rules wb-mqtt-spl-meter
+        export FORCE_WB_VERSION=CQC10
+        chr_apt wb-homa-w1 wb-homa-gpio wb-rules wb-mqtt-spl-meter
 
         echo "Add wb-mqtt-tcs34725 package"
 
@@ -261,7 +277,8 @@ case "$BOARD" in
     ;;
     "32" )
         # WB Smart Home specific
-        FORCE_WB_VERSION=32 chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
+        export FORCE_WB_VERSION=32
+        chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
 
         chr_apt netplug hostapd
 
@@ -274,8 +291,8 @@ case "$BOARD" in
 
     "MKA3" )
         # MKA3
-        FORCE_WB_VERSION=KMON1 chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent
-        FORCE_WB_VERSION=KMON1 chr_apt wb-dbic
+        export FORCE_WB_VERSION=KMON1
+        chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-dbic
 
         # https://github.com/contactless/wb-dbic
         cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
@@ -288,7 +305,8 @@ case "$BOARD" in
 
     "NETMON" )
         # NETMON-1
-        FORCE_WB_VERSION=KMON1 chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
+        export FORCE_WB_VERSION=KMON1
+        chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
 
         chr_apt netplug
 
