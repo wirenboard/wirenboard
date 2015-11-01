@@ -269,7 +269,9 @@ wb_firstboot()
 
     [[ ! -f "$serial" ]] && {
         log_action_begin_msg "Get WB serial number"
-        wb-gen-serial > $serial
+        [[ -e "/mnt/data/$serial" ]] &&
+            cp "/mnt/data/$serial" "$serial" ||
+            wb-gen-serial > $serial
         log_end_msg $? || return $?
     }
 
