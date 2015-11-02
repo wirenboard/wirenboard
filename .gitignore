@@ -29,3 +29,4 @@ wb-utils_*.changes
 
 configs/debian/wb-configs/
 wb-configs_*.*
+*.pyc
