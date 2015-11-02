@@ -52,7 +52,8 @@ dd if=/dev/zero of=$IMGFILE bs=1M count=5 conv=notrunc
 {
 	wb_partition 16 53
 	wb_partition
-} | sfdisk $IMGFILE
+} | sfdisk --in-order --Linux --unit=S  $IMGFILE
+
 
 DEV=/dev/mapper/`sudo kpartx -av $IMGFILE | sed -rn 's#.* (loop[0-9]+p).*#\1#p; q'`
 
