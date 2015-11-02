@@ -1,3 +1,15 @@
+wb-configs (1.58.1) stable; urgency=medium
+
+  * proper handle hosts replacement
+
+ -- Evgeny Boger <boger@contactless.ru>  Sun, 18 Oct 2015 01:49:28 +0300
+
+wb-configs (1.58) stable; urgency=medium
+
+  * minor fix for chroot_this
+
+ -- Evgeny Boger <boger@contactless.ru>  Sat, 17 Oct 2015 16:19:30 +0300
+
 wb-configs (1.57) stable; urgency=medium
 
   * move repo to /etc/apt/sources.list.d
