@@ -16,4 +16,4 @@ sudo umount ${DEV}1
 sudo dd if=$1 of=${DEV} bs=4M conv=fdatasync
 sync
 sync
-sudo parted ${DEV} -s "resizepart 2 -0"
+#sudo parted ${DEV} -s "resizepart 2 -0"
