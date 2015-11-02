@@ -1,6 +1,22 @@
 #!/bin/bash
 set -e
 
+
+check_compatible() {
+	local fit_compat `fit_prop / compatible`
+	[[ -z "$fit_compat" || "$fit_compat" == "unknown" ]] && return 0
+	for compat in `tr < /proc/device-tree/compatible  '\000' '\n'`; do
+		[[ "$fit_compat" == "$compat" ]] && return 0
+	done
+	return 1
+}
+
+if flag_set "force-compatible"; then
+	info "WARNING: Don't check compatibility. I hope you know what you're doing..."
+else
+	check_compatible || die "This update is incompatible with this device"
+fi
+
 fit_blob_verify_hash rootfs
 
 info "Installing firmware update"

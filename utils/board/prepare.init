@@ -60,11 +60,17 @@ wb_partition()
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
 }
 
+wb_get_partition_start()
+{
+    local part=${STORAGE}p$1
+    fdisk -u sectors -l $STORAGE |
+        sed -rn "s#^${part}\\s+([0-9]+).*#\\1#p"
+}
+
 wb_erase_partition()
 {
     local part=${STORAGE}p$1
-    local start=`fdisk -u sectors -l $STORAGE |
-        sed -rn "s#^${part}\\s+([0-9]+).*#\\1#p"`
+    local start=`wb_get_partition_start $1`
 
     log_action_begin_msg "Erasing partition $part"
     dd if=/dev/zero of=$STORAGE seek=$start bs=$SECTOR_SIZE count=$[1*MB/SECTOR_SIZE] 2>&1 >/dev/null
@@ -81,7 +87,9 @@ wb_prepare_partitions()
 
     log_action_msg "Preparing partitions"
 
-    PART_START=$[4*MB/SECTOR_SIZE]
+    # mx23 and mx28 have different boot image search methods, so keep existing uboot
+    PART_START=`wb_get_partition_start 1`
+
     TOTAL_SECTORS=$[`sfdisk -s $STORAGE`*2] || {
         log_failure_msg "Unable to get total sectors count for $STORAGE"
         return 1
@@ -261,7 +269,9 @@ wb_firstboot()
 
     [[ ! -f "$serial" ]] && {
         log_action_begin_msg "Get WB serial number"
-        wb-gen-serial > $serial
+        [[ -e "/mnt/data/$serial" ]] &&
+            cp "/mnt/data/$serial" "$serial" ||
+            wb-gen-serial > $serial
         log_end_msg $? || return $?
     }
 

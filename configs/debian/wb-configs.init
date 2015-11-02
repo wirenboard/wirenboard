@@ -118,16 +118,15 @@ wb_move()
             fi
         fi
     elif [[ -e "$src" ]]; then        # is it a regular file/dir?
+        mv "$src" "${src}.default"
         if [[ -e "$dst" ]]; then      # is there already a file in $MNT?
             log_action_msg "$src: replaced with symlink to existing $dst"
         else
             mkdir -p `dirname "$dst"`
-            mv "$src" "${src}.default"
             cp -aH "${src}.default" "$dst"
             [[ -n "$nosavefiles" ]] && find "${src}.default" -type f -delete
             log_action_msg "$src: copyed to $dst, replaced with symlink"
         fi
-        rm -rf "$src"
         ln -Tfs "$dst" "${src}"
     else
         log_warning_msg "$src: is neither symlink or regular file, don't touch"

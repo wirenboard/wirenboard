@@ -1,3 +1,10 @@
+wb-utils (1.60) stable; urgency=medium
+
+  * wb-prepare: don't move uboot
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Sun, 01 Nov 2015 15:25:04 +0000
+
+
 wb-utils (1.59) stable; urgency=medium
 
   * add basic board support for CQC10 and WB5

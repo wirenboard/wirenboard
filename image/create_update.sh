@@ -60,11 +60,27 @@ include() {
 EOF
 }
 
+dtb_get_compatible() {
+	fdtget - / compatible | sed 's/ .*$//'
+}
+
 if [[ -d "$ROOTFS" ]]; then
+	DTB=$ROOTFS/`sed -n 's/^fdt_file=//p' $ROOTFS/boot/uEnv.txt`
+	[[ -e "$DTB" ]] || die "Unable to get DTB path"
+	COMPATIBLE=`cat "$DTB" | dtb_get_compatible`
 	ROOTFS_TARBALL=`create_tarball $ROOTFS`
 elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
+	DTB=`tar xf "$ROOTFS_TARBALL" ./boot/uEnv.txt --to-command="sed -n 's/^fdt_file=//p'"`
+	[[ -n "$DTB" ]] || die "Unable to get DTB path"
+	COMPATIBLE=`tar xf "$ROOTFS_TARBALL" ".$DTB" --to-command="cat" | dtb_get_compatible`
 fi
+unset DTB
+
+[[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
+
+VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
+
 ITS=`mktemp`
 
 cleanup() {
@@ -79,8 +95,8 @@ cat <<EOF
 
 / {
 	description = "WirenBoard firmware update";
-	compatible = "imx23-wirenboard41contactless";
-	firmware-version = "unknown";
+	compatible = "$COMPATIBLE";
+	firmware-version = "$VERSION";
 	firmware-compatible = "unknown";
 	#address-cells = <1>;
 	images {
