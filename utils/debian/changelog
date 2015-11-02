@@ -1,3 +1,11 @@
+wb-utils (1.59) stable; urgency=medium
+
+  * add basic board support for CQC10 and WB5
+  * do not start GSM if GSM modem not present
+
+
+ -- Evgeny Boger <boger@contactless.ru>  Sat, 17 Oct 2015 16:55:55 +0300
+
 wb-utils (1.58) stable; urgency=medium
 
   * wb-prepare: try to use existing SSH host keys for speed
