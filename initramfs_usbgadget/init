@@ -1,0 +1,19 @@
+#!/bin/busybox sh
+/bin/busybox --install -s
+
+/bin/mknod /dev/null c 1 3
+/bin/mknod /dev/tty c 5 0
+
+/bin/mount -a
+/sbin/mdev -s
+
+echo mmc0 > /sys/class/leds/red/trigger
+
+echo timer > /sys/class/leds/green/trigger
+echo 300 > /sys/class/leds/green/delay_on
+echo 1600 > /sys/class/leds/green/delay_off
+
+
+/sbin/modprobe g_mass_storage file=/dev/mmcblk0 iManufacturer="Wiren Board" iProduct="Wiren Board"
+
+/bin/sh

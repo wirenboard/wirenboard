@@ -1,0 +1,3 @@
+proc		/proc		proc		rw,nosuid,nodev,noexec,relatime		0 0
+sysfs		/sys		sysfs		rw,nosuid,nodev,noexec,relatime		0 0
+devtmpfs	/dev		devtmpfs	rw,nosuid,mode=755					0 0
