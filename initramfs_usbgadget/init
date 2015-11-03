@@ -7,11 +7,12 @@
 /bin/mount -a
 /sbin/mdev -s
 
-echo mmc0 > /sys/class/leds/red/trigger
+echo none > /sys/class/leds/red/trigger
+echo 0 > /sys/class/leds/red/brightness
 
 echo timer > /sys/class/leds/green/trigger
-echo 300 > /sys/class/leds/green/delay_on
-echo 1600 > /sys/class/leds/green/delay_off
+echo 250 > /sys/class/leds/green/delay_on
+echo 250 > /sys/class/leds/green/delay_off
 
 
 /sbin/modprobe g_mass_storage file=/dev/mmcblk0 iManufacturer="Wiren Board" iProduct="Wiren Board"
