@@ -49,13 +49,21 @@ do_start()
 	#   2 if daemon could not be started
 
     case "$WB_VERSION" in
-        "41" | "52" )
-
+        "41"  )
             #  switch on green led
             echo 0 > /sys/class/leds/red/brightness
             echo 255 > /sys/class/leds/green/brightness
 
         ;;
+
+        "52" )
+            #  blink green led
+            echo timer > /sys/class/leds/green/trigger
+            echo 0 > /sys/class/leds/red/brightness
+        ;;
+
+
+
         * )
         ;;
     esac
@@ -79,12 +87,17 @@ do_stop()
 
     case "$WB_VERSION" in
         "41" )
-
             #  switch on red led
             echo 255 > /sys/class/leds/red/brightness
             echo 0 > /sys/class/leds/green/brightness
-
         ;;
+
+        "52" )
+            #  blink red led
+            echo timer > /sys/class/leds/red/trigger
+            echo 0 > /sys/class/leds/green/brightness
+        ;;
+
         * )
         ;;
     esac
