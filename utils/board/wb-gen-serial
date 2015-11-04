@@ -56,6 +56,31 @@ function gen_mac_wifi()
     fi
 }
 
+function gen_mac_cpu()
+{
+    debug "Trying to generate MAC from CPU serial..."
+    SERIAL_STR=`cat /proc/cpuinfo | grep Serial | cut -d':' -f2 | cut -c2-`
+    RC=$?
+    if [[ $RC != 0 ]] ; then
+        debug "Error reading serial from /proc/cpuinfo"
+        return 1;
+    fi;
+
+
+    debug "Got SoC serial: ${SERIAL_STR}"
+
+    if [[ "${SERIAL_STR}" = "0000000000000000" ]] ; then
+        debug "SoC serial is empty, ignoring. Unsupported SoC or maybe old kernel?"
+        return 1;
+    fi;
+
+    SERIAL_MD5=`echo ${SERIAL_STR} | md5sum | cut -d' ' -f1`
+
+    MAC="$PREFIX:44:${SERIAL_MD5:0:2}:${SERIAL_MD5:2:2}:${SERIAL_MD5:4:2}"
+    echo $MAC
+    return 0
+}
+
 function gen_mac_rand()
 {
     debug "Trying to get random MAC..."
@@ -73,10 +98,13 @@ function gen_mac_rand()
 
 function gen_mac_best()
 {
-    gen_mac_wifi || gen_mac_simcom || gen_mac_rand
+    gen_mac_wifi || gen_mac_cpu || gen_mac_simcom || gen_mac_rand
 }
 
 case "$1" in
+	"cpu" )
+		gen_mac_cpu
+	;;
 	"gsm" )
 		gen_mac_simcom
 	;;
@@ -88,7 +116,7 @@ case "$1" in
 	;;
 
     "-h" | "--help" | "help" )
-		echo "USAGE: $0 [gsm|wifi|rand|help]";
+		echo "USAGE: $0 [gsm|cpu|wifi|rand|help]";
         exit 0;
     ;;
 	* )
