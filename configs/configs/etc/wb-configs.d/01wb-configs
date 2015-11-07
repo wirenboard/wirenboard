@@ -17,6 +17,7 @@ wb_move /etc/hostapd.conf
 wb_move /var/lib/wirenboard
 wb_move /var/lib/mosquitto
 wb_move_nosavefiles /var/log/
+wb_move_nosavefiles /root/
 wb_move_nosavefiles /var/cache/apt/             # just fat, move it out
 wb_move_nosavefiles /var/lib/apt/lists/			# -//-
 wb_move_nosavefiles /var/www/uploads/ /uploads  # here will be firmware updates
