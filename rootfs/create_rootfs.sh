@@ -192,6 +192,9 @@ else
 	popd
 fi
 
+echo "Creating /mnt/data mountpoint"
+mkdir ${OUTPUT}/mnt/data
+
 echo "Install packages from contactless repo"
 pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
 pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
