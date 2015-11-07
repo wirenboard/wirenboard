@@ -221,12 +221,6 @@ case "$BOARD" in
         export FORCE_WB_VERSION=52
         chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
-        #~ echo "Add rtl8188 hostapd package"
-        #~ RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-        #~ cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
-        #~ chr_nofail dpkg -i ${RTL8188_DEB}
-        #~ rm ${OUTPUT}/${RTL8188_DEB}
-
         set_fdt imx28-wirenboard52
     ;;
 
