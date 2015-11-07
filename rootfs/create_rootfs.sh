@@ -186,9 +186,10 @@ else
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
 
+    PWD=`pwd`
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
-	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
+	tar czpf ${PWD}/$ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
 
