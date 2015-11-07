@@ -127,9 +127,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	echo "Using existing $ROOTFS_BASE_TARBALL"
 	rm -rf $OUTPUT
 	mkdir -p $OUTPUT
-	pushd ${OUTPUT}
-	tar xpf $ROOTFS_BASE_TARBALL
-	popd
+	tar xpf $ROOTFS_BASE_TARBALL -C ${OUTPUT}
 
 	prepare_chroot
 	services_disable
@@ -139,7 +137,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	chr apt-get -y upgrade
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
-	exit
+	#~ exit
 	debootstrap \
 		--foreign \
 		--include=${ADD_PACKAGES} \
@@ -152,11 +150,11 @@ else
 	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
 	modprobe binfmt_misc
-	
+
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
 	cp ${CONFIG_DIR}/etc/hosts.wb ${OUTPUT}/etc/hosts
 	echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
-	
+
 	echo "Second debootstrap stage"
 	chr /debootstrap/debootstrap --second-stage
 
@@ -165,34 +163,34 @@ else
 
 	echo "Set root password"
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
-	
+
 	echo "Install initial repos"
 	cp ${CONFIG_DIR}/etc/apt/sources.list.d/contactless.list ${OUTPUT}/etc/apt/sources.list.d/
 	#echo "deb [arch=armel,all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
 	cp ${CONFIG_DIR}/etc/gai.conf.wb ${OUTPUT}/etc/gai.conf     # workaround for IPv6 lags
-	
+
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
-	
+
 	echo "Update&upgrade apt"
 	chr apt-get update
 	chr apt-get -y upgrade
-	
+
 	echo "Setup locales"
 	cp ${CONFIG_DIR}/etc/locale.gen.wb ${OUTPUT}/etc/locale.gen
 	chr /usr/sbin/locale-gen
 	chr update-locale
-	
+
 	echo "Install realtek firmware"
 	wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
-	
-	echo "Install quick2wire"
-	pushd ${OUTPUT}/opt/
-	wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip -O master.zip
-	unzip master.zip
-	popd
+
+	#~ echo "Install quick2wire"
+	#~ pushd ${OUTPUT}/opt/
+	#~ wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip -O master.zip
+	#~ unzip master.zip
+	#~ popd
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -237,11 +235,11 @@ case "$BOARD" in
         export FORCE_WB_VERSION=52
         chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
-        echo "Add rtl8188 hostapd package"
-        RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-        cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
-        chr_nofail dpkg -i ${RTL8188_DEB}
-        rm ${OUTPUT}/${RTL8188_DEB}
+        #~ echo "Add rtl8188 hostapd package"
+        #~ RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
+        #~ cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
+        #~ chr_nofail dpkg -i ${RTL8188_DEB}
+        #~ rm ${OUTPUT}/${RTL8188_DEB}
 
         set_fdt imx28-wirenboard52
     ;;
@@ -315,7 +313,7 @@ case "$BOARD" in
 esac
 
 chr apt-get clean
-rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/* ${OUTPUT}/var/lib/apt/lists/*
+rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
 
