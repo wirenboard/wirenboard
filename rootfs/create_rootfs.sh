@@ -186,19 +186,11 @@ else
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
 
-	#~ echo "Install quick2wire"
-	#~ pushd ${OUTPUT}/opt/
-	#~ wget https://github.com/quick2wire/quick2wire-python-api/archive/master.zip -O master.zip
-	#~ unzip master.zip
-	#~ popd
-
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
 	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
-
-#~ echo "export PYTHONPATH=/opt/quick2wire-python-api-master/" >> ${OUTPUT}/root/.bashrc
 
 echo "Install packages from contactless repo"
 pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
@@ -218,12 +210,6 @@ chr_apt --force-yes linux-latest wb-mqtt-homeui wb-mqtt-confed
 chr /etc/init.d/mosquitto stop
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
-
-#echo "Add mosquitto package"
-#MOSQ_DEB=mosquitto_1.3.4-2contactless1_armel.deb
-#cp ${SCRIPT_DIR}/../contrib/deb/mosquitto/${MOSQ_DEB} ${OUTPUT}/
-#chr dpkg -i ${MOSQ_DEB}
-#rm ${OUTPUT}/${MOSQ_DEB}
 
 set_fdt() {
     echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
