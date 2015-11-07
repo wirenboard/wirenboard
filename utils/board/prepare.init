@@ -232,6 +232,8 @@ wb_check_data()
     }
 
     wb_mkfs_ext4 ${data} data || return $?
+
+    mkdir -p /mnt/data
     mount ${data} /mnt/data || {
         log_failure_msg "Can't mount ${data}"
         return 1
@@ -261,6 +263,8 @@ wb_firstboot()
     [[ -f $flag ]] && return 0
 
     log_action_msg "Preparing rootfs for the first boot"
+
+    mkdir -p /mnt/data
 
     [[ ! -d "$wb_dir" ]] && {
         rm -rf $wb_dir
