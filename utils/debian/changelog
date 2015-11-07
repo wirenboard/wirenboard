@@ -1,3 +1,9 @@
+wb-utils (1.60.1) stable; urgency=medium
+
+  * create /mnt/data mountpoint on first boot
+
+ -- Evgeny Boger <boger@contactless.ru>  Wed, 04 Nov 2015 05:02:40 +0300
+
 wb-utils (1.60) stable; urgency=medium
 
   * wb-prepare: don't move uboot
