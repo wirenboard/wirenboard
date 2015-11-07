@@ -1,3 +1,9 @@
+wb-configs (1.60) stable; urgency=medium
+
+  * move /root to /mnt/data
+
+ -- Evgeny Boger <boger@contactless.ru>  Wed, 04 Nov 2015 15:34:52 +0300
+
 wb-configs (1.59) stable; urgency=medium
 
   * fix major bug
