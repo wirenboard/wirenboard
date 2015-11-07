@@ -2,20 +2,30 @@
 # need sudo apt-get install multipath-tools
 set -e
 set -x
-if [ $# -ne 3 ]; then
-	echo "USAGE: $0 <path to rootfs> <path to u-boot> <img file>"
+if [ $# -ne 4 ]; then
+	echo "USAGE: $0 <soc_type> <path to rootfs> <path to u-boot.sb or u-boot.sd> <path to img file>"
+    echo "<soc_type> should be either mx23 or mx28"
+
 	exit 1
 fi
 
-ROOTFS="$1"
-UBOOT="$2"
-IMGFILE="$3"
+ROOTFS="$2"
+UBOOT="$3"
+IMGFILE="$4"
 
-SOC_TYPE=`sed -rn 's/^CONFIG_TARGET_(MX2.).*/\1/p' $UBOOT/.config`
-[[ -n "$SOC_TYPE" ]] || {
-	echo "Can't determine SoC type"
-	exit 1
-}
+UBOOT_BASENAME=$(basename "$UBOOT")
+
+case "$1" in
+    "mx23")
+        SOC_TYPE="MX23"
+        ;;
+    "mx28")
+        SOC_TYPE="MX28"
+        ;;
+    *)
+        echo "Can't determine SoC type"
+esac
+
 
 if [ "$IMGFILE" == "/dev/sda" ]; then
 	echo "Attempt to rewrite sda part table";
@@ -38,13 +48,12 @@ TOTAL_SECTORS=$[IMGSIZE*MB/SECTOR_SIZE]
 
 PART_START_MX23=$[4*MB/SECTOR_SIZE]
 write_uboot_MX23() {
-	sudo dd if=$UBOOT/u-boot.sb of=${DEV}1 bs=$SECTOR_SIZE seek=4
+	sudo dd if=$UBOOT of=${DEV}1 bs=$SECTOR_SIZE seek=4
 }
 
 PART_START_MX28=$[1*MB/SECTOR_SIZE]
 write_uboot_MX28() {
-	$UBOOT/tools/mxsboot sd $UBOOT/u-boot.sb $UBOOT/u-boot.sdcard
-	sudo dd if=$UBOOT/u-boot.sdcard of=${DEV}1
+	sudo dd if=$UBOOT of=${DEV}1
 }
 
 eval "PART_START=\${PART_START_${SOC_TYPE}}"
@@ -93,7 +102,7 @@ trap cleanup EXIT
 
 # remove some usual development garbage
 chroot $ROOTFS apt-get clean || true
-rm -rf $ROOTFS/run/* $ROOTFS/var/cache/apt/* $ROOTFS/var/lib/apt/lists/* \
+rm -rf $ROOTFS/run/* $ROOTFS/var/cache/apt/archives/* $ROOTFS/var/lib/apt/lists/* \
 	$ROOTFS/usr/sbin/policy-rc.d \
 	$ROOTFS/*.deb
 
