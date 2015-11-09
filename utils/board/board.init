@@ -62,6 +62,14 @@ do_start()
             echo 0 > /sys/class/leds/red/brightness
         ;;
 
+        "KMON1" )
+            if [ ! -d /sys/class/gpio/gpio${WB_GPIO_5V_ISOLATED_ON} ]; then
+                echo $WB_GPIO_5V_ISOLATED_ON > /sys/class/gpio/export
+            fi
+
+            echo high > /sys/class/gpio/gpio${WB_GPIO_5V_ISOLATED_ON}/direction
+            echo high > /sys/class/gpio/gpio${WB_GPIO_5V_ISOLATED_ON}/direction
+        ;;
 
 
         * )
