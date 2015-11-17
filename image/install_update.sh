@@ -3,7 +3,7 @@ set -e
 
 
 check_compatible() {
-	local fit_compat `fit_prop / compatible`
+	local fit_compat=`fit_prop / compatible`
 	[[ -z "$fit_compat" || "$fit_compat" == "unknown" ]] && return 0
 	for compat in `tr < /proc/device-tree/compatible  '\000' '\n'`; do
 		[[ "$fit_compat" == "$compat" ]] && return 0
