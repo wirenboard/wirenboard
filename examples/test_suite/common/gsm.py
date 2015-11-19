@@ -29,13 +29,11 @@ def gsm_get_imei():
 class TestGSM(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        init_gsm()
-
         open("/etc/gammurc","wt").write("[gammu]\nport = /dev/ttyAPP0\nconnection = at115200\n")
 
-
-
+class TestGSMMegafon(TestGSM):
     def test_number(self):
+        init_gsm()
         #~ return
         ussd_number = '*205#'
         #~ ussd_number = '*111*0887#'
@@ -64,8 +62,39 @@ class TestGSM(unittest.TestCase):
 
         self.assertTrue(number.startswith('7'))
 
-#~ class TestGSMRTC(unittest.TestCase):
-class TestGSMRTC(object): # disable
+
+class TestGSMMTS(TestGSM):
+    def test_number(self):
+        init_gsm()
+        ussd_number = '*111*0887#'
+
+        # MTS sends SMS following USSD request
+        # so delete all sms first
+
+        subprocess.call("gammu deleteallsms  1", shell=True)
+
+        proc = subprocess.Popen('gammu getussd %s' % ussd_number, shell=True, stdout=subprocess.PIPE)
+         #~ | grep "Service reply" | sed -e "s/.*\"\(.*\)\".*/\1/" | xxd -r -ps | iconv -f=UTF-16BE -t=UTF-8
+        stdout, stderr = proc.communicate()
+
+        self.assertEquals(proc.returncode, 0, "Gammu send USSD error: "+ stdout)
+
+
+
+        proc = subprocess.Popen('gammu geteachsms' , shell=True, stdout=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        self.assertEquals(proc.returncode, 0, "Gammu get SMS error: "+ stdout)
+
+        print "Got SMS: ", stdout.decode('utf-8')
+
+        self.assertIn(u'Ваш номер телефона:+', stdout.decode('utf-8'))
+
+
+
+class TestGSMRTC(unittest.TestCase):
+#~ class TestGSMRTC(object): # disable
+
+    RTC_TIMEOUT_SECONDS=0
     @classmethod
     def setUpClass(cls):
         init_gsm()
@@ -77,7 +106,7 @@ class TestGSMRTC(object): # disable
         subprocess.call("wb-gsm-rtc save_time", shell=True)
 
         subprocess.call("wb-gsm off", shell=True)
-        rtc_timeout = 40
+        rtc_timeout = self.RTC_TIMEOUT_SECONDS
 
         print "Sleep for %s seconds to allow RTC cap to discarge" % rtc_timeout
         time.sleep(rtc_timeout)
@@ -90,7 +119,7 @@ class TestGSMRTC(object): # disable
         print "read back: ", time_read
 
         year = int(time_read.split('/')[0])
-        self.assertGreater(year, 1)
+        self.assertGreater(year, 10)
 
 
 
