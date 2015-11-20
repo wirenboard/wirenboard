@@ -46,7 +46,7 @@ class TestADC(unittest.TestCase):
         self.wbmqtt.send_value('wb-gpio', fet_control, '1')
         time.sleep(500E-3)
 
-        v_max = 0.1 # V
+        v_max = 0.15 # V
         v_measured = float(self.wbmqtt.get_next_value('wb-adc', adc_control))
         self.assertLess(v_measured, v_max)
 
@@ -55,7 +55,7 @@ class TestADC(unittest.TestCase):
 
         self.wbmqtt.send_value('wb-gpio', fet_control, '0')
         time.sleep(2000E-3)
-        self._test_adc_value(adc_control, 4.80, 1)
+        self._test_adc_value(adc_control, 4.80, 2)
 
         di_state = bool(int(self.wbmqtt.get_last_value('wb-gpio', di_control)))
         self.assertTrue(di_state)
