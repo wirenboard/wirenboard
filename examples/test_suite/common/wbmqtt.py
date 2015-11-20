@@ -39,7 +39,7 @@ class WBMQTT(object):
     def get_last_value(self, device_id, control_id):
         return self.control_values[(device_id, control_id)]
 
-    def get_next_value(self, device_id, control_id, timeout = 1):
+    def get_next_value(self, device_id, control_id, timeout = 10):
         self.control_values[(device_id, control_id)] = None
         ts_start = time.time()
         while 1:
