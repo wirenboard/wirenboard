@@ -1,0 +1,3 @@
+#!/bin/bash
+set -u -e
+proot -R /rootfs -q qemu-arm-static /bin/bash "$@"
