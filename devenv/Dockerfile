@@ -38,9 +38,12 @@ COPY entrypoint.sh /sbin/
 COPY chr /usr/local/bin/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 
-RUN /bin/echo 'export TERM=xterm' >>/etc/bash.bashrc && \
-    /bin/echo 'export GOPATH="$HOME/go"' >>/etc/bash.bashrc && \
-    /bin/echo 'export PATH="/usr/local/go/bin:$PATH"' >>/etc/bash.bashrc && \
-    /bin/echo 'mkdir -p "$GOPATH"' >>/etc/bash.bashrc
+RUN /bin/echo 'export TERM=xterm' >/tmp/bash.bashrc && \
+    /bin/echo 'export GOPATH="$HOME/go"' >>/tmp/bash.bashrc && \
+    /bin/echo 'export PATH="/usr/local/go/bin:$PATH"' >>/tmp/bash.bashrc && \
+    /bin/echo 'mkdir -p "$GOPATH"' >>/tmp/bash.bashrc && \
+    cat /etc/bash.bashrc >>/tmp/bash.bashrc && \
+    mv /tmp/bash.bashrc /etc/bash.bashrc && \
+    /bin/echo '[ -f /.devdir ] && cd "$(cat /.devdir)"' >/etc/profile.d/devdir.sh
 
 RUN npm install -g bower grunt-cli

@@ -19,5 +19,7 @@ chr apt-get install -y devscripts python-virtualenv git equivs build-essential \
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
 chr bash -c "dpkg -i /dh-virtualenv_*.deb"
 
+cp /etc/profile.d/devdir.sh /rootfs/etc/profile.d/
+
 chr apt-get clean
 rm -rf /rootfs/dh-virtualenv
