@@ -12,7 +12,8 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y git mercurial curl wget debootstrap \
       proot build-essential pkg-config pkg-config:armel debhelper npm \
-      nodejs-legacy bash-completion nano gcc-arm-linux-gnueabi sudo
+      nodejs-legacy bash-completion nano gcc-arm-linux-gnueabi sudo \
+      locales
 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
@@ -37,6 +38,12 @@ COPY configs /root/
 COPY entrypoint.sh /sbin/
 COPY chr /usr/local/bin/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
+
+COPY configs/configs/etc/locale.gen.wb /etc/locale.gen
+RUN locale-gen && update-locale
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 RUN /bin/echo 'export TERM=xterm' >/tmp/bash.bashrc && \
     /bin/echo 'export GOPATH="$HOME/go"' >>/tmp/bash.bashrc && \
