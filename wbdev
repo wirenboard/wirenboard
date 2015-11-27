@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run -it --privileged --rm -e DEV_UID=$UID -e DEV_USER=$USER -e DEV_DIR="$PWD" -v $HOME:$HOME -h wbdevenv contactless/devenv "$@"
