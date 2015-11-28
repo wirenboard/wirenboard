@@ -74,7 +74,7 @@ case "$cmd" in
         chu "$@"
         ;;
     make)
-        chu make
+        chu make "$@"
         ;;
     cdeb)
         chu dpkg-buildpackage -us -uc

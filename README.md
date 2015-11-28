@@ -82,8 +82,8 @@ Usage:
   directory.
 * `wbdev cdeb` builds an armel deb from a C++ project in the current
   directory.
-* `wbdev make` invokes `make` in qemu chroot environment in the
-  current directory.
+* `wbdev make [args...]` invokes `make` in qemu chroot environment in
+  the current directory.
 
 You may need to make changes to your shell init files such as
 `~/.bashrc` to avoid confusion between host machine and development
