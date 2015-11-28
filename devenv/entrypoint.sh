@@ -67,6 +67,9 @@ case "$cmd" in
     gdeb)
         su "$DEV_USER" -c bash -c '. /etc/bash.bashrc; CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc'
         ;;
+    hmake)
+        sudo -u "$DEV_USER" make "$@"
+        ;;
     root)
         $shell_cmd "$@"
         ;;

@@ -84,6 +84,9 @@ Usage:
   directory.
 * `wbdev make [args...]` invokes `make` in qemu chroot environment in
   the current directory.
+* `wbdev hmake [args...]` invokes `make` in host user mode in the
+  current directory. Use it to build x86_64 binaries and to do `wbdev hmake test`
+  on C++ projects. 
 
 You may need to make changes to your shell init files such as
 `~/.bashrc` to avoid confusion between host machine and development
