@@ -13,11 +13,15 @@ services_disable
 chr apt-get update
 chr apt-get install -y devscripts python-virtualenv git equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.7 g++-4.7 libmodbus-dev \
-    libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion
+    libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
+    valgrind libgtest-dev cmake
 
 (rm -rf /rootfs/dh-virtualenv && cd /rootfs && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
 chr bash -c "dpkg -i /dh-virtualenv_*.deb"
+
+# build and install google test
+chr bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
 
 cp /etc/profile.d/devdir.sh /rootfs/etc/profile.d/
 
