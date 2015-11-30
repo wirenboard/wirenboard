@@ -17,7 +17,7 @@ install: $(BIN_NAME)
 	install -m 0755 $(BIN_NAME) $(DESTDIR)/$(prefix)/bin/$(BIN_NAME)
 
 clean:
-	-@rm $(BIN_NAME)
+	@rm -f $(BIN_NAME)
 .PHONY: install clean all
 
 

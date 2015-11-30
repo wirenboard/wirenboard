@@ -1,3 +1,15 @@
+wb-utils (1.60.3) stalbe; urgency=medium
+
+  * proper RFM69 env variables for WB5
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 30 Nov 2015 21:04:24 +0300
+
+wb-utils (1.60.2) stable; urgency=medium
+
+  * enables dry inputs on NETMON-1
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 09 Nov 2015 19:40:50 +0300
+
 wb-utils (1.60.1) stable; urgency=medium
 
   * create /mnt/data mountpoint on first boot

@@ -217,8 +217,9 @@ case "$WB_VERSION" in
     "50" )
     WB_ADC_TYPE=3
 
-    WB_GPIO_RFM_IRQ=38;
-    WB_RFM_SPI_MINOR=; # FIXME: set right value
+    WB_GPIO_RFM_IRQ=38
+    WB_RFM_SPI_MINOR=0
+    WB_RFM_SPI_MINOR=32765
 
 
     WB_GSM_POWER_TYPE=2
@@ -235,8 +236,8 @@ case "$WB_VERSION" in
     WB_ADC_TYPE=3
 
     WB_GPIO_RFM_IRQ=38;
-    WB_RFM_SPI_MINOR=; # FIXME: set right value
-
+    WB_RFM_SPI_MINOR=0
+    WB_RFM_SPI_MINOR=32765
 
     WB_GSM_POWER_TYPE=2
     WB_GPIO_GSM_POWER=17;
