@@ -53,75 +53,15 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-CONFIG_DIR="$SCRIPT_DIR/../configs/configs"
+CONFIG_DIR="${CONFIG_DIR:-$SCRIPT_DIR/../configs/configs}"
 
 ROOTFS_BASE_TARBALL="$(dirname ${OUTPUT})/rootfs_base.tar.gz"
 
-services_disable() {
-    # This disables startin services when installing packages
-    echo exit 101 > ${OUTPUT}/usr/sbin/policy-rc.d
-    chmod +x ${OUTPUT}/usr/sbin/policy-rc.d
-}
-
-services_enable() {
-    rm -f ${OUTPUT}/usr/sbin/policy-rc.d
-}
-
-cleanup_chroot() {
-    local ret=$?
-
-    echo "Umount proc,dev,dev/pts in rootfs"
-    [[ -L ${OUTPUT}/dev/ptmx ]] || umount ${OUTPUT}/dev/ptmx
-    umount ${OUTPUT}/dev/pts
-    umount ${OUTPUT}/proc
-    umount ${OUTPUT}/sys
-
-    services_enable
-
-    return $ret
-}
-
-prepare_chroot() {
-	# without devpts mount options you will likely end up looking why you can't open
-	# new terminal window :)
-	echo "Mount /proc, /sys, /dev, /dev/pts"
-	mkdir -p ${OUTPUT}/{proc,sys,dev/pts}
-	mount --bind /proc ${OUTPUT}/proc
-	mount --bind /sys ${OUTPUT}/sys
-	mount -t devpts devpts ${OUTPUT}/dev/pts -o "gid=5,mode=666,ptmxmode=0666,newinstance"
-	rm -f ${OUTPUT}/dev/ptmx
-	ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
-	if [[ ! -L ${OUTPUT}/dev/ptmx ]]; then
-	    if [[ -e ${OUTPUT}/dev/ptmx ]]; then
-	        mount --bind ${OUTPUT}/dev/pts/ptmx ${OUTPUT}/dev/ptmx
-	    else
-	        ln -s /dev/pts/ptmx ${OUTPUT}/dev/ptmx
-	    fi
-	fi
-
-	trap cleanup_chroot EXIT
-}
-
-# a few shortcuts
-chr() {
-    chroot ${OUTPUT} "$@"
-}
-
-chr_nofail() {
-    chroot ${OUTPUT} "$@" || true
-}
-
-chr_apt() {
-    chr apt-get install -y --force-yes "$@"
-}
-
-dbg() {
-    chr ls -l /dev/pts
-    chr ls -l /proc
-}
+ROOTFS_DIR=${OUTPUT}
+. "${SCRIPT_DIR}"/rootfs_env.sh
 
 echo "Install dependencies"
-apt-get install qemu-user-static binfmt-support || true
+apt-get install -y qemu-user-static binfmt-support || true
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	echo "Using existing $ROOTFS_BASE_TARBALL"
@@ -149,7 +89,7 @@ else
 	echo "Copy qemu to rootfs"
 	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-	modprobe binfmt_misc
+	modprobe binfmt_misc || true
 
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
 	cp ${CONFIG_DIR}/etc/hosts.wb ${OUTPUT}/etc/hosts
@@ -163,6 +103,11 @@ else
 
 	echo "Set root password"
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
+
+        echo "Install primary sources.list"
+        echo "deb http://httpredir.debian.org/debian wheezy main" >${OUTPUT}/etc/apt/sources.list
+        echo "deb http://httpredir.debian.org/debian wheezy-updates main" >>${OUTPUT}/etc/apt/sources.list
+        echo "deb http://security.debian.org wheezy/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
 	cp ${CONFIG_DIR}/etc/apt/sources.list.d/contactless.list ${OUTPUT}/etc/apt/sources.list.d/
@@ -186,10 +131,10 @@ else
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
 
-    PWD=`pwd`
+        WD=`pwd`
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
-	tar czpf ${PWD}/$ROOTFS_BASE_TARBALL --one-file-system ./
+	tar czpf ${WD}/$ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
 
