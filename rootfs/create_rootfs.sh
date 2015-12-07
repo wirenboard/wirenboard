@@ -7,7 +7,7 @@ wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu
 python-serial,memtester,apt-utils,dialog,locales,python3-minimal,unzip,minicom,\
 iw,ppp,libmodbus5,python-smbus,ssmtp
 #REPO="http://ftp.debian.org/debian"
-REPO="http://mirror.yandex.ru/debian"
+REPO="ftp://ftp.ru.debian.org/debian/"
 OUTPUT="rootfs"
 RELEASE=wheezy
 
@@ -21,10 +21,11 @@ then
 fi
 
 case "$2" in
-    5|4|32|28|MKA3|NETMON)
+    5|4|32|28|MKA3|NETMON|CQC10|AC-E1)
         ;;
     *)
-        echo "Unknown board"
+        echo "Unknown board" 
+        exit 1
         ;;
 esac
 
@@ -120,6 +121,13 @@ dbg() {
     chr ls -l /proc
 }
 
+chr_install_deb() {
+    DEB_FILE="$1"
+    cp ${DEB_FILE} ${OUTPUT}/
+    chr_nofail dpkg -i `basename ${DEB_FILE}`
+    rm ${OUTPUT}/`basename ${DEB_FILE}`
+}
+
 echo "Install dependencies"
 apt-get install qemu-user-static binfmt-support || true
 
@@ -210,8 +218,7 @@ chr_apt --force-yes $pkgs
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes linux-latest wb-mqtt-homeui wb-mqtt-confed
-chr /etc/init.d/mosquitto stop
+chr_apt --force-yes linux-latest wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -223,7 +230,7 @@ case "$BOARD" in
     "5" )
         # Wiren Board 5
         export FORCE_WB_VERSION=52
-        chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts
 
         set_fdt imx28-wirenboard52
     ;;
@@ -231,13 +238,12 @@ case "$BOARD" in
     "4" )
         # Wiren Board 4
         export FORCE_WB_VERSION=41
-        chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
         echo "Add rtl8188 hostapd package"
+
         RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-        cp ${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB} ${OUTPUT}/
-        chr_nofail dpkg -i ${RTL8188_DEB}
-        rm ${OUTPUT}/${RTL8188_DEB}
+        chr_install_deb "${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB}"
 
         set_fdt imx23-wirenboard41
     ;;
@@ -245,14 +251,12 @@ case "$BOARD" in
     "CQC10" )
         # CQC10 device
         export FORCE_WB_VERSION=CQC10
-        chr_apt wb-homa-w1 wb-homa-gpio wb-rules wb-mqtt-spl-meter
+        chr_apt wb-homa-w1 wb-homa-gpio wb-mqtt-spl-meter zabbix-agent wb-mqtt-homeui-mediamain
 
         echo "Add wb-mqtt-tcs34725 package"
-
-        TCS_DEB=/home/boger/work/board/cinema/wb-mqtt-tcs34725_1.0_all.deb
-        cp TCS_DEB ${OUTPUT}/
-        chr_nofail dpkg -i `basename ${TCS_DEB}`
-        rm ${OUTPUT}/`basename ${TCS_DEB}`
+        chr_install_deb /home/boger/work/board/cinema/wb-mqtt-tcs34725_1.1_all.deb
+        echo "Add wb-techneva package"
+        chr_install_deb /home/boger/work/board/cinema/wb-techneva/wb-techneva-cqc_1.1_all.deb
 
         set_fdt imx23-wirenboard-cqc10
 
@@ -260,7 +264,7 @@ case "$BOARD" in
     "32" )
         # WB Smart Home specific
         export FORCE_WB_VERSION=32
-        chr_apt wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
 
         chr_apt netplug hostapd
 
@@ -268,13 +272,15 @@ case "$BOARD" in
     ;;
 
     "28" )
+        export FORCE_WB_VERSION=28
+        chr_apt wb-mqtt-homeui
         set_fdt imx23-wirenboard28
     ;;
 
     "MKA3" )
         # MKA3
         export FORCE_WB_VERSION=KMON1
-        chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-dbic
+        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-dbic
 
         # https://github.com/contactless/wb-dbic
         cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
@@ -284,17 +290,24 @@ case "$BOARD" in
         set_fdt imx23-wirenboard-kmon1
     ;;
 
+    "AC-E1" )
+        export FORCE_WB_VERSION=28
+
+        set_fdt imx23-wirenboard-ac-e1
+    ;;
 
     "NETMON" )
         # NETMON-1
         export FORCE_WB_VERSION=KMON1
-        chr_apt wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
+        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
 
         chr_apt netplug
 
         set_fdt imx23-wirenboard-kmon1.dtb
     ;;
 esac
+
+chr /etc/init.d/mosquitto stop
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*

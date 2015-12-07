@@ -1,3 +1,10 @@
+wb-utils (1.60.4) stable; urgency=medium
+
+  * properly add RFM69 env variables for WB5
+  * add buzzer PWM number to wb_env
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 01 Dec 2015 21:19:27 +0300
+
 wb-utils (1.60.3) stalbe; urgency=medium
 
   * proper RFM69 env variables for WB5
