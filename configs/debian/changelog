@@ -1,3 +1,22 @@
+wb-configs (1.60.3) stable; urgency=medium
+
+  * add lirc config
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 07 Dec 2015 05:53:44 +0300
+
+wb-configs (1.60.2) stable; urgency=medium
+
+  * add zabbix agent config
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 24 Nov 2015 15:17:08 +0300
+
+wb-configs (1.60.1) stable; urgency=medium
+
+  *  do not move /etc/passwd
+  *  do not disable w1_therm on boot
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 09 Nov 2015 19:03:11 +0300
+
 wb-configs (1.60) stable; urgency=medium
 
   * move /root to /mnt/data
