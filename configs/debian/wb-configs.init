@@ -69,73 +69,87 @@ wb_check_data()
     return 0
 }
 
-wb_move()
+wb_fix_data_file()
 {
     local src_orig=$1
     local src=${1%/}
     local dst="$MNT${2:-$src}"
 
-    if [[ -h "$src" ]]; then                  # is it a symlink already?
-        if [[ -e "$src" ]]; then
-            local f=`readlink -f "$src"`
-            if [[ "$f" != "$dst" ]]; then
-                mv "$src" "${src}.default"
-                if [[ -e "$dst" ]]; then      # is there already a file in $MNT?
-                    log_action_msg "$src: replaced with symlink to existing $dst"
-                else
-                    mkdir -p `dirname "$dst"`
-                    cp -aH "$f" "$dst"
-                    log_action_msg "$src: copyed $f to $dst, replaced symlink"
-                fi
-                rm -rf "$src"
-                ln -Tfs "$dst" "$src"
-            else
-                log_action_msg "$src: good symlink, not touching"
-            fi
+    # ensure that file in /mnt/data exists. if not, copy from rootfs.
+    if [[ ! -e "$dst" ]]; then
+        local f=''
+        if [[ -f "${src}" || -d "${src}" ]]; then
+            f="$src"
+        elif [[ -e "${src}.default" ]]; then
+            f="${src}.default"
+        elif [[ -e "${src}.wb" ]]; then
+            f="${src}.wb"
+            rm -rf "${src}.default"
+            ln -Tfs "$f" "${src}.default"
+        elif [[ "${src_orig}" != "$src" ]]; then
+            mkdir -p "$dst"
+            f=$dst
         else
-            local f=''
-            if [[ -e "$dst" ]]; then
-                f=$dst
-            elif [[ -e "${src}.default" ]]; then
-                f="${src}.default"
-            elif [[ -e "${src}.wb" ]]; then
-                f="${src}.wb"
-                rm -rf "${src}.default"
-                ln -Tfs "$f" "${src}.default"
-            elif [[ "${src_orig}" != "$src" ]]; then
-                mkdir -p "$dst"
-                f=$dst
-            fi
+            log_warning_msg "$src: unable to find file to fix broken state"
+            return 1
+        fi
 
-            if [[ -n "$f" ]]; then
-                mkdir -p `dirname "$dst"`
-                [[ "$f" != "$dst" ]] && cp -aH "$f" "$dst"
-                rm -rf "$src"
-                ln -Tfs "$dst" "${src}"
-                log_action_msg "$src: broken symlink, repaired using existing file $f"
-            else
-                log_warning_msg "$src: broken symlink and unable to repair"
-            fi
+        log_action_msg "$src: fixing with existing file $f"
+        mkdir -p `dirname "$dst"`
+        [[ -n "$nosavefiles" ]] && find "$f" -type f -delete
+        cp -aH "$f" "$dst"
+
+        # create backup if there isn't one
+        if [[ ! -e "${src}.default" ]]; then
+            log_action_msg "$src: saving backup to ${src}.default"
+            cp -aH "$f" "${src}.default"
         fi
-    elif [[ -e "$src" ]]; then        # is it a regular file/dir?
-        mv "$src" "${src}.default"
-        if [[ -e "$dst" ]]; then      # is there already a file in $MNT?
-            log_action_msg "$src: replaced with symlink to existing $dst"
-        else
-            mkdir -p `dirname "$dst"`
-            cp -aH "${src}.default" "$dst"
-            [[ -n "$nosavefiles" ]] && find "${src}.default" -type f -delete
-            log_action_msg "$src: copyed to $dst, replaced with symlink"
-        fi
-        ln -Tfs "$dst" "${src}"
-    else
-        log_warning_msg "$src: is neither symlink or regular file, don't touch"
     fi
+}
+
+wb_move()
+{
+    wb_fix_data_file $1 || return $?
+
+    local src=${1%/}
+    local dst="$MNT${2:-$src}"
+
+    # is there an existing symlink?
+    if [[ -h "$src" && -e "$src" ]]; then
+        # it points to correct file?
+        local f=`readlink -f "$src"`
+        if [[ "$f" == "$dst" ]]; then
+            log_action_msg "$src: good symlink, not touching"
+            return 0
+        fi
+    fi
+
+    log_action_msg "$src: symlinking to $dst"
+    ln -Tfs "$dst" "$src"
 }
 
 wb_move_nosavefiles()
 {
     nosavefiles=1 wb_move "$@"
+}
+
+wb_move_bind()
+{
+    wb_fix_data_file $1 || return $?
+
+    local src=${1%/}
+    local dst="$MNT${2:-$src}"
+    log_action_msg "$src: binding to $dst"
+    umount -f $src 2>&1 >/dev/null
+    if [[ -d "$dst" && ! -d "$src" ]]; then
+        rm -rf "$src"
+        mkdir "$src"
+    fi
+    if [[ -f "$dst" && ! -f "$src" ]]; then
+        rm -f "$src"
+        touch "$src"
+    fi
+    mount --bind "$dst" "$src"
 }
 
 #
