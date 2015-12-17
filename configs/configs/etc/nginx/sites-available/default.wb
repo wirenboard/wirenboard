@@ -30,6 +30,8 @@ server {
 	server_name localhost;
 	try_files $uri $uri/ /index.html;
 
+	expires max;
+
 	location /fwupdate/upload {
 		limit_except POST {
 			deny all;
