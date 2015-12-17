@@ -1,3 +1,9 @@
+wb-configs (1.61) stable; urgency=medium
+
+  * add file change monitor for /etc/{passwd,shadow,group,gshadow}
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Thu, 17 Dec 2015 02:19:59 +0000
+
 wb-configs (1.60.3) stable; urgency=medium
 
   * add lirc config

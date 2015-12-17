@@ -8,7 +8,7 @@ Homepage: <insert the upstream URL, if relevant>
 
 Package: wb-configs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, wb-utils (>= 1.53)
+Depends: ${shlibs:Depends}, ${misc:Depends}, wb-utils (>= 1.53), inotify-tools
 Provides: ${diverted-files}
 Conflicts: ${diverted-files}
 Description: Default config files for Wiren Board rootfs

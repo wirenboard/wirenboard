@@ -16,6 +16,8 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="move config files to shared partition"
 NAME=wb-configs
 SCRIPTNAME=/etc/init.d/$NAME
+DAEMON=/usr/bin/wb-watch-configs
+PIDFILE=/var/run/wb-watch-configs.pid
 
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
@@ -153,6 +155,25 @@ wb_move_bind()
     mount --bind "$dst" "$src"
 }
 
+WB_WATCH_FILES=()
+
+wb_move_watch()
+{
+    wb_fix_data_file $1 || return $?
+
+    local src=$1
+    local dst="$MNT${2:-$src}"
+
+    [[ ! -f "$src" || -h "$src" ]] && rm "$src"
+    diff -q "$src" "$dst" >/dev/null 2>&1 || {
+        log_action_msg "$src: copying from $dst"
+        cp -aH "$dst" "$src"
+    }
+
+    log_action_msg "$src: watching for changes"
+    WB_WATCH_FILES+=("$src")
+}
+
 #
 # Function that starts the daemon/service
 #
@@ -169,8 +190,13 @@ do_start()
 
     log_action_msg "Checking symlinks to $MNT"
     for item in /etc/wb-configs.d/*; do
+        grep -q '\.dpkg-old$' <<< "$item" && continue
         source "$item"
     done
+
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --background --no-close --startas $DAEMON --test &&
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --background --no-close --exec $DAEMON -- ${WB_WATCH_FILES[@]} ||
+        log_warning_msg "Unable to start $DAEMON"
 
     [[ "${md5_interfaces}" != "`md5sum /etc/network/interfaces`" ||
        "`cat /sys/class/net/eth0/address`" != "`cat /var/lib/wirenboard/serial.conf`" ]] && {
@@ -200,6 +226,20 @@ do_stop()
 	#   2 if daemon could not be stopped
 	#   other if a failure occurred
 
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	# Wait for children to finish too if this is a daemon that forks
+	# and if the daemon is only ever run from this initscript.
+	# If the above conditions are not satisfied then add some other code
+	# that waits for the process to drop all resources that could be
+	# needed by services started subsequently.  A last resort is to
+	# sleep for some time.
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+	[ "$?" = 2 ] && return 2
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PIDFILE
+	return "$RETVAL"
     return 0;
 
 }

@@ -8,7 +8,7 @@
 # wb_move_nosavefiles - do the same, but don't backup files, only directory structure and symlinks
 
 for f in passwd shadow group gshadow; do
-	wb_move_bind /etc/${f}
+	wb_move_watch /etc/${f}
 done
 
 wb_move /etc/network/interfaces
