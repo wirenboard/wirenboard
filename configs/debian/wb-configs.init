@@ -125,6 +125,7 @@ wb_move()
     fi
 
     log_action_msg "$src: symlinking to $dst"
+    rm -rf "$src"
     ln -Tfs "$dst" "$src"
 }
 
