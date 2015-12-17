@@ -6,6 +6,8 @@
 #
 # wb_move - basic variant, moves ${1} to /mnt/data/${2:-$1}, saving backups to ${1}.default
 # wb_move_nosavefiles - do the same, but don't backup files, only directory structure and symlinks
+# wb_move_bind - use bind mount instead of symlink
+# wb_move_watch - continuously monitor file for changes and copy as needed
 
 for f in passwd shadow group gshadow; do
 	wb_move_watch /etc/${f}
