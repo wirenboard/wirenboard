@@ -1,2 +1,14 @@
 #!/bin/bash
-docker run -it --privileged --rm -e DEV_UID=$UID -e DEV_USER=$USER -e DEV_DIR="$PWD" -v $HOME:$HOME -h wbdevenv contactless/devenv "$@"
+DOCKER_TTY_OPTS=-i
+if [ -t 0 ]; then
+    DOCKER_TTY_OPTS=-it
+fi
+docker run $DOCKER_TTY_OPTS --privileged --rm \
+       -e DEV_UID=$UID \
+       -e DEV_USER=$USER \
+       -e DEV_DIR="$PWD" \
+       -e DEV_TERM="$TERM" \
+       -v $HOME:$HOME \
+       -h wbdevenv \
+       contactless/devenv \
+       "$@"
