@@ -1,0 +1,62 @@
+/config/default_dashboard/uid	dashboard1
+/config/rooms/room1/uid	room1
+/config/rooms/room1/name	Main
+/config/widgets/widget1/controls/slot0/uid	slot0
+/config/widgets/widget1/controls/slot0/topic	/devices/wb-adc/controls/A1
+/config/widgets/widget1/name	Sensor 1
+/config/widgets/widget1/room	room1
+/config/widgets/widget1/template	sensor
+/config/widgets/widget1/uid	widget1
+/config/widgets/widget2/controls/slot0/uid	slot0
+/config/widgets/widget2/controls/slot0/topic	/devices/wb-adc/controls/A2
+/config/widgets/widget2/name	Sensor 2
+/config/widgets/widget2/room	room1
+/config/widgets/widget2/template	sensor
+/config/widgets/widget2/uid	widget2
+/config/widgets/widget3/controls/slot0/uid	slot0
+/config/widgets/widget3/controls/slot0/topic	/devices/wb-gpio/controls/A3_IN
+/config/widgets/widget3/name	Binary Sensor 3
+/config/widgets/widget3/room	room1
+/config/widgets/widget3/template	open_closed_sensor
+/config/widgets/widget3/uid	widget3
+/config/dashboards/dashboard1/name	Main
+/config/dashboards/dashboard1/uid	dashboard1
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/uid	slot0
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/topic/name	A1
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/topic/value	0.04
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/topic/topic	/devices/wb-adc/controls/A1
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/topic/metaType	voltage
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/topic/metaOrder	0
+/config/dashboards/dashboard1/widgets/widget0/controls/slot0/topic/$$hashKey	object:18
+/config/dashboards/dashboard1/widgets/widget0/uid	widget1
+/config/dashboards/dashboard1/widgets/widget0/name	Sensor 1
+/config/dashboards/dashboard1/widgets/widget0/room	room1
+/config/dashboards/dashboard1/widgets/widget0/template	sensor
+/config/dashboards/dashboard1/widgets/widget0/canEdit	false
+/config/dashboards/dashboard1/widgets/widget0/$$hashKey	object:510
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/uid	slot0
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/topic/name	A2
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/topic/value	0.04
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/topic/topic	/devices/wb-adc/controls/A2
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/topic/metaType	voltage
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/topic/metaOrder	1
+/config/dashboards/dashboard1/widgets/widget1/controls/slot0/topic/$$hashKey	object:23
+/config/dashboards/dashboard1/widgets/widget1/uid	widget2
+/config/dashboards/dashboard1/widgets/widget1/name	Sensor 2
+/config/dashboards/dashboard1/widgets/widget1/room	room1
+/config/dashboards/dashboard1/widgets/widget1/template	sensor
+/config/dashboards/dashboard1/widgets/widget1/canEdit	false
+/config/dashboards/dashboard1/widgets/widget1/$$hashKey	object:511
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/uid	slot0
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/name	A3_IN
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/value	0
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/topic	/devices/wb-gpio/controls/A3_IN
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/metaType	switch
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/metaOrder	12
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/metaReadonly	1
+/config/dashboards/dashboard1/widgets/widget2/controls/slot0/topic/$$hashKey	object:111
+/config/dashboards/dashboard1/widgets/widget2/uid	widget3
+/config/dashboards/dashboard1/widgets/widget2/name	Binary Sensor 3
+/config/dashboards/dashboard1/widgets/widget2/room	room1
+/config/dashboards/dashboard1/widgets/widget2/template	open_closed_sensor
+/config/dashboards/dashboard1/widgets/widget2/$$hashKey	object:512
