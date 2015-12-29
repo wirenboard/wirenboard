@@ -6,8 +6,13 @@
 #
 # wb_move - basic variant, moves ${1} to /mnt/data/${2:-$1}, saving backups to ${1}.default
 # wb_move_nosavefiles - do the same, but don't backup files, only directory structure and symlinks
+# wb_move_bind - use bind mount instead of symlink
+# wb_move_watch - continuously monitor file for changes and copy as needed
 
-wb_move /etc/shadow
+for f in passwd shadow group gshadow; do
+	wb_move_watch /etc/${f}
+done
+
 wb_move /etc/network/interfaces
 wb_move /etc/resolv.conf
 wb_move /etc/ssh
@@ -16,7 +21,7 @@ wb_move /etc/hostapd.conf
 wb_move /var/lib/wirenboard
 wb_move /var/lib/mosquitto
 wb_move_nosavefiles /var/log/
-wb_move_nosavefiles /root/
+wb_move /root/
 wb_move_nosavefiles /var/cache/apt/             # just fat, move it out
 wb_move_nosavefiles /var/lib/apt/lists/			# -//-
 wb_move_nosavefiles /var/www/uploads/ /uploads  # here will be firmware updates

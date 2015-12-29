@@ -62,12 +62,6 @@ RUN (cd /tmp && \
 # build and install google test
 RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
 
-RUN /bin/echo 'export TERM=xterm' >/tmp/bash.bashrc && \
-    /bin/echo 'export GOPATH="$HOME/go"' >>/tmp/bash.bashrc && \
-    /bin/echo 'export PATH="/usr/local/go/bin:$PATH"' >>/tmp/bash.bashrc && \
-    /bin/echo 'mkdir -p "$GOPATH"' >>/tmp/bash.bashrc && \
-    cat /etc/bash.bashrc >>/tmp/bash.bashrc && \
-    mv /tmp/bash.bashrc /etc/bash.bashrc && \
-    /bin/echo '[ -f /.devdir ] && cd "$(cat /.devdir)"' >/etc/profile.d/devdir.sh
+COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
 RUN npm install -g bower grunt-cli

@@ -1,0 +1,37 @@
+#!/bin/bash
+#set -x
+
+WATCH_FILES=( $@ )
+WATCH_DIRS=( $(
+	for f in "${WATCH_FILES[@]}"; do
+		dirname "$f"
+	done | sort -u
+) )
+
+MNT="/mnt/data"
+PID_FILE="/var/run/wb-watch-configs.pid"
+cleanup() {
+	[[ -f "$PID_FILE" ]] && kill `cat "$PID_FILE"` 2>/dev/null
+	rm -f "$PID_FILE"
+}
+
+log() {
+	logger -t wb-watch-configs "$*"
+}
+
+(
+	echo "$BASHPID" > "$PID_FILE"
+	2>/dev/null exec inotifywait -m \
+		--event close_write,moved_to \
+		--format '%w%f %e' \
+		$WATCH_DIRS
+) | {
+trap cleanup EXIT
+
+while read EVENT_FILE EVENT_TYPE; do
+	grep -q "$EVENT_FILE" <<<"${WATCH_FILES[@]}" || continue
+	log "$EVENT_FILE was changed"
+	DST="${MNT}${EVENT_FILE}"
+	cp "$EVENT_FILE" "$DST"
+done
+}

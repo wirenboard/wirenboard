@@ -23,7 +23,7 @@ chr bash -c "dpkg -i /dh-virtualenv_*.deb"
 # build and install google test
 chr bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
 
-cp /etc/profile.d/devdir.sh /rootfs/etc/profile.d/
+cp /etc/profile.d/wbdev_profile.sh /rootfs/etc/profile.d/
 
 chr apt-get clean
 rm -rf /rootfs/dh-virtualenv

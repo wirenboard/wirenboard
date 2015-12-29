@@ -5,6 +5,9 @@ cmd=user
 root=
 shell_cmd=
 
+echo "$DEV_TERM" >/.term
+export TERM="$DEV_TERM"
+
 if [ $# -gt 0 ]; then
     cmd="$1"
     shift
@@ -45,12 +48,22 @@ fi
 # fix package installation issues
 chown -R "$DEV_USER.$DEV_GROUP" /usr/local/go
 
-chu () {
+# setup Go environment (for non-login shell cases)
+. /etc/profile.d/wbdev_profile.sh
+
+devsudo () {
     # Note: here we use sudo because
     # 1 - current debian su doesn't support --session-command flag
     #     thus causing 'no job control' errors in subshell
     # 2 - su -c causes argument expansion problems with "$@"
-    sudo -u "$DEV_USER" proot -R /rootfs -q qemu-arm-static $shell_cmd "$@"
+    # Also we use 'env' here because without it (i.e. when
+    # utilizing sudo's own environment passing mechanism)
+    # PATH gets overridden in the subshell
+    sudo -E -u "$DEV_USER" env HOME="/home/$DEV_USER" PATH="$PATH" "$@"
+}
+
+chu () {
+    devsudo proot -R /rootfs -q qemu-arm-static $shell_cmd "$@"
 }
 
 case "$cmd" in
@@ -58,17 +71,17 @@ case "$cmd" in
         if [ -n "$shell_cmd" ]; then
             su - "$DEV_USER"
         else
-            su -p "$DEV_USER" -c "$@"
+            devsudo "$@"
         fi
         ;;
     ndeb)
-        su "$DEV_USER" -c "dpkg-buildpackage -us -uc"
+        devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
-        su "$DEV_USER" -c bash -c '. /etc/bash.bashrc; CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc'
+        devsudo CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc "$@"
         ;;
     hmake)
-        sudo -u "$DEV_USER" make "$@"
+        devsudo make "$@"
         ;;
     root)
         $shell_cmd "$@"
@@ -80,7 +93,7 @@ case "$cmd" in
         chu make "$@"
         ;;
     cdeb)
-        chu dpkg-buildpackage -us -uc
+        chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
         proot -R /rootfs -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
