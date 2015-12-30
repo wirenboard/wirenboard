@@ -18,3 +18,4 @@
 /etc/nfc/libnfc.conf.wb
 
 /etc/lirc/hardware.conf.wb
+/etc/sysctl.conf.wb
