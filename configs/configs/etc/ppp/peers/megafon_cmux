@@ -5,6 +5,9 @@
 
 115200
 
+#disable hardware flow control
+nocrtscts
+
 # Assumes that your IP address is allocated dynamically by the ISP.
 noipdefault
 # Try to get the name server addresses from the ISP.
