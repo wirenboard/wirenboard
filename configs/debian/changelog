@@ -1,3 +1,11 @@
+wb-configs (1.62) stable; urgency=medium
+
+  * disable hardware flow control in ppp configs
+  * add gammu config
+  * add minicom configs for WB5 RS-485 ports
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 14 Jan 2016 17:22:39 +0300
+
 wb-configs (1.61) stable; urgency=medium
 
   * add file change monitor for /etc/{passwd,shadow,group,gshadow}
