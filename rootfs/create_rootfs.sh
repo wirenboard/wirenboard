@@ -157,6 +157,8 @@ pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
 pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto"
 
 pkgs+=" openssl ca-certificates"
+
+pkgs+=" avahi-daemon"
 chr_apt --force-yes $pkgs
 
 # stop mosquitto on host
