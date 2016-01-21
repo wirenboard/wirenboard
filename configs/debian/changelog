@@ -1,3 +1,10 @@
+wb-configs (1.63) stable; urgency=medium
+
+  * fix passing optional second argument for wb_move_*
+  * add configfs to /etc/fstab
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Thu, 21 Jan 2016 18:52:24 +0000
+
 wb-configs (1.62) stable; urgency=medium
 
   * disable hardware flow control in ppp configs
