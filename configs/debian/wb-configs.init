@@ -111,7 +111,7 @@ wb_fix_data_file()
 
 wb_move()
 {
-    wb_fix_data_file $1 || return $?
+    wb_fix_data_file "$@" || return $?
 
     local src=${1%/}
     local dst="$MNT${2:-$src}"
@@ -138,7 +138,7 @@ wb_move_nosavefiles()
 
 wb_move_bind()
 {
-    wb_fix_data_file $1 || return $?
+    wb_fix_data_file "$@" || return $?
 
     local src=${1%/}
     local dst="$MNT${2:-$src}"
@@ -159,7 +159,7 @@ WB_WATCH_FILES=()
 
 wb_move_watch()
 {
-    wb_fix_data_file $1 || return $?
+    wb_fix_data_file "$@" || return $?
 
     local src=$1
     local dst="$MNT${2:-$src}"
