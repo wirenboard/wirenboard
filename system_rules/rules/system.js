@@ -8,6 +8,9 @@ defineVirtualDevice("system", {
     "Firmware version": {
       type: "text",
       value: "0"
+    },
+    "Reboot": {
+      type: "pushbutton"
     }
   }
 });
@@ -28,5 +31,12 @@ spawn('cat', ['/etc/wb-fw-version'], {
   captureOutput: true,
   exitCallback: function (exitCode, capturedOutput) {
     dev.system["Firmware version"] = capturedOutput;
+  }
+});
+
+defineRule("_system_reboot", {
+  whenChanged: [ "system/Reboot" ],
+  then: function(newValue, devName, cellName) {
+    runShellCommand("reboot &");
   }
 });
