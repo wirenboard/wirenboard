@@ -7,7 +7,7 @@ wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu
 python-serial,memtester,apt-utils,dialog,locales,python3-minimal,unzip,minicom,\
 iw,ppp,libmodbus5,python-smbus,ssmtp
 #REPO="http://ftp.debian.org/debian"
-REPO="ftp://ftp.ru.debian.org/debian/"
+REPO="http://mirror.yandex.ru/debian/"
 OUTPUT="rootfs"
 RELEASE=wheezy
 
