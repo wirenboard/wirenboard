@@ -142,7 +142,7 @@ else
         WD=`pwd`
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
-	tar czpf ${WD}/$ROOTFS_BASE_TARBALL --one-file-system ./
+	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
 
@@ -177,7 +177,7 @@ case "$BOARD" in
     "5" )
         # Wiren Board 5
         export FORCE_WB_VERSION=52
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager
 
         set_fdt imx28-wirenboard52
     ;;
