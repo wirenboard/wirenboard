@@ -1,3 +1,9 @@
+wb-configs (1.64) stable; urgency=medium
+
+  * add wheezy-backports to apt sources
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Thu, 04 Feb 2016 02:45:33 +0000
+
 wb-configs (1.63) stable; urgency=medium
 
   * fix passing optional second argument for wb_move_*
