@@ -41,6 +41,16 @@ VERBOSE="yes"
 
 . /etc/wb_env.sh
 
+gpio_set() {
+	local gpio="/sys/class/gpio/gpio${1}"
+	if [ ! -d "$gpio" ]; then
+	    echo "${1}" > /sys/class/gpio/export || return $?
+	fi
+	
+	echo "$2" > "$gpio/direction"
+	echo "$2" > "$gpio/direction"
+}
+
 do_start()
 {
 	# Return
@@ -60,15 +70,12 @@ do_start()
             #  blink green led
             echo timer > /sys/class/leds/green/trigger
             echo 0 > /sys/class/leds/red/brightness
+
+            gpio_set ${WB_GPIO_5V_ON} high
         ;;
 
         "KMON1" )
-            if [ ! -d /sys/class/gpio/gpio${WB_GPIO_5V_ISOLATED_ON} ]; then
-                echo $WB_GPIO_5V_ISOLATED_ON > /sys/class/gpio/export
-            fi
-
-            echo high > /sys/class/gpio/gpio${WB_GPIO_5V_ISOLATED_ON}/direction
-            echo high > /sys/class/gpio/gpio${WB_GPIO_5V_ISOLATED_ON}/direction
+            gpio_set ${WB_GPIO_5V_ISOLATED_ON} high
         ;;
 
 

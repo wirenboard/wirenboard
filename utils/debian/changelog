@@ -1,3 +1,9 @@
+wb-utils (1.60.5) stable; urgency=medium
+
+  * enable 5V_OUT on WB5
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Thu, 04 Feb 2016 20:45:51 +0000
+
 wb-utils (1.60.4) stable; urgency=medium
 
   * properly add RFM69 env variables for WB5
