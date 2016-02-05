@@ -177,7 +177,7 @@ case "$BOARD" in
     "5" )
         # Wiren Board 5
         export FORCE_WB_VERSION=52
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager
 
         set_fdt imx28-wirenboard52
     ;;
@@ -185,7 +185,7 @@ case "$BOARD" in
     "4" )
         # Wiren Board 4
         export FORCE_WB_VERSION=41
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
         echo "Add rtl8188 hostapd package"
 
@@ -211,7 +211,7 @@ case "$BOARD" in
     "32" )
         # WB Smart Home specific
         export FORCE_WB_VERSION=32
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-homa-modbus wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
 
         chr_apt netplug hostapd
 
@@ -246,7 +246,7 @@ case "$BOARD" in
     "NETMON" )
         # NETMON-1
         export FORCE_WB_VERSION=KMON1
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-homa-modbus wb-rules
+        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-mqtt-serial wb-rules
 
         chr_apt netplug
 

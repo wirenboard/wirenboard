@@ -21,7 +21,7 @@ class TestRS485(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        subprocess.call("killall -9 wb-homa-modbus", shell=True)
+        subprocess.call("killall -9 wb-mqtt-serial", shell=True)
 
 
 
