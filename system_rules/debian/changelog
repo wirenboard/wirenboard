@@ -1,3 +1,10 @@
+wb-rules-system (1.3.1) stable; urgency=medium
+
+  * use board-specific PWM number for buzzer
+ 
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 08 Feb 2016 19:20:19 +0300
+
 wb-rules-system (1.3) stable; urgency=medium
 
   * add 'reboot' button
