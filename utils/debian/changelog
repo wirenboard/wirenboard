@@ -1,3 +1,9 @@
+wb-utils (1.60.6) stable; urgency=medium
+
+  * reset RTS on RS-485 transcievers
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 08 Feb 2016 13:30:42 +0300
+
 wb-utils (1.60.5) stable; urgency=medium
 
   * enable 5V_OUT on WB5
