@@ -11,6 +11,7 @@
 /etc/dnsmasq.conf.wb
 /etc/hostapd.conf.wb
 /etc/default/hostapd.wb
+/etc/watchdog.conf.wb
 
 /etc/ppp/chap-secrets.wb
 
