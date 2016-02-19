@@ -19,7 +19,8 @@ RUN apt-get update && \
       libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.9 g++-4.9 libmodbus-dev \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
       valgrind libgtest-dev cmake config-package-dev \
-      python-netaddr python-pyparsing liblircclient-dev
+      python-netaddr python-pyparsing liblircclient-dev \
+      libusb-dev libusb-1.0-0-dev
 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
