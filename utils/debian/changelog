@@ -1,3 +1,9 @@
+wb-utils (1.61) stable; urgency=medium
+
+  * adds WB5.5 support
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 19 Feb 2016 20:02:49 +0300
+
 wb-utils (1.60.6) stable; urgency=medium
 
   * reset RTS on RS-485 transcievers
