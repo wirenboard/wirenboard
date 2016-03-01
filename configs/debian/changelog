@@ -1,3 +1,16 @@
+wb-configs (1.66) stable; urgency=medium
+
+  * Enable proxying of MQTT websocket to make it accessible via http://host:80/mqtt
+  * Enable (optional) global basic auth
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 12 Feb 2016 02:17:41 +0300
+
+wb-configs (1.65) stable; urgency=medium
+
+  * move lircd configs to data partition
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 09 Feb 2016 13:06:08 +0300
+
 wb-configs (1.64) stable; urgency=medium
 
   * add wheezy-backports to apt sources
