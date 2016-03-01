@@ -1,3 +1,9 @@
+wb-configs (1.67) stable; urgency=medium
+
+  * add watchdog config
+
+ -- Alexey Ignatov <lexszero@gmail.com>  Sat, 13 Feb 2016 05:18:11 +0000
+
 wb-configs (1.66) stable; urgency=medium
 
   * Enable proxying of MQTT websocket to make it accessible via http://host:80/mqtt
