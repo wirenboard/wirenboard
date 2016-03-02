@@ -1,9 +1,7 @@
 
 import unittest
 from collections import OrderedDict
-import os
 import sys
-import time
 import subprocess
 sys.path.insert(0, "../common")
 
@@ -26,6 +24,7 @@ import can
 from gpio import GPIO
 
 from gdocs import GSheetsLog
+from uid import get_mac, get_cpuinfo_serial
 
 
 class WB5TestW1(w1.TestW1):
@@ -42,28 +41,27 @@ class WB5TestRS485(rs485.TestRS485):
         subprocess.call("ifconfig can0 down", shell=True)
         subprocess.call("ifconfig can1 down", shell=True)
 
+
 class WB5TestRFM69(rf433.TestRFM69):
-    SPI_MAJOR = 32765 # -1
+    SPI_MAJOR = 32765  # -1
     SPI_MINOR = 0
     IRQ_GPIO = 38
-
 
 
 gsm_test = gsm.TestGSMMTS
 # gsm_test = gsm.TestGSMegafon
 
 mapping = OrderedDict([
-    ( WB5TestRS485      , 8 ),
-    ( wifi.TestWifi , 9 ),
-    ( WB5TestRFM69  , 10 ),
-    ( wb5_adc.TestADC          , 6 ),
-    ( WB5TestW1            , 7 ),
-    ( network.TestNetwork,   3 ),
-    ( can.TestCAN,  4 ),
-    ( gsm_test          , 2 ),
-    ( gsm.TestGSMRTC        , 5 ),
+    (WB5TestRS485, 7),
+    (wifi.TestWifi, 8),
+    (WB5TestRFM69, 9),
+    (wb5_adc.TestADC, 5),
+    (WB5TestW1, 6),
+    (network.TestNetwork, 2),
+    (can.TestCAN, 3),
+    (gsm_test, 1),
+    (gsm.TestGSMRTC, 4),
 ])
-
 
 
 def suite():
@@ -75,18 +73,10 @@ def suite():
     return suite
 
 
-
-
-def get_mac():
-   return os.popen('wb-gen-serial').read().strip()
-
-
 def print_sn(sn):
     print "====================================="
     print "IMEI SN:     %s %s      " % (str(sn)[:3], str(sn)[3:])
     print "====================================="
-
-
 
 
 if __name__ == '__main__':
@@ -102,18 +92,18 @@ if __name__ == '__main__':
     beep.setup()
     beep.test()
 
-
     gsm.init_gsm()
     imei = gsm.gsm_get_imei()
     print "imei=%s" % imei
 
+    cpuinfo_serial = str(get_cpuinfo_serial())
+    print "cpuinfo serial: ", cpuinfo_serial
 
     mac = get_mac()
 
     result = unittest.TextTestRunner(verbosity=2).run(suite())
 
-
-    results_row = ['--', ]  * (max(mapping.values()) + 1)
+    results_row = ['--', ] * (max(mapping.values()) + 1)
 
     for test_class, test_index in mapping.iteritems():
         results_row[test_index] = 'OK'
@@ -122,7 +112,6 @@ if __name__ == '__main__':
         test_index = mapping[test.__class__]
         results_row[test_index] = 'FAIL'
 
-
     #~ adc_cal = wb4_adc.AdcCalibrate()
     #~ print "r1 constants for R1 and R2 channels:", adc_cal.get_r1_calib(), adc_cal.get_r2_calib()
 
@@ -130,10 +119,7 @@ if __name__ == '__main__':
 
     #~ results_row.append(MEM_TYPE)
 
-
-
     overall_status = 'OK' if result.wasSuccessful() else 'FAIL'
-
 
     prefix, sn, crc = GSheetsLog.split_imei(imei)
 
@@ -150,14 +136,10 @@ if __name__ == '__main__':
         leds.blink_fast('red')
         leds.set_brightness('green', 0)
 
-
-
     print "sending data to google..."
 
-    log = GSheetsLog('https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0', '../common/Commissioning-30b68b322b7c.json')
-    log.update_data(imei, overall_status, [mac,] +  results_row)
-
-
-
+    log = GSheetsLog('https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0',
+                     '../common/Commissioning-30b68b322b7c.json')
+    log.update_data(imei, overall_status, [mac, cpuinfo_serial] + results_row)
 
     print "Done!"

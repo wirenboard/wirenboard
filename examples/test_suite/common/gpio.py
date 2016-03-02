@@ -2,6 +2,7 @@ import threading
 import select
 from collections import defaultdict
 
+
 class GPIOHandler(object):
     IN = "in"
     OUT = "out"
@@ -19,7 +20,7 @@ class GPIOHandler(object):
 
         self.epoll = select.epoll()
 
-        self.polling_thread = threading.Thread(target = self.gpio_polling_thread)
+        self.polling_thread = threading.Thread(target=self.gpio_polling_thread)
         self.polling_thread.daemon = True
         self.polling_thread.start()
 
@@ -39,19 +40,18 @@ class GPIOHandler(object):
                         else:
                             self.gpio_first_event_fired[gpio] = True
 
-
     def export(self, gpio):
-        open('/sys/class/gpio/export','wt').write("%d\n" % gpio)
+        open('/sys/class/gpio/export', 'wt').write("%d\n" % gpio)
 
     def unexport(self, gpio):
-        open('/sys/class/gpio/unexport','wt').write("%d\n" % gpio)
+        open('/sys/class/gpio/unexport', 'wt').write("%d\n" % gpio)
 
     def setup(self, gpio, direction):
         self.export(gpio)
         open('/sys/class/gpio/gpio%d/direction' % gpio, 'wt').write("%s\n" % direction)
 
     def _open(self, gpio):
-        fd  = open('/sys/class/gpio/gpio%d/value' % gpio, 'r+')
+        fd = open('/sys/class/gpio/gpio%d/value' % gpio, 'r+')
         self.gpio_fds[gpio] = fd
 
     def _check_open(self, gpio):
@@ -65,16 +65,15 @@ class GPIOHandler(object):
         self.gpio_fds[gpio].write('1' if value else '0')
         self.gpio_fds[gpio].flush()
 
-
     def input(self, gpio):
         self._check_open(gpio)
 
         self.gpio_fds[gpio].seek(0)
-        val= self.gpio_fds[gpio].read().strip()
+        val = self.gpio_fds[gpio].read().strip()
         return False if val == '0' else True
 
     def request_gpio_interrupt(self, gpio, edge):
-        val = open('/sys/class/gpio/gpio%d/edge' % gpio, 'wt').write("%s\n" % edge)
+        open('/sys/class/gpio/gpio%d/edge' % gpio, 'wt').write("%s\n" % edge)
         self._check_open(gpio)
 
     def add_event_detect(self, gpio, edge, callback):
@@ -93,16 +92,14 @@ class GPIOHandler(object):
         if ret is not None:
             self.epoll.unregister(self.gpio_fds[gpio])
 
-
     def wait_for_edge(self, gpio, edge, timeout=None):
-        if timeout == None:
+        if timeout is None:
             timeout = 1E100
 
         event = threading.Event()
         event.clear()
-        callback = lambda x: event.set()
 
-        self.add_event_detect(gpio, edge, callback)
+        self.add_event_detect(gpio, edge, lambda x: event.set())
         #~ print "wait for edge..."
         ret = event.wait(timeout)
         #~ print "wait for edge done"
@@ -110,8 +107,5 @@ class GPIOHandler(object):
 
         return ret
 
-
     #~ self.irq_gpio, GPIO.RISING, callback=self.interruptHandler)
 GPIO = GPIOHandler()
-
-
