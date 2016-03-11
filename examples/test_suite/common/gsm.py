@@ -24,6 +24,19 @@ def gsm_get_imei():
 
     return stdout.strip()
 
+def split_imei(imei):
+    imei = str(imei)
+    if not imei.isdigit():
+        raise RuntimeError("imei is not a numerical")
+
+    if len(imei) != 15:
+        raise RuntimeError("wrong imei len")
+
+    prefix = imei[:8]
+    sn = imei[8:14]
+    crc = imei[14]
+
+    return int(prefix), int(sn), int(crc)
 
 class TestGSM(unittest.TestCase):
     @classmethod
@@ -90,11 +103,9 @@ class TestGSMRTC(unittest.TestCase):
 
     RTC_TIMEOUT_SECONDS = 0
 
-    @classmethod
-    def setUpClass(cls):
-        init_gsm()
-
     def test_rtc(self):
+        init_gsm()
+        
         # large capacitor parallel to battery in WB4 prevent it from working...
 
         subprocess.call("wb-gsm-rtc save_time", shell=True)

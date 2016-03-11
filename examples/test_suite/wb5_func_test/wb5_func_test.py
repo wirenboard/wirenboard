@@ -2,13 +2,15 @@
 import unittest
 from collections import OrderedDict
 import sys
+import datetime
+import hashlib
 import subprocess
 sys.path.insert(0, "../common")
 
 import leds
 import gsm
 import w1
-
+import sysinfo
 
 #~ import gpio
 import rs485
@@ -17,15 +19,20 @@ import network
 import beeper
 
 import wb5_adc
-import wb5_di
 import rf433
 import wifi
 import can
-from gpio import GPIO
 
 from gdocs import GSheetsLog
 from uid import get_mac, get_cpuinfo_serial
 
+def reduce_hash(digest_str, modulo):
+    remainder = 0
+    for c in digest_str:
+        remainder = remainder * 256
+        remainder = remainder + ord(c)
+        remainder = remainder % modulo
+    return remainder
 
 class WB5TestW1(w1.TestW1):
     NUMBER_REQUIRED = 1
@@ -75,7 +82,7 @@ def suite():
 
 def print_sn(sn):
     print "====================================="
-    print "IMEI SN:     %s %s      " % (str(sn)[:3], str(sn)[3:])
+    print "Short SN:     %s %s      " % (str(sn)[:3], str(sn)[3:])
     print "====================================="
 
 
@@ -92,15 +99,35 @@ if __name__ == '__main__':
     beep.setup()
     beep.test()
 
-    gsm.init_gsm()
-    imei = gsm.gsm_get_imei()
-    print "imei=%s" % imei
+    wifi_mac = wifi.get_wlan_mac()
+    wb_version = sysinfo.get_wb_version()
+    fw_version = sysinfo.get_fw_version()
+
+    try:
+        gsm.init_gsm()
+    except RuntimeError:
+        print "No GSM modem detected"
+        imei = None
+    else:
+        imei = gsm.gsm_get_imei()
+        print "imei=%s" % imei
 
     cpuinfo_serial = str(get_cpuinfo_serial())
     print "cpuinfo serial: ", cpuinfo_serial
 
     mac = get_mac()
 
+    if imei is not None:
+        imei_prefix, imei_sn, imei_crc = gsm.split_imei(imei)
+        board_id = imei
+        short_sn = imei_sn
+    else:
+        board_id = cpuinfo_serial + (wifi_mac if wifi_mac else "")
+        short_sn = "1" + str(reduce_hash(hashlib.md5(board_id).digest(), 1000000))
+        imei_prefix = "-"
+    print_sn(short_sn)
+    
+    
     result = unittest.TextTestRunner(verbosity=2).run(suite())
 
     results_row = ['--', ] * (max(mapping.values()) + 1)
@@ -121,12 +148,10 @@ if __name__ == '__main__':
 
     overall_status = 'OK' if result.wasSuccessful() else 'FAIL'
 
-    prefix, sn, crc = GSheetsLog.split_imei(imei)
-
     print "====================================="
     print "Overall status:    %s    " % overall_status
     print "====================================="
-    print_sn(sn)
+    print_sn(short_sn)
 
     if len(result.errors + result.failures) == 0:
         leds.set_brightness('red', 0)
@@ -140,6 +165,11 @@ if __name__ == '__main__':
 
     log = GSheetsLog('https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0',
                      '../common/Commissioning-30b68b322b7c.json')
-    log.update_data(imei, overall_status, [mac, cpuinfo_serial] + results_row)
+    test_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log.update_data(board_id, short_sn, overall_status,
+                    [imei_prefix, wifi_mac, mac, cpuinfo_serial] +
+                    results_row +
+                    ["-", wb_version, fw_version, test_date]
+                    )
 
     print "Done!"

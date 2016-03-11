@@ -4,7 +4,7 @@ from oauth2client.client import SignedJwtAssertionCredentials
 
 
 class GSheetsLog(object):
-    IMEI_COL = 3
+    BOARD_ID_COL = 3
 
     def __init__(self, url, key_fname):
         json_key = json.load(open(key_fname))
@@ -16,13 +16,13 @@ class GSheetsLog(object):
         self.wks = self.gc.open_by_url(url)
         self.worksheet = self.wks.get_worksheet(0)
 
-    def find_row(self, imei):
-        imei_sn = str(imei)
-        sn_list = self.worksheet.col_values(self.IMEI_COL)[1:]
-        if imei_sn not in sn_list:
+    def find_row(self, board_id):
+        board_id = str(board_id)
+        sn_list = self.worksheet.col_values(self.BOARD_ID_COL)[1:]
+        if board_id not in sn_list:
             return
 
-        return sn_list.index(imei) + 2
+        return sn_list.index(board_id) + 2
 
     def insert_row(self, row_number, row, position=1):
         if len(row) == 0:
@@ -36,32 +36,18 @@ class GSheetsLog(object):
             cell.value = row[i]
         self.worksheet.update_cells(cell_range)
 
-    @staticmethod
-    def split_imei(imei):
-        imei = str(imei)
-        if not imei.isdigit():
-            raise RuntimeError("imei is not a numberical")
-
-        if len(imei) != 15:
-            raise RuntimeError("wrong imei len")
-
-        prefix = imei[:8]
-        sn = imei[8:14]
-        crc = imei[14]
-
-        return int(prefix), int(sn), int(crc)
-
-    def update_row_by_imei(self, imei, row):
-        row_number = self.find_row(imei)
+    def update_row_by_board_id(self, board_id, row):
+        row_number = self.find_row(board_id)
         if row_number is None:
             self.worksheet.append_row(row)
         else:
             self.insert_row(row_number, row)
 
-    def update_data(self, imei, qc, data_row):
-        imei_prefix, imei_sn, imei_crc = self.split_imei(imei)
-        row = [qc, imei_sn, imei, imei_prefix, imei_crc] + data_row
-        self.update_row_by_imei(imei, row)
+    def update_data(self, board_id, short_sn, qc, data_row):
+        # imei_prefix, imei_sn, imei_crc = self.split_imei(imei)
+
+        row = [qc, short_sn, board_id] + data_row
+        self.update_row_by_board_id(board_id, row)
 
 
 if __name__ == '__main__':
