@@ -22,7 +22,6 @@ min-memory		= 256
 pidfile		= /var/run/syslogd.pid 
 pidfile		= /var/run/sshd.pid
 pidfile		= /var/run/mosquitto.pid
-pidfile		= /var/run/mqtt-wss.pid
 pidfile		= /var/run/nginx.pid
 
 # Put other test/repair scripts to this dir
