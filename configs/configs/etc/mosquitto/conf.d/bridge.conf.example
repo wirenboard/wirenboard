@@ -9,8 +9,5 @@ topic /devices/#  both 2 "" /client/wb_SERIAL
 topic /config/#  both 2 "" /client/wb_SERIAL
 topic /rpc/#  both 2 "" /client/wb_SERIAL
 
-#topic /devices/# both 2 "" /user
-
-
 username wb_SERIAL
 password PASSWORD

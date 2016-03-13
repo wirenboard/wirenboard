@@ -27,6 +27,13 @@ wb_move_nosavefiles /var/lib/apt/lists/			# -//-
 wb_move_nosavefiles /var/www/uploads/ /uploads  # here will be firmware updates
 
 wb_move /etc/lirc/lircd.conf.d/
+wb_move /etc/nginx/passwd
+wb_move /etc/nginx/sites-enabled/
+wb_move /etc/mosquitto/conf.d/bridge.conf
+wb_move /etc/mosquitto/conf.d/listeners.conf
+wb_move /etc/mosquitto/conf.d/auth.conf
+wb_move /etc/mosquitto/passwd.conf
+wb_move /etc/mosquitto/acl.conf
 
 for f in wb-homa-adc.conf wb-homa-gpio.conf wb-mqtt-serial.conf wb-rules; do
     wb_move /etc/${f}
