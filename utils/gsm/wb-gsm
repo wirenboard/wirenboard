@@ -1,235 +1,36 @@
 #!/bin/bash
-. /etc/wb_env.sh
 
-PORT=/dev/ttyAPP0
+. /usr/share/wb-gsm-common.sh
 
-PWRKEY_GPIO=/sys/class/gpio/gpio${WB_GPIO_GSM_PWRKEY}
-RESET_GPIO=/sys/class/gpio/gpio${WB_GPIO_GSM_RESET}
-
-#32
-POWER_GPIO=/sys/class/gpio/gpio${WB_GPIO_GSM_POWER}
-STATUS_GPIO=/sys/class/gpio/gpio${WB_GPIO_GSM_STATUS}
-
-function debug() {
-    echo $1 1>&2
-}
-
-function gpio_set_dir() {
-	CUR_DIRECTION=`cat "/sys/class/gpio/gpio$1/direction"`
-	if [ ! $CUR_DIRECTION = "$2" ]; then
-	    echo "$2" > /sys/class/gpio/gpio$1/direction
-	fi
-
-}
-
-
-function gpio_set_value() {
-    echo $2 > /sys/class/gpio/gpio$1/value
-
-}
-
-function gpio_export() {
-	if [ ! -e  /sys/class/gpio/gpio$1  ]; then
-		echo $1 > /sys/class/gpio/export
-	fi
-}
-
-function init() {
-	if [ "$WB_GSM_POWER_TYPE" = "0" ]; then
-		debug "No GSM modem present, exiting"
-		exit 1
-	fi
-
-    gpio_export $WB_GPIO_GSM_PWRKEY
-    gpio_set_dir $WB_GPIO_GSM_PWRKEY out
-
-
-	if [ ${WB_GSM_POWER_TYPE} = "1" ]; then
-        gpio_export $WB_GPIO_GSM_RESET
-        gpio_set_dir $WB_GPIO_GSM_RESET out
-        gpio_set_value $WB_GPIO_GSM_RESET 0
-	fi
-
-	if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        gpio_export $WB_GPIO_GSM_POWER
-        gpio_set_dir $WB_GPIO_GSM_POWER out
-
-        gpio_export $WB_GPIO_GSM_STATUS
-        gpio_set_dir $WB_GPIO_GSM_STATUS in
-	fi
-
-}
-
-
-function toggle() {
-	debug "toggle SIM900 state using PWRKEY"
-
-    if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        gpio_set_value $WB_GPIO_GSM_POWER 1
-    fi
-
-
-    gpio_set_value $WB_GPIO_GSM_PWRKEY 0
-	sleep 1
-    gpio_set_value $WB_GPIO_GSM_PWRKEY 1
-	sleep 1
-    gpio_set_value $WB_GPIO_GSM_PWRKEY 0
-}
-
-function reset() {
-
-	if [ ${WB_GSM_POWER_TYPE} = "1" ]; then
-		debug "Resetting SIM900R using RESET pin"
-		echo 1 > ${RESET_GPIO}/value
-        sleep 0.5
-        echo 0 > ${RESET_GPIO}/value
-        sleep 0.5
-    fi
-
-    if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-		debug "Resetting SIM900R using POWER FET"
-		echo 0 > ${POWER_GPIO}/value
-        sleep 0.5
-        echo 1 > ${POWER_GPIO}/value
-        sleep 0.5
-    fi
-
-}
-
-function set_speed() {
-	stty -F $PORT  115200
-}
-
-function init_baud() {
-    set_speed
-    echo  -e "AAAAAAAAAAAAAAAAAAAT\r\n" > $PORT
-	sleep 1
-    echo  -e "AT+IPR=115200\r\n" > $PORT
-	sleep 1
-}
-
-function imei() {
-    set_speed
-    REPORT_FILE=`mktemp`
-    /usr/sbin/chat -s -r $REPORT_FILE  TIMEOUT 2 ABORT "ERROR" REPORT "86" "" "AT+CGSN" OK ""  > $PORT < $PORT
-    RC=$?
-
-
-    if [[ $RC != 0 ]] ; then
-        debug "ERROR while getting IMEI"
-        rm $REPORT_FILE
-        exit $RC;
-    fi
-
-    REPORT=`cat $REPORT_FILE | cut -d' ' -f6-`
-    rm $REPORT_FILE
-
-    echo $REPORT
-}
-
-function imei_sn() {
-    IMEI=`imei`
-    IMEI_SN=`echo $IMEI | cut -c 9-14`
-    echo ${IMEI_SN}
-}
-
-
-
-
-
-function switch_off() {
-	debug "Try to switch off SIM900R "
-
-    if [ ${WB_GSM_POWER_TYPE} = "1" ]; then
-        debug "resetting SIM900R first"
-        reset
-        sleep 3
-    fi
-
-	debug "Send power down command "
-	set_speed
-	echo  -e "AT+CPOWD=1\r\n" > $PORT
-	sleep 5
-
-    if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        debug "physically switching off SIM900R using POWER FET"
-        echo 0 > ${POWER_GPIO}/value
-    fi;
-
-
-
-
-}
-
-
-function ensure_on() {
-	switch_off
-
-    if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        debug "switching on SIM900R using POWER FET"
-        echo 1 > ${POWER_GPIO}/value
-    fi;
-
-	toggle
-	sleep 2
-	set_speed
-}
-
-function test_connection() {
-    /usr/sbin/chat   TIMEOUT 5 ABORT "ERROR" ABORT "BUSY" "" ATZ OK "" > $PORT < $PORT
-    RC=$?
-    echo $RC
-}
-
-function restart_if_broken() {
-    #~ set_speed
-    RC=$(test_connection)
-
-    if [[ $RC != 0 ]] ; then
-        debug "connection test error!"
-        debug "Restarting GSM modem..."
-        ensure_on
-        sleep 5
-
-        RC=$(test_connection)
-        if [[ $RC != 0 ]] ; then
-            debug "ERROR: modem restarted, still no answer"
-        fi
-
-        exit $RC;
-    fi
-}
-init
-
-
+gsm_init
 
 case "$1" in
-	"reset" )
-		reset
-	;;
+    "reset" )
+        reset
+    ;;
 
-	"toggle" )
-		toggle
-	;;
+    "toggle" )
+        toggle
+    ;;
 
-	"on" )
-		ensure_on
-	;;
+    "on" )
+        ensure_on
+    ;;
 
     "restart_if_broken" )
         restart_if_broken
     ;;
 
-	"off" )
-		switch_off
-	;;
+    "off" )
+        switch_off
+    ;;
 
-	"set_speed" )
-		set_speed
-	;;
-	"init_baud" )
-		init_baud
-	;;
+    "set_speed" )
+        set_speed
+    ;;
+    "init_baud" )
+        init_baud
+    ;;
 
     "imei" )
         imei
@@ -239,17 +40,10 @@ case "$1" in
         imei_sn
     ;;
 
-	* )
-		echo "USAGE: $0 toggle|<reset>";
-		toggle
-	;;
+    * )
+        echo "USAGE: $0 reset|toggle|on|restart_if_broken|off|set_speed|init_baud|imei|imei_sn";
+    ;;
 esac
-
-
-
-
-
-
 
 
 
