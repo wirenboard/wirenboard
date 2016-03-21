@@ -1,6 +1,6 @@
 #!/bin/bash
 . /etc/wb_env.sh
-. /usr/share/wb-gsm-common.sh
+. /usr/lib/wb-gsm-common.sh
 
 PORT=/dev/ttyAPP0
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /usr/share/wb-gsm-common.sh
+. /usr/lib/wb-gsm-common.sh
 
 gsm_init
 

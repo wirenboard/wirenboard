@@ -23,7 +23,7 @@ install: $(BIN_NAME)
 	install -m 0755 adc/wb-adc-set-mux $(DESTDIR)/$(prefix)/bin/wb-adc-set-mux
 
 	install -m 0755 gsm/wb-gsm $(DESTDIR)/$(prefix)/bin/wb-gsm
-	install -m 0755 gsm/wb-gsm-common.sh $(DESTDIR)/$(prefix)/share/wb-gsm-common.sh
+	install -m 0755 gsm/wb-gsm-common.sh $(DESTDIR)/$(prefix)/lib/wb-gsm-common.sh
 
 	install -m 0755 gsm/rtc.sh $(DESTDIR)/$(prefix)/bin/wb-gsm-rtc
 
