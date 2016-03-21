@@ -5,15 +5,15 @@
 # Default-Stop:      0 1 6
 # Required-Start: $remote_fs ntp
 # Required-Stop:
-# Short-Description:  initscript to use SIMCOM SIM900 integrated RTC
-# Description:        initscript to use SIMCOM SIM900 integrated RTC
+# Short-Description:  initscript to use GSM modem integrated RTC
+# Description:        initscript to use GSM modem integrated RTC
 ### END INIT INFO
 
 # Do NOT "set -e"
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="update local time using SIMCOM SIM900 integrated RTC"
+DESC="update local time using GSM modem integrated RTC"
 NAME=wb-gsm-rtc
 BIN_NAME=/usr/bin/$NAME
 DAEMON=$BIN_NAME

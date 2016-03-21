@@ -92,7 +92,7 @@ function gsm_init() {
 
 
 function toggle() {
-    debug "toggle SIM900 state using PWRKEY"
+    debug "toggle GSM modem state using PWRKEY"
 
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
         gpio_set_value $WB_GPIO_GSM_POWER 1
@@ -109,7 +109,7 @@ function toggle() {
 function reset() {
 
     if [ ${WB_GSM_POWER_TYPE} = "1" ]; then
-        debug "Resetting SIM900R using RESET pin"
+        debug "Resetting GSM modem using RESET pin"
         echo 1 > ${RESET_GPIO}/value
         sleep 0.5
         echo 0 > ${RESET_GPIO}/value
@@ -117,7 +117,7 @@ function reset() {
     fi
 
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        debug "Resetting SIM900R using POWER FET"
+        debug "Resetting GSM modem using POWER FET"
         echo 0 > ${POWER_GPIO}/value
         sleep 0.5
         echo 1 > ${POWER_GPIO}/value
@@ -168,10 +168,10 @@ function imei_sn() {
 
 
 function switch_off() {
-    debug "Try to switch off SIM900R "
+    debug "Try to switch off GSM modem "
 
     if [ ${WB_GSM_POWER_TYPE} = "1" ]; then
-        debug "resetting SIM900R first"
+        debug "resetting GSM modem first"
         reset
         sleep 3
     fi
@@ -182,7 +182,7 @@ function switch_off() {
     sleep 5
 
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        debug "physically switching off SIM900R using POWER FET"
+        debug "physically switching off GSM modem using POWER FET"
         echo 0 > ${POWER_GPIO}/value
     fi;
 
@@ -196,7 +196,7 @@ function ensure_on() {
     switch_off
 
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
-        debug "switching on SIM900R using POWER FET"
+        debug "switching on GSM modem using POWER FET"
         echo 1 > ${POWER_GPIO}/value
     fi;
 
