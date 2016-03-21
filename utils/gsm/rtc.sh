@@ -21,16 +21,22 @@ function sys_set_time() {
 case "$1" in
 	"save_time" )
         gsm_init
+        restart_if_broken
+
 		gsm_set_time `sys_get_time`
 	;;
 
 	"restore_time" )
         gsm_init
+        restart_if_broken
+
         sys_set_time `gsm_get_time`
 	;;
 
 	"read" )
         gsm_init
+        restart_if_broken
+
 		gsm_get_time
 	;;
 

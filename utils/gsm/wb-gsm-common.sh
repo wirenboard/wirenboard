@@ -28,11 +28,16 @@ function gpio_set_value() {
 
 }
 
+function gpio_get_value() {
+    cat /sys/class/gpio/gpio$1/value
+}
+
 function gpio_export() {
     if [ ! -e  /sys/class/gpio/gpio$1  ]; then
         echo $1 > /sys/class/gpio/export
     fi
 }
+
 
 function get_model() {
     #~ set_speed
@@ -83,7 +88,9 @@ function gsm_init() {
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
         gpio_export $WB_GPIO_GSM_POWER
         gpio_set_dir $WB_GPIO_GSM_POWER out
+    fi
 
+    if [ ${WB_GSM_HAS_STATUS_PIN} = "1" ]; then
         gpio_export $WB_GPIO_GSM_STATUS
         gpio_set_dir $WB_GPIO_GSM_STATUS in
     fi
@@ -178,8 +185,22 @@ function switch_off() {
 
     debug "Send power down command "
     set_speed
-    echo  -e "AT+CPOWD=1\r\n" > $PORT
-    sleep 5
+    echo  -e "AT+CPOWD=1\r\n" > $PORT # for SIMCOM
+    echo  -e "AT+CPWROFF\r\n" > $PORT # for SIMCOM
+
+    if [ ${WB_GSM_HAS_STATUS_PIN} = "1" ]; then
+        debug "Waiting for modem to stop"
+        max_tries=25
+
+        for ((i=0; i<=upperlim; i++)); do
+            if [ "`gpio_get_value ${WB_GPIO_GSM_STATUS}`" = "0" ]; then
+                break
+            fi
+            sleep 0.2
+        done
+    else
+        sleep 5
+    fi
 
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
         debug "physically switching off GSM modem using POWER FET"
@@ -193,7 +214,14 @@ function switch_off() {
 
 
 function ensure_on() {
-    switch_off
+    if [ ${WB_GSM_HAS_STATUS_PIN} = "1" ]; then
+        if [ "`gpio_get_value ${WB_GPIO_GSM_STATUS}`" = "1" ]; then
+            debug "need to switch off"
+            switch_off
+        fi
+    else
+        switch_off
+    fi
 
     if [ ${WB_GSM_POWER_TYPE} = "2" ]; then
         debug "switching on GSM modem using POWER FET"
@@ -201,7 +229,20 @@ function ensure_on() {
     fi;
 
     toggle
-    sleep 2
+
+    if [ ${WB_GSM_HAS_STATUS_PIN} = "1" ]; then
+        debug "Waiting for modem to start"
+        max_tries=30
+
+        for ((i=0; i<=upperlim; i++)); do
+            if [ "`gpio_get_value ${WB_GPIO_GSM_STATUS}`" = "1" ]; then
+                break
+            fi
+            sleep 0.1
+        done
+    else
+        sleep 2
+    fi
     set_speed
 }
 
@@ -213,28 +254,36 @@ function test_connection() {
 
 function restart_if_broken() {
     #~ set_speed
-    RC=$(test_connection)
+    local RC=0
+    if [ ${WB_GSM_HAS_STATUS_PIN} = "1" ]; then
+        if [ "`gpio_get_value ${WB_GPIO_GSM_STATUS}`" = "0" ]; then
+            debug "Modem switched off, switch it on instead of testing the connection"
+            local RC=1
+        fi
+    fi
+
+    if [[ $RC == 0 ]]; then
+        RC=$(test_connection)
+        if [[ $RC != 0 ]] ; then
+            debug "connection test error!"
+        fi
+    fi
 
     if [[ $RC != 0 ]] ; then
-        debug "connection test error!"
-        debug "Restarting GSM modem..."
         ensure_on
         sleep 5
 
         RC=$(test_connection)
         if [[ $RC != 0 ]] ; then
             debug "ERROR: modem restarted, still no answer"
+            exit $RC;
         fi
-
-        exit $RC;
     fi
 }
 
 
 function gsm_get_time() {
     #~ set_speed
-    restart_if_broken
-
     REPORT_FILE=`mktemp`
     /usr/sbin/chat -s -r $REPORT_FILE  TIMEOUT 2 ABORT "ERROR" REPORT "+CCLK:" "" "AT+CCLK?" OK ""  > $PORT < $PORT
     RC=$?
@@ -251,12 +300,10 @@ function gsm_get_time() {
 
     TIME="${REPORT:8:17}"
     echo $TIME
-
 }
 
 
 function gsm_set_time() {
-    restart_if_broken
 
     if is_neoway_m660a; then
         TIMESTR="$1";

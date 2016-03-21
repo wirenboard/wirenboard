@@ -1,3 +1,15 @@
+wb-utils (1.63) stable; urgency=medium
+
+  * fix RTC on neoway m660a
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 21 Mar 2016 18:51:23 +0300
+
+wb-utils (1.62) stable; urgency=medium
+
+  * do not check for mqtt-wss
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 11 Mar 2016 19:49:59 +0300
+
 wb-utils (1.61) stable; urgency=medium
 
   * adds WB5.5 support
