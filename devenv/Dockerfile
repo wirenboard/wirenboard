@@ -20,7 +20,7 @@ RUN apt-get update && \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
       valgrind libgtest-dev cmake config-package-dev \
       python-netaddr python-pyparsing liblircclient-dev \
-      libusb-dev libusb-1.0-0-dev jq python-dev
+      libusb-dev libusb-1.0-0-dev jq python-dev python-smbus
 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
