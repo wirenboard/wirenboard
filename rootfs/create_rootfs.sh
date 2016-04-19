@@ -21,7 +21,7 @@ then
 fi
 
 case "$2" in
-    5|4|32|28|MKA3|NETMON|CQC10|AC-E1)
+    5|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
         ;;
     *)
         echo "Unknown board" 
@@ -142,7 +142,7 @@ else
         WD=`pwd`
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
-	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
+	tar czpf $WD/$ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
 
@@ -158,14 +158,15 @@ pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquit
 
 pkgs+=" openssl ca-certificates"
 
-pkgs+=" avahi-daemon"
+pkgs+=" avahi-daemon pps-tools"
 chr_apt --force-yes $pkgs
 
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes linux-latest wb-mqtt-confed
+chr_apt --force-yes linux-headers-4.1.15-imxv5-x0.1 linux-image-4.1.15-imxv5-x0.1 linux-firmware-image-4.1.15-imxv5-x0.1 device-tree-compiler
+chr_apt --force-yes wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -185,6 +186,7 @@ case "$BOARD" in
     "4" )
         # Wiren Board 4
         export FORCE_WB_VERSION=41
+
         chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
 
         echo "Add rtl8188 hostapd package"
@@ -211,6 +213,8 @@ case "$BOARD" in
     "32" )
         # WB Smart Home specific
         export FORCE_WB_VERSION=32
+
+
         chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
 
         chr_apt netplug hostapd
@@ -227,6 +231,7 @@ case "$BOARD" in
     "MKA3" )
         # MKA3
         export FORCE_WB_VERSION=KMON1
+
         chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-dbic
 
         # https://github.com/contactless/wb-dbic
@@ -235,6 +240,18 @@ case "$BOARD" in
         rm ${OUTPUT}/set_confidential.sh
 
         set_fdt imx23-wirenboard-kmon1
+    ;;
+
+    "MKA31" )
+        # MKA31 based on WB52 (netmon2-1)
+        export FORCE_WB_VERSION=52
+        chr_apt wb-mqtt-homeui wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-hwconf-manager wb-mqtt-am2320 zabbix-agent
+
+        cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
+        chr /set_confidential.sh
+        rm ${OUTPUT}/set_confidential.sh
+
+        set_fdt imx28-wirenboard52
     ;;
 
     "AC-E1" )
