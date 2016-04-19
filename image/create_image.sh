@@ -43,8 +43,9 @@ MB=1024*1024
 
 # create image file
 DATASIZE=`sudo du -sm $ROOTFS | cut -f1`
-IMGSIZE=$[DATASIZE + 100] # in megabytes
+IMGSIZE=$[DATASIZE + 250] # in megabytes
 TOTAL_SECTORS=$[IMGSIZE*MB/SECTOR_SIZE]
+echo "IMGSIZE: $IMGSIZE"
 
 PART_START_MX23=$[4*MB/SECTOR_SIZE]
 write_uboot_MX23() {
@@ -76,16 +77,21 @@ wb_partition()
     [[ "$fstype" == 5 ]] && ((PART_START+=2048)) || ((PART_START+=$size))
 }
 
-dd if=/dev/zero of=$IMGFILE bs=1M count=5 conv=notrunc
+dd if=/dev/zero of=$IMGFILE bs=1M count=5 conv=notrunc,fdatasync
 {
 	wb_partition 16 53
 	wb_partition
-} | sfdisk --in-order --Linux --unit=S  $IMGFILE
+} | sfdisk  --Linux --unit=S  $IMGFILE
 
+sync
 
 DEV=/dev/mapper/`sudo kpartx -av $IMGFILE | sed -rn 's#.* (loop[0-9]+p).*#\1#p; q'`
+sync
+sleep 3
 
 write_uboot_${SOC_TYPE}
+
+ls -lh  ${DEV}2
 
 sudo mkfs.ext4 ${DEV}2 -E stride=2,stripe-width=1024 -b 4096 -L rootfs
 MOUNTPOINT=`mktemp -d`
