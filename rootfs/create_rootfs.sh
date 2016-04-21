@@ -21,7 +21,7 @@ then
 fi
 
 case "$2" in
-    5|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
+    5|55|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
         ;;
     *)
         echo "Unknown board" 
@@ -181,6 +181,14 @@ case "$BOARD" in
         chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager
 
         set_fdt imx28-wirenboard52
+    ;;
+
+    "55" )
+        # Wiren Board 5
+        export FORCE_WB_VERSION=55
+        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager
+
+        set_fdt imx28-wirenboard55
     ;;
 
     "4" )
