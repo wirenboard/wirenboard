@@ -1,0 +1,35 @@
+wb-test-suite (1.2) stable; urgency=medium
+
+  * adds support for WB5.5/WB5.6
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 21 Apr 2016 15:05:29 +0300
+
+wb-test-suite (1.1) stable; urgency=medium
+
+  * update functest to work on WB5 without GSM modem
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 11 Mar 2016 14:27:30 +0300
+
+wb-test-suite (1.0.3) stable; urgency=medium
+
+  *  save cpuinfo serial
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 23 Nov 2015 19:43:45 +0300
+
+wb-test-suite (1.0.2) stable; urgency=medium
+
+  * adjust min adc val
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 20 Nov 2015 23:36:33 +0300
+
+wb-test-suite (1.0.1) stable; urgency=medium
+
+  * allow 3 percent for adc
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 20 Nov 2015 23:18:53 +0300
+
+wb-test-suite (1.0) stable; urgency=medium
+
+  * Initial release. (Closes: #XXXXXX)
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 20 Nov 2015 17:11:10 +0300
