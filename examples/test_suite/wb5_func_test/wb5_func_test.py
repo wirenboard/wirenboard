@@ -58,20 +58,8 @@ class WB5TestRFM69(rf433.TestRFM69):
 gsm_test = gsm.TestGSMMTS
 # gsm_test = gsm.TestGSMegafon
 
-mapping = OrderedDict([
-    (WB5TestRS485, 7),
-    (wifi.TestWifi, 8),
-    (WB5TestRFM69, 9),
-    (wb5_adc.TestADC, 5),
-    (WB5TestW1, 6),
-    (network.TestNetwork, 2),
-    (can.TestCAN, 3),
-    (gsm_test, 1),
-    (gsm.TestGSMRTC, 4),
-])
 
-
-def suite():
+def suite(mapping):
     suite = unittest.TestSuite()
 
     for test_class in mapping.iterkeys():
@@ -103,6 +91,21 @@ if __name__ == '__main__':
     wb_version = sysinfo.get_wb_version()
     fw_version = sysinfo.get_fw_version()
 
+
+    mapping = OrderedDict([
+        (WB5TestRS485, 7),
+        (wifi.TestWifi, 8),
+        (WB5TestRFM69, 9),
+        (wb5_adc.TestADC55 if (wb_version == '55') else wb5_adc.TestADC52, 5),
+        (WB5TestW1, 6),
+        (network.TestNetwork, 2),
+        (can.TestCAN, 3),
+        (gsm_test, 1),
+        (gsm.TestGSMRTC, 4),
+    ])
+
+
+
     try:
         gsm.init_gsm()
     except RuntimeError:
@@ -126,9 +129,15 @@ if __name__ == '__main__':
         short_sn = "1" + str(reduce_hash(hashlib.md5(board_id).digest(), 1000000))
         imei_prefix = "-"
     print_sn(short_sn)
-    
-    
-    result = unittest.TextTestRunner(verbosity=2).run(suite())
+
+
+    # init CAN extension module on slot2 (hw-specific)
+    if wb_version == '55':
+        subprocess.call("wb-hwconf-helper init wb55-mod2 wbe-i-can-iso", shell=True)
+    else:
+        subprocess.call("wb-hwconf-helper init wb5-mod2 wbe-i-can-iso", shell=True)
+
+    result = unittest.TextTestRunner(verbosity=2).run(suite(mapping))
 
     results_row = ['--', ] * (max(mapping.values()) + 1)
 

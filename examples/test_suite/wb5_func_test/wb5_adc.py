@@ -13,7 +13,7 @@ def test():
     return False
 
 
-class TestADC(unittest.TestCase):
+class TestADCBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         subprocess.call("service wb-homa-adc start", shell=True)
@@ -85,9 +85,13 @@ class TestADC(unittest.TestCase):
     def test_r1(self):
         self._test_adc_value('R1', 10000., 5)
 
+
+class TestADC52(unittest.TestCase):
     def test_r2(self):
         self._test_adc_value('R2', 10000., 5)
 
+class TestADC55(unittest.TestCase):
+    pass
 
 if __name__ == '__main__':
     #~ cal = AdcCalibrate()
