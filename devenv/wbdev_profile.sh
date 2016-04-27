@@ -1,10 +1,14 @@
 if [ -z "$DEV_USER" ]; then
-    export GOPATH="$HOME/go"
+    export WORKSPACE_DIR="$HOME/wbdev"
 else
-    export GOPATH="/home/$DEV_USER/go"
+    export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 fi
-export PATH="/usr/local/go/bin:$PATH"
+export GOPATH="$WORKSPACE_DIR/go"
+export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 mkdir -p "$GOPATH"
+if [ -n "$DEV_USER" ]; then
+    chown "$DEV_USER.$DEV_USER" "$GOPATH"
+fi
 if [ -f /.devdir ]; then
     cd "$(cat /.devdir)"
 fi

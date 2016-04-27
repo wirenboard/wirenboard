@@ -9,6 +9,8 @@ RUN apt-get update && \
     echo 'deb http://emdebian.org/tools/debian/ jessie main' >/etc/apt/sources.list.d/crosstools.list && \
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
     echo 'deb [arch=amd64] http://repo.mosquitto.org/debian jessie main' >/etc/apt/sources.list.d/mosquitto-jessie.list && \
+    apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
+    echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     dpkg --add-architecture armel && \
     dpkg --add-architecture i386 && \
     apt-get update && \
@@ -20,18 +22,28 @@ RUN apt-get update && \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
       valgrind libgtest-dev cmake config-package-dev \
       python-netaddr python-pyparsing liblircclient-dev \
-      libusb-dev libusb-1.0-0-dev jq python-dev python-smbus
+      libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
+      aptly
 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
-ENV GOLANG_VERSION 1.5.1
+ENV GOLANG_VERSION 1.6.2
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA1 46eecd290d8803887dec718c691cc243f2175fe0
+ENV GOLANG_DOWNLOAD_SHA1 b8318b09de06076d5397e6ec18ebef3b45cd315d
+
+ENV GLIDE_VERSION 0.10.2
+ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
+ENV GLIDE_DOWNLOAD_SHA1 41d7e11ca11e225ab2c773da8996e53e7125a6e3
 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& echo "$GOLANG_DOWNLOAD_SHA1  golang.tar.gz" | sha1sum -c - \
 	&& tar -C /usr/local -xzf golang.tar.gz \
 	&& rm golang.tar.gz
+
+RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
+	&& echo "$GLIDE_DOWNLOAD_SHA1  glide.tar.gz" | sha1sum -c - \
+	&& tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
+	&& rm glide.tar.gz
 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
@@ -43,6 +55,7 @@ COPY rootfs /root/rootfs
 COPY prep.sh /root/
 COPY configs /root/
 COPY entrypoint.sh /sbin/
+COPY projects.list /
 COPY chr /usr/local/bin/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 

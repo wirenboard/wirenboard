@@ -79,14 +79,17 @@ Usage:
 * `wbdev ndeb` builds a noarch deb from a project in the current
   directory.
 * `wbdev gdeb` builds an armel deb from a Go project in the current
-  directory.
+  directory (should be used under a wbdev workspace, see **WBDEV
+  Workspace** below).
 * `wbdev cdeb` builds an armel deb from a C++ project in the current
   directory.
 * `wbdev make [args...]` invokes `make` in qemu chroot environment in
   the current directory.
 * `wbdev hmake [args...]` invokes `make` in host user mode in the
   current directory. Use it to build x86_64 binaries and to do `wbdev hmake test`
-  on C++ projects. 
+  on C++ projects.
+* `wbdev update-workspace` creates or updates wbdev workspace in
+  `~/wbdev` (see **WBDEV Workspace** below).
 
 You may need to make changes to your shell init files such as
 `~/.bashrc` to avoid confusion between host machine and development
@@ -103,3 +106,38 @@ fi
 
 This will prefix the command prompt with `(wbch)` in case when the
 chroot user mode and with `(wbdev)` in case when the host user mode.
+
+WBDEV Workspace
+===============
+
+Go-based Wiren Board apps make use of [glide](https://glide.sh/)
+package manager which requires proper Go workspace to function.
+To make this part easier and for added convenience for other WB
+projects `wbdev update-workspace` builds and unified directory
+layout for WB projects, performing `git clone` for projects
+listed in [devenv/projects.list](devenv/projects.list):
+
+```
+~/wbdev
+   |
+   +--- homeui
+   |
+   +--- wb-mqtt-serial
+   |
+   +--- other non-Go apps...
+   |
+   +--- go/
+         +- src/
+             +- github.com/
+                 +- contactless
+                     +- wb-rules
+                     |
+                     +- wb-mqtt-confed
+                     |
+                     +- other go projects...
+    
+```
+
+This layout is required for building Go projects using wbdev.
+`wbdev update-workspace` performs `git pull --ff-only origin <primary-branch>`
+for projects that are already cloned.
