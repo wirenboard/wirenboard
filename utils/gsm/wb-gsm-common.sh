@@ -40,7 +40,7 @@ function gpio_export() {
 
 
 function get_model() {
-    #~ set_speed
+    set_speed
     wb-gsm restart_if_broken
 
     REPORT_FILE=`mktemp`
@@ -70,6 +70,8 @@ function is_neoway_m660a() {
 }
 
 function gsm_init() {
+    set_speed
+
     if [ "$WB_GSM_POWER_TYPE" = "0" ]; then
         debug "No GSM modem present, exiting"
         exit 1
@@ -134,7 +136,7 @@ function reset() {
 }
 
 function set_speed() {
-    stty -F $PORT  115200
+    stty -F $PORT  115200 -icrnl
 }
 
 function init_baud() {
