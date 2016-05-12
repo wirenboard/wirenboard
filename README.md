@@ -141,3 +141,14 @@ listed in [devenv/projects.list](devenv/projects.list):
 This layout is required for building Go projects using wbdev.
 `wbdev update-workspace` performs `git pull --ff-only origin <primary-branch>`
 for projects that are already cloned.
+
+Updating wbdev
+==============
+
+To update wbdev image and wbdev script, use the following commands
+(substitute proper path to wbdev script):
+
+```
+docker pull contactless/devenv
+wget -O /path/to/your/wbdev-script https://raw.githubusercontent.com/contactless/wirenboard/master/wbdev
+```
