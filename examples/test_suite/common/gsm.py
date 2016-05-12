@@ -101,7 +101,7 @@ class TestGSMMTS(TestGSM):
 class TestGSMRTC(unittest.TestCase):
 #~ class TestGSMRTC(object): # disable
 
-    RTC_TIMEOUT_SECONDS = 0
+    RTC_TIMEOUT_SECONDS = 2
 
     def test_rtc(self):
         init_gsm()

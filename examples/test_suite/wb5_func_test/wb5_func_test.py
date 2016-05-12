@@ -2,6 +2,7 @@
 import unittest
 from collections import OrderedDict
 import sys
+import os
 import datetime
 import hashlib
 import subprocess
@@ -24,7 +25,7 @@ import wifi
 import can
 
 from gdocs import GSheetsLog
-from uid import get_mac, get_cpuinfo_serial
+from uid import get_mac, get_cpuinfo_serial, get_mmc_serial
 
 def reduce_hash(digest_str, modulo):
     remainder = 0
@@ -75,13 +76,9 @@ def print_sn(sn):
 
 
 if __name__ == '__main__':
-    #~ leds.set_brightness('green', 0)
-    #~ leds.set_brightness('red', 0)
-
-    #~ relay.init()
+    print "USAGE: %s <ignored tests(comma-separated)>" % os.path.basename(sys.argv[0])
 
     subprocess.call("killall -9 wb-rules", shell=True)
-    #~ subprocess.call("killall -9 wb-rules", shell=True)
 
     beep = beeper.Beeper(3)
     beep.setup()
@@ -93,18 +90,23 @@ if __name__ == '__main__':
 
 
     mapping = OrderedDict([
-        (WB5TestRS485, 7),
-        (wifi.TestWifi, 8),
-        (WB5TestRFM69, 9),
-        (wb5_adc.TestADC55 if (wb_version == '55') else wb5_adc.TestADC52, 5),
-        (WB5TestW1, 6),
-        (network.TestNetwork, 2),
-        (can.TestCAN, 3),
-        (gsm_test, 1),
-        (gsm.TestGSMRTC, 4),
+        (WB5TestRS485, 6),
+        (wifi.TestWifi, 7),
+        (WB5TestRFM69, 8),
+        (wb5_adc.TestADC55 if (wb_version == '55') else wb5_adc.TestADC52, 4),
+        (WB5TestW1, 5),
+        (network.TestNetwork, 1),
+        (can.TestCAN, 2),
+        (gsm_test, 0),
+        (gsm.TestGSMRTC, 3),
     ])
+    if len(sys.argv) > 1:
+        ignore_tests = set(int(x) for x in sys.argv[1].strip().split(','))
 
-
+        if ignore_tests:
+            print "Will ignore tests: " + ",".join(str(x) for x in ignore_tests) 
+    else:
+        ignore_tests = set()
 
     try:
         gsm.init_gsm()
@@ -117,6 +119,9 @@ if __name__ == '__main__':
 
     cpuinfo_serial = str(get_cpuinfo_serial())
     print "cpuinfo serial: ", cpuinfo_serial
+
+    mmc_serial = str(get_mmc_serial())
+    print "mmc serial: ", mmc_serial
 
     mac = get_mac()
 
@@ -142,11 +147,20 @@ if __name__ == '__main__':
     results_row = ['--', ] * (max(mapping.values()) + 1)
 
     for test_class, test_index in mapping.iteritems():
-        results_row[test_index] = 'OK'
+        if test_index in ignore_tests:
+            results_row[test_index] = 'OK/NP'
+        else:
+            results_row[test_index] = 'OK'
 
+    has_real_errors = False
     for test, err_msg in (result.errors + result.failures):
         test_index = mapping[test.__class__]
-        results_row[test_index] = 'FAIL'
+        if test_index in ignore_tests:
+            results_row[test_index] = 'FAIL/NP'
+        else:
+            results_row[test_index] = 'FAIL'
+            has_real_errors = True
+
 
     #~ adc_cal = wb4_adc.AdcCalibrate()
     #~ print "r1 constants for R1 and R2 channels:", adc_cal.get_r1_calib(), adc_cal.get_r2_calib()
@@ -155,18 +169,17 @@ if __name__ == '__main__':
 
     #~ results_row.append(MEM_TYPE)
 
-    overall_status = 'OK' if result.wasSuccessful() else 'FAIL'
+    overall_status = 'OK' if (not has_real_errors) else 'FAIL'
 
     print "====================================="
     print "Overall status:    %s    " % overall_status
     print "====================================="
     print_sn(short_sn)
 
-    if len(result.errors + result.failures) == 0:
+    if not has_real_errors:
         leds.set_brightness('red', 0)
         leds.blink_fast('green')
     else:
-        pass
         leds.blink_fast('red')
         leds.set_brightness('green', 0)
 
@@ -176,9 +189,15 @@ if __name__ == '__main__':
                      '../common/Commissioning-30b68b322b7c.json')
     test_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log.update_data(board_id, short_sn, overall_status,
-                    [imei_prefix, wifi_mac, mac, cpuinfo_serial] +
+                    [imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] +
                     results_row +
                     ["-", wb_version, fw_version, test_date]
                     )
 
     print "Done!"
+
+    if has_real_errors:
+        beep.beep(0.07, 10)
+    else:
+        beep.beep(0.5, 3)
+

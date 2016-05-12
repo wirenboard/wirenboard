@@ -1,3 +1,12 @@
+wb-test-suite (1.3) stable; urgency=medium
+
+  * fix RTC test on neoway
+  * add option to ignore some tests when determining the overall status
+  * save MMC serial and modem IMEI
+  * beep at the end
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 12 May 2016 17:44:36 +0300
+
 wb-test-suite (1.2) stable; urgency=medium
 
   * adds support for WB5.5/WB5.6
