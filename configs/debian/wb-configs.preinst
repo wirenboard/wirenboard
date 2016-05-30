@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+# temporary workaround to allow dpkg to update mqtt config
+rm -rf /mnt/data/etc/mosquitto/conf.d/listeners.conf.dpkg-new
+ln -s /etc/mosquitto/conf.d/listeners.conf.dpkg-new /mnt/data/etc/mosquitto/conf.d/
+
+#DEBHELPER#
+
+exit 0

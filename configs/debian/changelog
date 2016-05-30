@@ -1,3 +1,9 @@
+wb-configs (1.69) UNRELEASED; urgency=medium
+
+  * Use mqtt-wss instead of mosquitto for MQTT-over-websockets
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 30 May 2016 15:03:12 +0300
+
 wb-configs (1.68) stable; urgency=medium
 
   * fix default watchdog config
