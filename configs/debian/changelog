@@ -1,3 +1,9 @@
+wb-configs (1.68) stable; urgency=medium
+
+  * fix default watchdog config
+
+ -- Evgeny Boger <boger@contactless.ru>  Sun, 13 Mar 2016 12:34:40 +0300
+
 wb-configs (1.67) stable; urgency=medium
 
   * add watchdog config
