@@ -1,0 +1,2 @@
+auth_basic "Wiren Board UI";
+auth_basic_user_file /etc/nginx/passwd;
