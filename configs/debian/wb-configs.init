@@ -116,6 +116,11 @@ wb_move()
     local src=${1%/}
     local dst="$MNT${2:-$src}"
 
+    # create symlinks to (possibly non-existing)
+    # .dpkg-new files located next to the original file
+    rm -rf "$dst.dpkg-new"
+    ln -Tfs "$src.dpkg-new" "$dst.dpkg-new"
+
     # is there an existing symlink?
     if [[ -h "$src" && -e "$src" ]]; then
         # it points to correct file?
