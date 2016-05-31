@@ -92,18 +92,18 @@ wb_fix_data_file()
             mkdir -p "$dst"
             f=$dst
         else
-            log_warning_msg "$src: unable to find file to fix broken state"
+            echo "$src: unable to find file to fix broken state"
             return 1
         fi
 
-        log_action_msg "$src: fixing with existing file $f"
+        echo "$src: fixing with existing file $f"
         mkdir -p `dirname "$dst"`
         [[ -n "$nosavefiles" ]] && find "$f" -type f -delete
         cp -aH "$f" "$dst"
 
         # create backup if there isn't one
         if [[ ! -e "${src}.default" ]]; then
-            log_action_msg "$src: saving backup to ${src}.default"
+            echo "$src: saving backup to ${src}.default"
             cp -aH "$f" "${src}.default"
         fi
     fi
@@ -121,12 +121,12 @@ wb_move()
         # it points to correct file?
         local f=`readlink -f "$src"`
         if [[ "$f" == "$dst" ]]; then
-            log_action_msg "$src: good symlink, not touching"
+            [[ "$DEBUG" == "yes" ]] && echo "$src: good symlink, not touching"
             return 0
         fi
     fi
 
-    log_action_msg "$src: symlinking to $dst"
+    echo "$src: symlinking to $dst"
     rm -rf "$src"
     ln -Tfs "$dst" "$src"
 }
@@ -142,7 +142,7 @@ wb_move_bind()
 
     local src=${1%/}
     local dst="$MNT${2:-$src}"
-    log_action_msg "$src: binding to $dst"
+    echo "$src: binding to $dst"
     umount -f $src 2>&1 >/dev/null
     if [[ -d "$dst" && ! -d "$src" ]]; then
         rm -rf "$src"
@@ -166,11 +166,11 @@ wb_move_watch()
 
     [[ ! -f "$src" || -h "$src" ]] && rm "$src"
     diff -q "$src" "$dst" >/dev/null 2>&1 || {
-        log_action_msg "$src: copying from $dst"
+        echo "$src: copying from $dst"
         cp -aH "$dst" "$src"
     }
 
-    log_action_msg "$src: watching for changes"
+    [[ "$DEBUG" == "yes" ]] && echo "$src: watching for changes"
     WB_WATCH_FILES+=("$src")
 }
 
