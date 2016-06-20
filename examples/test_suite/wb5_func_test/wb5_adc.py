@@ -68,14 +68,6 @@ class TestADCBase(unittest.TestCase):
     def test_A4(self):
         self._test_a1a4('A4_OUT', 'A4_IN', 'A4')
 
-    def test_5vout(self):
-        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '0')
-        time.sleep(500E-3)
-        di_state = bool(int(self.wbmqtt.get_last_value('wb-gpio', 'A1_IN')))
-        self.assertFalse(di_state)
-        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
-        time.sleep(10E-3)
-
     def test_Vin(self):
         self._test_adc_value('Vin', 12.0, 20)
 
@@ -86,14 +78,32 @@ class TestADCBase(unittest.TestCase):
         self._test_adc_value('R1', 10000., 5)
 
 
-class TestADC52(unittest.TestCase):
+class TestADC52(TestADCBase):
     def test_r2(self):
         self._test_adc_value('R2', 10000., 5)
 
-class TestADC55(unittest.TestCase):
-    pass
+    def test_5vout(self):
+        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '0')
+        time.sleep(500E-3)
+        di_state = bool(int(self.wbmqtt.get_last_value('wb-gpio', 'A1_IN')))
+        self.assertFalse(di_state)
+        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
+        time.sleep(10E-3)
+
+class TestADC55(TestADCBase):
+    def test_5vout(self):
+        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '0')
+        time.sleep(500E-3)
+        v_measured = float(self.wbmqtt.get_next_value('wb-adc', '5Vout'))
+        self.assertLess(v_measured, 3.0)
+
+        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
+        time.sleep(500E-3)
+        v_measured = float(self.wbmqtt.get_next_value('wb-adc', '5Vout'))
+        self.assertGreaterEqual(v_measured, 4.8)
 
 if __name__ == '__main__':
+    print "Usage: python %s [TestADC52|TestADC55]" % sys.argv[0]
     #~ cal = AdcCalibrate()
     #~ print "r1 constants for R1 and R2 channels:", cal.get_r1_calib(), cal.get_r2_calib()
 
