@@ -14,6 +14,7 @@ def test():
 
 
 class TestADCBase(unittest.TestCase):
+    ref_5v = 4.2
     @classmethod
     def setUpClass(cls):
         subprocess.call("service wb-homa-adc start", shell=True)
@@ -26,10 +27,6 @@ class TestADCBase(unittest.TestCase):
         cls.wbmqtt.close()
 
     def setUp(self):
-        #~ self.adc.set_scale(0, self.adc.get_available_scales(0)[1])
-        #~ self.adc.set_scale(1, self.adc.get_available_scales(1)[1])
-
-        #~ self.wbmqtt.clear_values()
         self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
 
     def _test_adc_value(self, control, v_ref, delta_percent=1):
@@ -51,7 +48,7 @@ class TestADCBase(unittest.TestCase):
 
         self.wbmqtt.send_value('wb-gpio', fet_control, '0')
         time.sleep(2000E-3)
-        self._test_adc_value(adc_control, 4.80, 4)
+        self._test_adc_value(adc_control, self.ref_5v, 4)
 
         di_state = bool(int(self.wbmqtt.get_last_value('wb-gpio', di_control)))
         self.assertTrue(di_state)
@@ -75,10 +72,11 @@ class TestADCBase(unittest.TestCase):
         self._test_adc_value('BAT', 3.9, 5)
 
     def test_r1(self):
-        self._test_adc_value('R1', 10000., 5)
+        self._test_adc_value('R1', 10000., 10)
 
 
 class TestADC52(TestADCBase):
+
     def test_r2(self):
         self._test_adc_value('R2', 10000., 5)
 
@@ -91,6 +89,10 @@ class TestADC52(TestADCBase):
         time.sleep(10E-3)
 
 class TestADC55(TestADCBase):
+    def setUp(self):
+        self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
+        self.ref_5v = float(self.wbmqtt.get_next_value('wb-adc', '5Vout'))
+
     def test_5vout(self):
         self.wbmqtt.send_value('wb-gpio', '5V_OUT', '0')
         time.sleep(500E-3)
@@ -100,7 +102,7 @@ class TestADC55(TestADCBase):
         self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
         time.sleep(500E-3)
         v_measured = float(self.wbmqtt.get_next_value('wb-adc', '5Vout'))
-        self.assertGreaterEqual(v_measured, 4.8)
+        self.assertAlmostEqual(v_measured, 5.1, delta=0.2)
 
 if __name__ == '__main__':
     print "Usage: python %s [TestADC52|TestADC55]" % sys.argv[0]
