@@ -1,3 +1,9 @@
+wb-test-suite (1.4.1) stable; urgency=medium
+
+  * fix broken ADC tests on 5.6.1/PS
+
+ -- Evgeny Boger <boger@contactless.ru>  Mon, 20 Jun 2016 20:15:43 +0300
+
 wb-test-suite (1.4) stable; urgency=medium
 
   * adds test for MOD-GSM-RTC
