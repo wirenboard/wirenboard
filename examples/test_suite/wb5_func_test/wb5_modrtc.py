@@ -24,6 +24,11 @@ class TestModGSMRTC(unittest.TestCase):
     def setUpClass(cls):
         print "setup class"
 
+        try:
+            GPIO.unexport(cls.GSM_POWER_GPIO)
+        except:
+            pass
+
         cls._disable_rtc()
         cls._enable_rtc()
 
