@@ -8,6 +8,8 @@ import hashlib
 import subprocess
 sys.path.insert(0, "../common")
 
+import argparse
+
 import leds
 import gsm
 import w1
@@ -23,6 +25,7 @@ import wb5_adc
 import rf433
 import wifi
 import can
+import wb5_modrtc
 
 from gdocs import GSheetsLog
 from uid import get_mac, get_cpuinfo_serial, get_mmc_serial
@@ -74,9 +77,22 @@ def print_sn(sn):
     print "Short SN:     %s %s      " % (str(sn)[:3], str(sn)[3:])
     print "====================================="
 
+def parse_comma_separated_set(list_str):
+    return set(int(x) for x in list_str.strip().split(',')) if list_str else set()
+
 
 if __name__ == '__main__':
-    print "USAGE: %s <ignored tests(comma-separated)>" % os.path.basename(sys.argv[0])
+    parser = argparse.ArgumentParser(description='WB5 Function Testing Tool', add_help=False)
+
+    parser.add_argument('-i', '--ignore-tests', dest='ignore_tests', type=str,
+                     help='List of tests to ignore (but still perform)', default='')
+
+    parser.add_argument('-s', '--skip-tests', dest='skip_tests', type=str,
+                     help='List of tests to skip', default='')
+
+    args = parser.parse_args()
+
+
 
     subprocess.call("killall -9 wb-rules", shell=True)
 
@@ -99,14 +115,19 @@ if __name__ == '__main__':
         (can.TestCAN, 2),
         (gsm_test, 0),
         (gsm.TestGSMRTC, 3),
+        (wb5_modrtc.TestModGSMRTC, 9),
     ])
-    if len(sys.argv) > 1:
-        ignore_tests = set(int(x) for x in sys.argv[1].strip().split(','))
 
-        if ignore_tests:
-            print "Will ignore tests: " + ",".join(str(x) for x in ignore_tests) 
-    else:
-        ignore_tests = set()
+
+    skip_tests = parse_comma_separated_set(args.skip_tests)
+    if skip_tests:
+        print "Will skip tests: " + ",".join(str(x) for x in skip_tests)
+
+    ignore_tests = parse_comma_separated_set(args.ignore_tests)
+    if ignore_tests:
+        print "Will ignore tests: " + ",".join(str(x) for x in ignore_tests)
+
+
 
     try:
         gsm.init_gsm()
@@ -142,9 +163,20 @@ if __name__ == '__main__':
     else:
         subprocess.call("wb-hwconf-helper init wb5-mod2 wbe-i-can-iso", shell=True)
 
+    results_row = ['--', ] * (max(mapping.values()) + 1)
+
+    # delete tests we would like to skip
+    if skip_tests:
+        filtered_mapping = OrderedDict()
+        for test_class, test_index in mapping.iteritems():
+            if test_index in skip_tests:
+                print "Will skip %s test" % test_class.__name__
+            else:
+                filtered_mapping[test_class] = test_index
+        mapping = filtered_mapping
+
     result = unittest.TextTestRunner(verbosity=2).run(suite(mapping))
 
-    results_row = ['--', ] * (max(mapping.values()) + 1)
 
     for test_class, test_index in mapping.iteritems():
         if test_index in ignore_tests:
