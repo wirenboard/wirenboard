@@ -1,3 +1,16 @@
+wb-test-suite (1.4.3) stable; urgency=medium
+
+  * better handling of 5V reference for ADC tests
+  * disable RTC battery test by default
+
+ -- Evgeny Boger <boger@contactless.ru>  Wed, 22 Jun 2016 17:25:57 +0300
+
+wb-test-suite (1.4.2) stable; urgency=medium
+
+  * extend 5V range
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 21 Jun 2016 14:51:59 +0300
+
 wb-test-suite (1.4.1) stable; urgency=medium
 
   * fix broken ADC tests on 5.6.1/PS

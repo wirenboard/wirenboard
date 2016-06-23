@@ -4,6 +4,7 @@ import unittest
 import subprocess
 import time
 import datetime
+import sys
 
 from gpio import GPIO
 
@@ -57,6 +58,8 @@ class TestModGSMRTC(unittest.TestCase):
 
         self.assertAlmostEqual(ts_end - ts_start, delay, delta = 1)
 
+
+class TestModGSMRTCFull(TestModGSMRTC):
     def test_battery(self):
         delay = 60
         self._disable_rtc()
@@ -72,9 +75,11 @@ class TestModGSMRTC(unittest.TestCase):
         dt = datetime.datetime.fromtimestamp(ts)
         self.assertGreater(dt.year, 2015)
 
-
 if __name__ == '__main__':
+    print "Usage: python %s [TestModGSMRTC|TestModGSMRTCFull]" % sys.argv[0]
+
     unittest.main()
+
 
 
 

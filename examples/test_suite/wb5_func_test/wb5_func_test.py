@@ -223,7 +223,7 @@ if __name__ == '__main__':
     log.update_data(board_id, short_sn, overall_status,
                     [imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] +
                     results_row +
-                    ["-", wb_version, fw_version, test_date]
+                    [ wb_version, fw_version, test_date]
                     )
 
     print "Done!"

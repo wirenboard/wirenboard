@@ -91,7 +91,12 @@ class TestADC52(TestADCBase):
 class TestADC55(TestADCBase):
     def setUp(self):
         self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
-        self.ref_5v = float(self.wbmqtt.get_next_value('wb-adc', '5Vout'))
+        v5_val_str = self.wbmqtt.get_next_value('wb-adc', '5Vout')
+        if v5_val_str == "nan":
+            self.ref_5v = 5.0
+            print "Cannot read 5V reference, use default"
+        else:
+            self.ref_5v = float(v5_val_str)
 
     def test_5vout(self):
         self.wbmqtt.send_value('wb-gpio', '5V_OUT', '0')
@@ -102,7 +107,8 @@ class TestADC55(TestADCBase):
         self.wbmqtt.send_value('wb-gpio', '5V_OUT', '1')
         time.sleep(500E-3)
         v_measured = float(self.wbmqtt.get_next_value('wb-adc', '5Vout'))
-        self.assertAlmostEqual(v_measured, 5.1, delta=0.2)
+        self.assertLessEqual(v_measured, 5.6)
+        self.assertGreater(v_measured, 4.8)
 
 if __name__ == '__main__':
     print "Usage: python %s [TestADC52|TestADC55]" % sys.argv[0]
