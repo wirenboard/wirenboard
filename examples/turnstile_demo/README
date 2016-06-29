@@ -1,0 +1,5 @@
+Считыватели Matrix III RD-ALL подключен к порту RS-485 /dev/ttyAPP4 контроллера Wiren Board 5 
+
+В ридеры должна быть прошита прошивка http://www.ironlogic.ru/il.nsf/file/ru_rdall_net.rar/$FILE/rdall_net.rar
+
+
