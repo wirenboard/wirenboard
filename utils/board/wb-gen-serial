@@ -1,126 +1,257 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-PREFIX="00:86"
+import os
+import sys
+import hashlib
+import argparse
+import random
+import string
 
-. /etc/wb_env.sh
+sys.path.insert(0, "/usr/lib/wb-test-suite/common/")
 
-function debug() {
-    echo $1 1>&2
-}
+from uid import get_cpuinfo_serial, get_mmc_serial
+import gsm
+import wifi
 
-function _gen_mac_simcom()
-{
-    IMEI=`wb-gsm imei`
-    RC=$?
+# Filename for random generated serial number seed
+FALLBACK_SEED_FILE = "/var/lib/wirenboard/serial-seed"
 
-    IMEI_SN=`echo $IMEI | cut -c 9-14`
-
-    if [[ $RC != 0 ]] ; then
-        debug "ERROR"
-        return $RC;
-    fi
-    IMEIPREFIX=${IMEI:0:8}
-
-    MAC_PREFIX_OCTET=`printf "%x\n" $((IMEIPREFIX%256))`
-
-    MAC="$PREFIX:${MAC_PREFIX_OCTET}:${IMEI_SN:0:2}:${IMEI_SN:2:2}:${IMEI_SN:4:2}"
-    echo $MAC
-    return 0
-}
-
-function gen_mac_simcom()
-{
-    debug "Trying to get GSM IMEI..."
-    wb-gsm restart_if_broken
-    _gen_mac_simcom
-    RC=$?
-    if [[ $RC != 0 ]] ; then
-        wb-gsm restart_if_broken
-        RC=$?
-    fi
-
-    return $RC
-}
-
-function gen_mac_wifi()
-{
-    debug "Trying to get Wi-Fi MAC..."
-    ADDR_FNAME=/sys/class/net/wlan0/address
-    if [ -e $ADDR_FNAME ]; then
-        WIFI_MAC=`cat $ADDR_FNAME`
-        MAC="$PREFIX:41:${WIFI_MAC:9:8}"
-        echo $MAC
-        return 0
-    else
-        return 1;
-    fi
-}
-
-function gen_mac_cpu()
-{
-    debug "Trying to generate MAC from CPU serial..."
-    SERIAL_STR=`cat /proc/cpuinfo | grep Serial | cut -d':' -f2 | cut -c2-`
-    RC=$?
-    if [[ $RC != 0 ]] ; then
-        debug "Error reading serial from /proc/cpuinfo"
-        return 1;
-    fi;
+# Default MAC prefix
+MAC_PREFIX = "00:86"
 
 
-    debug "Got SoC serial: ${SERIAL_STR}"
+def _get_imei():
+    try:
+        gsm.init_gsm()
+    except RuntimeError:
+        return ""
+    else:
+        return gsm.gsm_get_imei()
 
-    if [[ "${SERIAL_STR}" = "0000000000000000" ]] ; then
-        debug "SoC serial is empty, ignoring. Unsupported SoC or maybe old kernel?"
-        return 1;
-    fi;
 
-    SERIAL_MD5=`echo ${SERIAL_STR} | md5sum | cut -d' ' -f1`
+def pack_long(num):
+    ret = ""
+    while num > 0:
+        val = num & 0x1F
+        if val < 26:
+            ret += chr(ord('A') + val)
+        else:
+            ret += chr(ord('2') + val - 26)
 
-    MAC="$PREFIX:44:${SERIAL_MD5:0:2}:${SERIAL_MD5:2:2}:${SERIAL_MD5:4:2}"
-    echo $MAC
-    return 0
-}
+        num >>= 5
+    return ret
 
-function gen_mac_rand()
-{
-    debug "Trying to get random MAC..."
-    LC_CTYPE=C
-    SUFFIX=
-    for i in {1..3}
-    do
-        IFS= read -d '' -r -n 1 char < /dev/urandom
-        SUFFIX+=$(printf -- ':%02x\n' "'$char")
-    done
-    MAC="$PREFIX:43$SUFFIX"
-    echo $MAC
-    return 0;
-}
 
-function gen_mac_best()
-{
-    gen_mac_wifi || gen_mac_cpu || gen_mac_simcom || gen_mac_rand
-}
+def unpack_long(s):
+    ret = long()
 
-case "$1" in
-	"cpu" )
-		gen_mac_cpu
-	;;
-	"gsm" )
-		gen_mac_simcom
-	;;
-	"wifi" )
-		gen_mac_wifi
-	;;
-	"rand" )
-		gen_mac_rand
-	;;
+    for i in s[::-1]:
+        if i.isdigit():
+            ret += ord(i) - ord('2') + 26
+        else:
+            ret += ord(i) - ord('A')
 
-    "-h" | "--help" | "help" )
-		echo "USAGE: $0 [gsm|cpu|wifi|rand|help]";
-        exit 0;
-    ;;
-	* )
-		gen_mac_best
-	;;
-esac
+        ret <<= 5
 
+    ret >>= 5
+
+    return ret
+
+
+def random_word(length):
+    return ''.join(random.choice(string.lowercase) for i in range(length))
+
+
+def _get_serial_2():
+    wifi_mac = wifi.get_wlan_mac()
+
+    imei = _get_imei()
+
+    cpuinfo_serial = str(get_cpuinfo_serial())
+
+    mmc_serial = str(get_mmc_serial())
+
+    seed_string = str(wifi_mac) + str(imei) + cpuinfo_serial + mmc_serial
+
+    # DEBUG
+    seed_string = ""
+
+    # Generate random serial number if no seed is presented
+    if len(seed_string) == 0:
+        if os.path.isfile(FALLBACK_SEED_FILE):
+            print >> sys.stderr, "Warning: use random seed file from %s" % FALLBACK_SEED_FILE
+            f = open(FALLBACK_SEED_FILE, "r")
+            seed_string = f.read()
+        else:
+            print >> sys.stderr, "Warning: generating random seed file %s" % FALLBACK_SEED_FILE
+            f = open(FALLBACK_SEED_FILE, "w")
+            seed_string = random_word(64)
+            f.write(seed_string)
+
+
+    ser_hash = hashlib.md5(seed_string).hexdigest()
+    ser_hash = int(ser_hash[8:], 16) ^ int(ser_hash[:8], 16)
+
+    serial_reduced = 0
+    while ser_hash != 0:
+        serial_reduced = serial_reduced ^ (ser_hash & (2**40 - 1))
+        ser_hash = ser_hash >> 16
+
+    return pack_long(serial_reduced)
+
+
+# Old serial format
+
+def reduce_hash(digest_str, modulo):
+    remainder = 0
+    for c in digest_str:
+        remainder = remainder * 256
+        remainder = remainder + ord(c)
+        remainder = remainder % modulo
+    return remainder
+
+
+def _get_serial_1():
+    wifi_mac = wifi.get_wlan_mac()
+
+    try:
+        gsm.init_gsm()
+    except RuntimeError:
+        # print "No GSM modem detected"
+        imei = None
+    else:
+        imei = gsm.gsm_get_imei()
+        # print "imei=%s" % imei
+
+    cpuinfo_serial = str(get_cpuinfo_serial())
+    # print "cpuinfo serial: ", cpuinfo_serial
+
+    if imei is not None:
+        imei_prefix, imei_sn, imei_crc = gsm.split_imei(imei)
+        board_id = imei
+        short_sn = imei_sn
+    else:
+        board_id = cpuinfo_serial + (wifi_mac if wifi_mac else "")
+        short_sn = "1" + str(reduce_hash(hashlib.md5(board_id).digest(), 1000000))
+
+    return short_sn
+
+
+def get_serial(version=2):
+    if version == 2:
+        return _get_serial_2()
+    else:
+        return _get_serial_1()
+
+
+def _get_mac_2():
+    # generate mac address according to serial
+    # serial is 40-bit value,
+    # translate it to 24 bit
+    serial = unpack_long(_get_serial_2())
+
+    serial_reduced = long()
+
+    while serial > 0:
+        serial_reduced ^= serial & (2**24 - 1)
+        serial >>= 16
+
+    mac_suffix = ""
+
+    for i in range(3):
+        mac_suffix += ":%02x" % (serial_reduced & 255)
+        serial_reduced >>= 8
+
+    return MAC_PREFIX + ":40" + mac_suffix
+
+
+
+def _get_mac_1_wifi():
+    wifi_mac = wifi.get_wlan_mac()
+
+    if wifi_mac:
+        return MAC_PREFIX + ":41:" + wifi_mac[8:]
+    else:
+        return ""
+
+
+def _get_mac_1_imei():
+    imei = _get_imei()
+
+    if len(imei) == 0:
+        return ""
+
+    imei_sn = imei[8:14]
+    imei_prefix = imei[0:8]
+
+    int_prefix = "%02x" % (long(imei_prefix) % 256)
+    int_suffix = "%s:%s:%s" % (imei_sn[0:2], imei_sn[2:4], imei_sn[4:6])
+
+    return MAC_PREFIX + ":" + int_prefix + ":" + int_suffix
+
+
+def _get_mac_1_cpu():
+    cpu_serial = get_cpuinfo_serial()
+
+    if cpu_serial is None or cpu_serial == "0000000000000000":
+        return ""
+
+    smd5 = hashlib.md5(cpu_serial + "\n").hexdigest()
+
+    return MAC_PREFIX + ":44:" + smd5[0:2] + ":" + smd5[2:4] + ":" + smd5[4:6]
+
+
+def _get_mac_1_rand():
+    mac = MAC_PREFIX + ":43"
+
+    for i in range(3):
+        mac += ":%02x" % random.randint(0, 255)
+
+    return mac
+
+
+def _get_mac_1(mac_type):
+    if mac_type == "wifi":
+        return _get_mac_1_wifi()
+    elif mac_type == "cpu":
+        return _get_mac_1_cpu()
+    elif mac_type == "gsm":
+        return _get_mac_1_imei()
+    elif mac_type == "rand":
+        return _get_mac_1_rand()
+    else:
+        return _get_mac_1_wifi() or \
+               _get_mac_1_cpu() or \
+               _get_mac_1_imei() or \
+               _get_mac_1_rand()
+
+
+def get_mac(mac_type="best", version=2):
+    if version == 2:
+        return _get_mac_2()
+    else:
+        return _get_mac_1(mac_type)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate unique device information: serial number or MAC address")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-s", "--serial", help="Get device serial number",
+                       action="store_true")
+    group.add_argument("-m", "--mac", help="Generate eth0 MAC address",
+                       action="store_true")
+    parser.add_argument("-v", "--version", help="Select version of serial number (1 - old, 2 - new), default - 2",
+                        type=int, default=2, choices=[1, 2])
+    parser.add_argument("-t", "--type", help="MAC generator type for version 1",
+                        default="best", choices=["best", "wifi", "cpu", "gsm", "rand"])
+
+    args = parser.parse_args()
+
+    if args.serial:
+        print get_serial(args.version)
+    elif args.mac:
+        print get_mac(args.type, args.version)
+
+
+if __name__ == "__main__":
+    main()
