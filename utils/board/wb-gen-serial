@@ -73,9 +73,6 @@ def _get_serial_2():
 
     seed_string = str(wifi_mac) + str(imei) + cpuinfo_serial + mmc_serial
 
-    # DEBUG
-    seed_string = ""
-
     # Generate random serial number if no seed is presented
     if len(seed_string) == 0:
         if os.path.isfile(FALLBACK_SEED_FILE):

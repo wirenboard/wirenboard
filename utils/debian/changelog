@@ -1,3 +1,10 @@
+wb-utils (1.66) stable; urgency=medium
+
+  * rework wb-gen-serial to generate both serial number and MAC
+  * new serial generation sequence
+
+ -- Nikita Maslov <n.maslov@contactless.ru>  Mon, 11 Jul 2016 13:08:47 +0300
+
 wb-utils (1.65) stable; urgency=medium
 
   * adds version definition for WB5.8
