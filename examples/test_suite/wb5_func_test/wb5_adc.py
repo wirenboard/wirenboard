@@ -1,10 +1,7 @@
 # coding: utf-8
 import unittest
 
-import sys
-sys.path.insert(0, "../common")
-
-import wbmqtt
+from wb_common import wbmqtt
 import subprocess
 import time
 

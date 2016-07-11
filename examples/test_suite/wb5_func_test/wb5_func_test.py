@@ -1,30 +1,20 @@
 
 import unittest
 from collections import OrderedDict
-import sys
-import os
 import datetime
 import hashlib
 import subprocess
-sys.path.insert(0, "../common")
 
 import argparse
 
-import leds
-import gsm
-import w1
-import sysinfo
+from wb_common import leds, gsm, w1, sysinfo
 
 #~ import gpio
-import rs485
+from wb_common import rs485
 #~ import relay
-import network
-import beeper
+from wb_common import network, beeper, rf433, wifi, can
 
 import wb5_adc
-import rf433
-import wifi
-import can
 import wb5_modrtc
 
 from gdocs import GSheetsLog
