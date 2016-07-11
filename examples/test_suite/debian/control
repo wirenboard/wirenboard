@@ -7,5 +7,5 @@ Build-Depends: debhelper (>= 9), pkg-config
 
 Package: wb-test-suite
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, mosquitto, python-wb-io (>= 1.2), gammu, python-gspread, python-httplib2, python-crypto, wb-hwconf-manager (>= 1.6), wb-utils (>= 1.66)
+Depends: ${shlibs:Depends}, ${misc:Depends}, mosquitto, python-wb-io (>= 1.2), gammu, python-gspread, python-httplib2, python-crypto, wb-hwconf-manager (>= 1.6), wb-utils (>= 1.64), python-wb-common (>= 1.0)
 Description: Wiren Board functional testing suite
