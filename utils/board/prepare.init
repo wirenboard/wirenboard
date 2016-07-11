@@ -260,6 +260,7 @@ wb_firstboot()
     local flag="/var/lib/firstboot_done.flag"
     local wb_dir="/var/lib/wirenboard"
     local serial="$wb_dir/serial.conf"
+
     [[ -f $flag ]] && return 0
 
     log_action_msg "Preparing rootfs for the first boot"
@@ -275,7 +276,7 @@ wb_firstboot()
         log_action_begin_msg "Get WB serial number"
         [[ -e "/mnt/data/$serial" ]] &&
             cp "/mnt/data/$serial" "$serial" ||
-            wb-gen-serial > $serial
+            wb-gen-serial -m > $serial
         log_end_msg $? || return $?
     }
 
