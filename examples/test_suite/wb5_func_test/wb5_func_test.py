@@ -2,7 +2,6 @@
 import unittest
 from collections import OrderedDict
 import datetime
-import hashlib
 import subprocess
 
 import argparse
@@ -17,16 +16,9 @@ from wb_common import network, beeper, rf433, wifi, can
 import wb5_adc
 import wb5_modrtc
 
-from gdocs import GSheetsLog
-from uid import get_mac, get_cpuinfo_serial, get_mmc_serial
+from wb_common.gdocs import GSheetsLog
+from wb_common.uid import get_mac, get_cpuinfo_serial, get_mmc_serial
 
-def reduce_hash(digest_str, modulo):
-    remainder = 0
-    for c in digest_str:
-        remainder = remainder * 256
-        remainder = remainder + ord(c)
-        remainder = remainder % modulo
-    return remainder
 
 class WB5TestW1(w1.TestW1):
     NUMBER_REQUIRED = 1
@@ -64,7 +56,7 @@ def suite(mapping):
 
 def print_sn(sn):
     print "====================================="
-    print "Short SN:     %s %s      " % (str(sn)[:3], str(sn)[3:])
+    print "Short SN:     %s %s      " % (str(sn)[:4], str(sn)[4:])
     print "====================================="
 
 def parse_comma_separated_set(list_str):
@@ -118,7 +110,6 @@ if __name__ == '__main__':
         print "Will ignore tests: " + ",".join(str(x) for x in ignore_tests)
 
 
-
     try:
         gsm.init_gsm()
     except RuntimeError:
@@ -139,13 +130,14 @@ if __name__ == '__main__':
     if imei is not None:
         imei_prefix, imei_sn, imei_crc = gsm.split_imei(imei)
         board_id = imei
-        short_sn = imei_sn
     else:
         board_id = cpuinfo_serial + (wifi_mac if wifi_mac else "")
-        short_sn = "1" + str(reduce_hash(hashlib.md5(board_id).digest(), 1000000))
         imei_prefix = "-"
-    print_sn(short_sn)
 
+
+    # New serial generation sequence
+    short_sn = subprocess.Popen([ "wb-gen-serial", "-s" ], stdout=subprocess.PIPE).stdout.read().strip()
+    print_sn(short_sn)
 
     # init CAN extension module on slot2 (hw-specific)
     if wb_version == '55':
@@ -222,4 +214,3 @@ if __name__ == '__main__':
         beep.beep(0.07, 10)
     else:
         beep.beep(0.5, 3)
-

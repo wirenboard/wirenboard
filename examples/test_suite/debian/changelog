@@ -1,3 +1,10 @@
+wb-test-suite (1.5) stable; urgency=medium
+
+  * use new wb-gen-serial from wb-utils
+  * move 'common' dir to separate package python-wb-common
+
+ -- Nikita Maslov <n.maslov@contactless.ru>  Mon, 11 Jul 2016 12:46:29 +0300
+
 wb-test-suite (1.4.3) stable; urgency=medium
 
   * better handling of 5V reference for ADC tests

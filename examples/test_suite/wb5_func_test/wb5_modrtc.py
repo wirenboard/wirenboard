@@ -6,7 +6,7 @@ import time
 import datetime
 import sys
 
-from gpio import GPIO
+from wb_common.gpio import GPIO
 
 
 class TestModGSMRTC(unittest.TestCase):
