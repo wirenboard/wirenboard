@@ -1,0 +1,11 @@
+Source: wb-common
+Maintainer: Evgeny Boger <boger@contactless.ru>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6), debhelper (>= 7)
+Standards-Version: 3.9.1
+
+Package: python-wb-common
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Wiren Board Python common library and helpers
