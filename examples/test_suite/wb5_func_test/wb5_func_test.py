@@ -17,7 +17,7 @@ import wb5_adc
 import wb5_modrtc
 
 from wb_common.gdocs import GSheetsLog
-from wb_common.uid import get_mac, get_cpuinfo_serial, get_mmc_serial
+from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
 
 
 class WB5TestW1(w1.TestW1):
@@ -61,6 +61,15 @@ def print_sn(sn):
 
 def parse_comma_separated_set(list_str):
     return set(int(x) for x in list_str.strip().split(',')) if list_str else set()
+
+
+
+def get_mac():
+    return subprocess.Popen(['wb-gen-serial',  '-m'], stdout=subprocess.PIPE).stdout.read().strip()
+
+
+def get_serial():
+    return subprocess.Popen(['wb-gen-serial', '-s'], stdout=subprocess.PIPE).stdout.read().strip()
 
 
 if __name__ == '__main__':
@@ -137,7 +146,7 @@ if __name__ == '__main__':
 
 
     # New serial generation sequence
-    short_sn = subprocess.Popen([ "wb-gen-serial", "-s" ], stdout=subprocess.PIPE).stdout.read().strip()
+    short_sn = get_serial()
     print_sn(short_sn)
 
     # init CAN extension module on slot2 (hw-specific)
