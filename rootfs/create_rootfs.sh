@@ -5,7 +5,7 @@ ADD_PACKAGES=netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,\
 net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,\
 wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,\
 python-serial,memtester,apt-utils,dialog,locales,python3-minimal,unzip,minicom,\
-iw,ppp,libmodbus5,python-smbus,ssmtp
+iw,ppp,libmodbus5,python-smbus,ssmtp,moreutils
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
 OUTPUT="rootfs"
@@ -21,7 +21,7 @@ then
 fi
 
 case "$2" in
-    5|55|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
+    5|55|55P|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
         ;;
     *)
         echo "Unknown board" 
@@ -46,6 +46,23 @@ die() {
 	local ret=$?
 	>&2 echo "!!! $@"
 	[[ $ret == 0 ]] && exit 1 || exit $ret
+}
+
+# Runs jq with given arguments and replaces the original file with result
+# Example: json_edit '.foo = 123'
+json_edit() {
+    [[ -e "$JSON" ]] || {
+        die "JSON file '$JSON' not found"
+        return 1
+    }
+
+    local tmp=`mktemp`
+    sed 's#//.*##' "$JSON" |    # there are // comments, strip them out
+    jq "$@" > "$tmp"
+    local ret=$?
+    [[ "$ret" == 0 ]] && cat "$tmp" > "$JSON"
+    rm "$tmp"
+    return $ret
 }
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
@@ -191,6 +208,20 @@ case "$BOARD" in
         set_fdt imx28-wirenboard55
     ;;
 
+    "55P" )
+        # Wiren Board 5 for Proton
+        export FORCE_WB_VERSION=55
+        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd can-utils wb-test-suite wb-hwconf-manager
+
+        set_fdt imx28-wirenboard55
+
+        JSON=${OUTPUT}/etc/wb-hardware.conf
+        json_edit '.slots|=map(if .id=="wb55-mod1" then .module="wbe-do-r6c-1" else . end)'
+        json_edit '.slots|=map(if .id=="wb55-mod2" then .module="wbe-do-r6c-1" else . end)'
+        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
+
+    ;;
+
     "4" )
         # Wiren Board 4
         export FORCE_WB_VERSION=41
@@ -275,7 +306,7 @@ case "$BOARD" in
 
         chr_apt netplug
 
-        set_fdt imx23-wirenboard-kmon1.dtb
+        set_fdt imx23-wirenboard-kmon1
     ;;
 esac
 
