@@ -93,7 +93,8 @@ write_uboot_${SOC_TYPE}
 
 ls -lh  ${DEV}2
 
-sudo mkfs.ext4 ${DEV}2 -E stride=2,stripe-width=1024 -b 4096 -L rootfs
+E2FS_FEATURES=has_journal,ext_attr,resize_inode,dir_index,filetype,extent,flex_bg,sparse_super,large_file,huge_file,uninit_bg,dir_nlink,extra_isize
+sudo mkfs.ext4 ${DEV}2 -E stride=2,stripe-width=1024 -Onone,$E2FS_FEATURES,^64bit -b 4096 -L rootfs
 MOUNTPOINT=`mktemp -d`
 sudo mount ${DEV}2 $MOUNTPOINT/
 
