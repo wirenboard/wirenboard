@@ -277,10 +277,11 @@ wb_firstboot()
     [[ ! -f "$serial" ]] && {
         log_action_begin_msg "Get WB serial number"
         [[ -e "/mnt/data/$serial" ]] &&
-            cp "/mnt/data/$serial" "$serial" && 
-            echo "wirenboard-$short_sn" > "/etc/hostname" &&
-            sed "s/^ssid=.*/ssid=$ssid/" "/etc/hostapd.conf" > "/etc/hostapd.conf" ||
-            wb-gen-serial -m > $serial
+            cp "/mnt/data/$serial" "$serial" ||
+            (echo "wirenboard-$short_sn" > "/etc/hostname.wb") &&
+            (sed -i.orig "s/^ssid=.*/ssid=$ssid/" "/etc/hostapd.conf.wb") &&
+            (wb-gen-serial -m > $serial) &&
+            reboot
         log_end_msg $? || return $?
     }
 
