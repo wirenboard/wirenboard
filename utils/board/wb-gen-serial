@@ -19,6 +19,9 @@ FALLBACK_SEED_FILE = "/var/lib/wirenboard/serial-seed"
 # Default MAC prefix
 MAC_PREFIX = "00:86"
 
+# Serial generator revision == fisrt symbol in serial number starting from A
+GEN_REVISION = 0
+
 
 def _get_imei():
     try:
@@ -85,14 +88,17 @@ def _get_serial_2():
             seed_string = random_word(64)
             f.write(seed_string)
 
-
     ser_hash = hashlib.md5(seed_string).hexdigest()
     ser_hash = int(ser_hash[8:], 16) ^ int(ser_hash[:8], 16)
 
     serial_reduced = 0
     while ser_hash != 0:
-        serial_reduced = serial_reduced ^ (ser_hash & (2**40 - 1))
+        serial_reduced = serial_reduced ^ (ser_hash & (2**35 - 1))
         ser_hash = ser_hash >> 16
+
+    # append serial number generator version as number (from 0 == 'A' in Base32)
+    serial_reduced <<= 5
+    serial_reduced += GEN_REVISION & 0x1F
 
     return pack_long(serial_reduced)
 
@@ -160,7 +166,6 @@ def _get_mac_2():
         serial_reduced >>= 8
 
     return MAC_PREFIX + ":40" + mac_suffix
-
 
 
 def _get_mac_1_wifi():
