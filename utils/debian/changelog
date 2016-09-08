@@ -1,3 +1,9 @@
+wb-utils (1.65) stable; urgency=medium
+
+  * adds version definition for WB5.8
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 19 Aug 2016 19:09:05 +0300
+
 wb-utils (1.64) stable; urgency=medium
 
   * disable icrnl (\r to \n) on modem UART port

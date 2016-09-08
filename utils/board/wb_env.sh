@@ -21,6 +21,10 @@ if [ "x$FORCE_WB_VERSION" = "x" ]; then
                 WB_VERSION=55;
                 break;
             ;;
+            "contactless,imx28-wirenboard58" )
+                WB_VERSION=58;
+                break;
+            ;;
             "contactless,imx23-wirenboard32" )
                 WB_VERSION=32;
                 break;
@@ -267,7 +271,7 @@ case "$WB_VERSION" in
 
     ;;
 
-    "55" )
+    "55" | "58" )
     WB_ADC_TYPE=3
 
     WB_GPIO_RFM_IRQ=38;

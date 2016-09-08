@@ -66,7 +66,7 @@ do_start()
 
         ;;
 
-        "52" | "55" )
+        "52" | "55" | "58" )
             #  blink green led
             echo timer > /sys/class/leds/green/trigger
             echo 0 > /sys/class/leds/red/brightness
@@ -78,7 +78,7 @@ do_start()
             stty -F /dev/ttyAPP2 9600
             stty -F /dev/ttyAPP3 9600
             stty -F /dev/ttyAPP4 9600
-            
+
         ;;
 
         "KMON1" )
