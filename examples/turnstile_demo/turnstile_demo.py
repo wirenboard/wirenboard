@@ -235,10 +235,17 @@ if __name__ =='__main__':
     manager = TurnstilesManager(turnstiles = [
         {
             'name' : 'Turnstile 1 forward',
-            'reader_id' : 19997,
+            'reader_id' : 3794,
             'pass_status_channel' : 'wb-gpio/A1_IN',
-            'open_channel' : 'wb-gpio/A3_OUT'
-        }
+            'open_channel' : 'wb-gpio/EXT1_R3A1'
+        },
+        {
+            'name' : 'Turnstile 1 backwards',
+            'reader_id' : 12609,
+            'pass_status_channel' : 'wb-gpio/A2_IN',
+            'open_channel' : 'wb-gpio/EXT1_R3A2'
+        },
+
     ])
 
 
