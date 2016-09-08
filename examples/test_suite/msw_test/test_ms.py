@@ -181,7 +181,6 @@ class TestTH(unittest.TestCase):
         print "Temperature: %s" % value
         self.assertIsNotNone(value)
         self.assertAlmostEqual(float(value), 25, delta=3)
-
     def test_error_count(self):
         while True:
             am2320_reads = int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
