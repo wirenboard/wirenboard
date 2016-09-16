@@ -171,14 +171,17 @@ class TestSPL(unittest.TestCase):
 class TestTH(unittest.TestCase):
     def test_humidity(self):
         value = wbmqtt.get_next_value(serial_device.device_id, 'Humidity')
+        print "Humidity: %s" % value
         self.assertIsNotNone(value)
-        self.assertGreaterEqual(float(value), 30)
+        self.assertGreaterEqual(float(value), 25)
         self.assertLessEqual(float(value), 70)
 
     def test_templerature(self):
         value = wbmqtt.get_next_value(serial_device.device_id, 'Temperature')
+        print "Temperature: %s" % value
         self.assertIsNotNone(value)
         self.assertAlmostEqual(float(value), 25, delta=3)
+
     def test_error_count(self):
         while True:
             am2320_reads = int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
@@ -213,13 +216,17 @@ class TestIlluminance(unittest.TestCase):
     def test_ambient(self):
         self._switch_light(False)
         time.sleep(2000E-3)
-        self.assertLess(self._get_lux(), 2000)
+        lux = self._get_lux()
+        print "Ambient illuminance: %s lx" % lux
+        self.assertLess(lux, 2000)
 
     def test_illuminated(self):
         ambient_lux = self._get_lux_stable()
         self._switch_light(True)
         time.sleep(2000E-3)
-        self.assertAlmostEqual(self._get_lux_stable(), 3800 + ambient_lux, delta = 200)
+        lux = self._get_lux_stable() - ambient_lux
+        print "Illuminance difference: %s lx" %  lux
+        self.assertAlmostEqual(lux, 3800 , delta = 3800 * 0.1)
 
 
 
