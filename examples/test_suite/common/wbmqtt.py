@@ -8,16 +8,40 @@ import logging
 VALUES_MASK = "/devices/+/controls/+"
 ERRORS_MASK = "/devices/+/controls/+/meta/error"
 
+
+
+
+from functools import wraps
+
+def timing(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time.time()
+        result = f(*args, **kw)
+        te = time.time()
+        print 'func:%r args:[%r, %r] took: %2.4f sec' % \
+          (f.__name__, args, kw, te-ts)
+        return result
+    return wrap
+
+
+
+
 class CellSpec(object):
     def __init__(self, value = None, error = None):
         self.value = value
         self.error = error
 
+class MQTTConnection(mosquitto.Mosquitto):
+    def loop_forever(self, timeout=1.0, max_packets=1):
+        mosquitto.Mosquitto.loop_forever(self, timeout=0.05)
+
+
 class WBMQTT(object):
     def __init__(self):
         self.control_values = defaultdict(lambda: CellSpec())
 
-        self.client = mosquitto.Mosquitto()
+        self.client = MQTTConnection()
         self.client.connect('localhost', 1883)
         self.client.on_message = self.on_mqtt_message
         self.client.loop_start()
@@ -64,21 +88,28 @@ class WBMQTT(object):
         control_id = parts[4]
         return device_id, control_id
 
+    # @timing
     def on_mqtt_message(self, arg0, arg1, arg2=None):
+        st = time.time()
         if arg2 is None:
             mosq, obj, msg = None, arg0, arg1
         else:
             mosq, obj, msg = arg0, arg1, arg2
-        if msg.retain:
-            return
+        # if msg.retain:
+        #     return
+
         if mosquitto.topic_matches_sub(VALUES_MASK, msg.topic):
             self.control_values[self._get_channel(msg.topic)].value = msg.payload
         elif mosquitto.topic_matches_sub(ERRORS_MASK, msg.topic):
             self.control_values[self._get_channel(msg.topic)].error = msg.payload or None
 
+        # print "on msg", msg.topic, msg.payload, "took %d ms" % ((time.time() - st)*1000)
     def clear_values(self):
         for cell_spec in self.control_values.itervalues():
             cell_spec.value = None
+
+    def clear_value(self, device_id, control_id):
+        self.control_values[(device_id, control_id)].value = None
 
     def get_last_value(self, device_id, control_id):
         return self.control_values[(device_id, control_id)].value
@@ -89,6 +120,13 @@ class WBMQTT(object):
             return val
         else:
             return self.get_next_value(device_id, control_id)
+    # @timing
+    def get_next_or_last_value(self, device_id, control_id, timeout=0.5):
+        """ wait for timeout for new value, return old one otherwise"""
+        val = self.get_next_value(device_id, control_id, timeout=timeout)
+        if val is None:
+            val = self.get_last_value(device_id, control_id)
+        return val
 
     def get_last_error(self, device_id, control_id):
         self.watch_channel(device_id, control_id)
@@ -96,15 +134,16 @@ class WBMQTT(object):
 
     def get_next_value(self, device_id, control_id, timeout=10):
         self.watch_channel(device_id, control_id)
+        cached_value = self.get_last_value(device_id, control_id)
         self.control_values[(device_id, control_id)].value = None
         ts_start = time.time()
         while 1:
-            if (time.time() - ts_start) > timeout:
-                return
-
             value = self.get_last_value(device_id, control_id)
             if value is not None:
                 return value
+            if (time.time() - ts_start) > timeout:
+                self.control_values[(device_id, control_id)].value = cached_value
+                return
 
             time.sleep(0.01)
 
