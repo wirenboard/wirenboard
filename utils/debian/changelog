@@ -1,3 +1,12 @@
+wb-utils (1.66) stable; urgency=medium
+
+  * impovements in gsm script:
+    * restart_if_broken and wb-gsm on work faster
+    * init_baud command now supports Neoway M660A with non-standard
+          initial baud rate setting
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 30 Sep 2016 13:15:56 +0300
+
 wb-utils (1.65) stable; urgency=medium
 
   * adds version definition for WB5.8
