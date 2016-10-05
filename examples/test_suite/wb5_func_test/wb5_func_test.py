@@ -130,6 +130,7 @@ if __name__ == '__main__':
 
 
     try:
+        gsm.init_baudrate()
         gsm.init_gsm()
     except RuntimeError:
         print "No GSM modem detected"

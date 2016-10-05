@@ -15,6 +15,10 @@ def init_gsm():
     if retcode != 0:
         raise RuntimeError("gsm init failed")
 
+def init_baudrate():
+    retcode = subprocess.call("wb-gsm init_baud", shell=True)
+    if retcode != 0:
+        raise RuntimeError("gsm init baudrate failed")
 
 def gsm_get_imei():
     proc = subprocess.Popen("wb-gsm imei", shell=True, stdout=subprocess.PIPE)
