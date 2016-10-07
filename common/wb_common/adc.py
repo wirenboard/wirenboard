@@ -34,9 +34,6 @@ class ADC(object):
 
         return value
 
-
-
-
     def read_phys_ch_value(self, channel):
         values = []
         for i in xrange(self.N_SAMPLES):
