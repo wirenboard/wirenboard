@@ -1,0 +1,148 @@
+#!/bin/bash
+
+#set -x # show commands
+set -e # exit on any fail
+
+# name of the Aptly repository
+REPO_NAME=devel
+# name of distribution (ex. wheezy, jessie, stable, testing, sid in Debian)
+DISTRIBUTION=testing
+# list of arches
+ARCH=armel,all
+
+# Aptly special config file name, with path
+CONFIG_FILE=~/.wbrepo/wbrepo.conf
+# Local repository dir
+LOCAL_REPO_DIR=~/.wbrepo/
+
+# GPG key owner name
+KEY_OWNER=RepoKeeper
+
+# GPG key owner email, doesn't really matter
+KEY_OWNER_EMAIL=repokeeper@localhost.local
+
+# -------------------- end of config variables ---------------------- #
+
+# service variables, don't change
+APTLY_ARGS="-config=$CONFIG_FILE "
+
+# trap Ctrl-C to stop everything
+trap 'stopall' INT
+
+stopall() {
+    # ignore SIGINT and SIGTERM while shutting down
+    trap '' INT TERM 
+    echo "Stopping..."
+
+    # kill all background processes (as for 'serve')
+    kill -TERM 0
+    wait
+}
+
+print_help() {
+	# -------------------- start of help message heredoc ------------------- #
+	cat >&2 <<EOL
+wbrepo - wbdev local repository tool - Aptly based
+
+Commands:
+
+	add [deb files] 	 add packages in local repository
+	remove [query] 		 remove packages from local repository
+	list 			 list available packages in repository
+	serve 			 start little HTTP server to make repository available
+EOL
+}
+
+# check if local config exists
+if [ ! -s $CONFIG_FILE ]; then
+    echo "=> Creating local repository and Aptly config file..."
+    mkdir -p `dirname $CONFIG_FILE`
+
+#--------------start of Aptly config file heredoc------------------#
+    cat > $CONFIG_FILE <<END
+    {
+        "rootDir": "$LOCAL_REPO_DIR",
+	"downloadConcurrency": 4,
+	"downloadSpeedLimit": 0,
+	"architectures": [],
+	"dependencyFollowSuggests": false,
+	"dependencyFollowRecommends": false,
+	"dependencyFollowAllVariants": false,
+	"dependencyFollowSource": false,
+	"gpgDisableSign": false,
+	"gpgDisableVerify": false,
+	"downloadSourcePackages": false,
+	"ppaDistributorID": "contactless",
+	"ppaCodename": "",
+	"S3PublishEndpoints": {},
+	"SwiftPublishEndpoints": {}
+    }
+END
+#---------------end of Aptly config file heredoc-------------------#
+	
+fi
+
+# check if repository exists
+if [ `aptly $APTLY_ARGS repo list | grep $REPO_NAME | wc -l` == 0 ]; then
+    echo "=> Creating aptly repository $REPO_NAME"
+    aptly $APTLY_ARGS repo create $REPO_NAME
+fi
+
+# check if key exists
+if [ `gpg --list-keys | grep $KEY_OWNER | wc -l` == 0 ]; then
+	echo "=> Generating GPG keys for repository"
+	echo "=> To speed up the process, try to run in other session on this machine:"
+	echo "=>     while sleep 0.5; do dd if=/initrd.img of=/dev/null iflag=direct; done"
+	echo "=> This will increase entropy and will help GPG to generate keys"
+
+	# -------------------- start of GPG batch heredoc ---------------------- #
+	cat >/tmp/gpg_batch <<EOL
+		%echo Generating a basic key for local repository
+		Key-Type: RSA
+		Key-Length: 1024
+		Name-Real: $KEY_OWNER
+		Name-Email: $KEY_OWNER_EMAIL
+		Expire-Date: 0
+		%commit
+		%echo Done.
+EOL
+	# ---------------------- end of GPG batch heredoc ---------------------- #
+
+	# generate new GPG key
+	gpg --gen-key --batch /tmp/gpg_batch
+	rm /tmp/gpg_batch -rf
+
+	# export GPG key into repository public
+	mkdir -p $LOCAL_REPO_DIR/public
+	gpg --export -a $KEY_OWNER > $LOCAL_REPO_DIR/public/repo.gpg.key
+
+	echo "=> Key generation done"
+fi
+
+case $1 in
+add)
+    aptly $APTLY_ARGS repo add $REPO_NAME ${@:2}
+    aptly $APTLY_ARGS publish drop $DISTRIBUTION >/dev/null 2>/dev/null || true
+    aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_NAME 2>/dev/null
+;;
+remove)
+    aptly $APTLY_ARGS repo remove $REPO_NAME "${@:2}"
+    aptly $APTLY_ARGS publish drop $DISTRIBUTION >/dev/null 2>/dev/null || true
+    aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_NAME 2>/dev/null
+;;
+list)
+	aptly $APTLY_ARGS repo show -with-packages $REPO_NAME
+;;
+serve)
+    PORT=8086
+    if [ $2 != "" ]; then
+        PORT=$2
+    fi
+    aptly $APTLY_ARGS serve -listen=":$PORT" &
+    cat # wait for Ctrl-C
+;;
+*)
+	print_help
+	>&2 echo "=> ERROR: unable to parse command"
+;;
+esac
