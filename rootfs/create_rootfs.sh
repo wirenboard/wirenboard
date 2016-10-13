@@ -11,6 +11,8 @@ REPO="http://mirror.yandex.ru/debian/"
 OUTPUT="rootfs"
 RELEASE=wheezy
 
+ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
+
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
 
@@ -92,13 +94,12 @@ chr_install_deb() {
 
 setup_additional_repos() {
     # setup additional repos
-    FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 
-    mkdir -p `dirname $FILE`
-    touch $FILE
+    mkdir -p `dirname $ADD_REPO_FILE`
+    touch $ADD_REPO_FILE
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
-        echo "deb $repo testing main" >> $FILE
+        echo "deb $repo testing main" >> $ADD_REPO_FILE
         chr bash -c "wget $repo/repo.gpg.key -O- | apt-key add -"
     done
 }
@@ -337,6 +338,10 @@ case "$BOARD" in
 esac
 
 chr /etc/init.d/mosquitto stop
+
+# remove additional repo files
+rm -rf $ADD_REPO_FILE
+chr apt-get update
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
