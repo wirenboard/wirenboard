@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-set -x
+#set -x
 ADD_PACKAGES=netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,\
 net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,\
 wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,\
@@ -14,9 +14,14 @@ RELEASE=wheezy
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
 
-if [ $# -ne 2 ]
+if [[ ( "$#" < 2)  ]]
 then
-  echo "USAGE: $0 <path to rootfs> <BOARD>"
+  echo "USAGE: $0 <path to rootfs> <BOARD> [list of additional repos]"
+  echo ""
+  echo "How to attach additional repos:"
+  echo -e "\t$0 <path to rootfs> <BOARD> \"http://localhost:8086/\""
+  echo -e "Additional repo must have a public key file on http://<hostname>/repo.gpg.key"
+  echo -e "In process, repo names will be expanded as \"deb <repo_address> testing main\""
   exit 1
 fi
 
@@ -85,6 +90,19 @@ chr_install_deb() {
     rm ${OUTPUT}/`basename ${DEB_FILE}`
 }
 
+setup_additional_repos() {
+    # setup additional repos
+    FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
+
+    mkdir -p `dirname $FILE`
+    touch $FILE
+    for repo in "${@}"; do
+        echo "=> Setup additional repository $repo..."
+        echo "deb $repo testing main" >> $FILE
+        chr bash -c "wget $repo/repo.gpg.key -O- | apt-key add -"
+    done
+}
+
 echo "Install dependencies"
 apt-get install -y qemu-user-static binfmt-support || true
 
@@ -96,6 +114,10 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 
 	prepare_chroot
 	services_disable
+
+    # setup additional repositories
+    echo "Install additional repos"
+    setup_additional_repos "${@:3}"
 
 	echo "Updating"
 	chr apt-get update
@@ -141,6 +163,10 @@ else
 
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+    
+    # setup additional repositories
+    echo "Install additional repos"
+    setup_additional_repos "${@:3}"
 
 	echo "Update&upgrade apt"
 	chr apt-get update

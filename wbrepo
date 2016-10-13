@@ -135,7 +135,7 @@ list)
 ;;
 serve)
     PORT=8086
-    if [ $2 != "" ]; then
+    if [ "$2" != "" ]; then
         PORT=$2
     fi
     aptly $APTLY_ARGS serve -listen=":$PORT" &
