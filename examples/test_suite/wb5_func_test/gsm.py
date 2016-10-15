@@ -1,46 +1,11 @@
 # coding: utf-8
-import os
-import re
+
+from wb_common import gsm
 import unittest
+import re
 import subprocess
 import time
 
-
-def gsm_decode(hexstr):
-    return os.popen('echo %s | xxd -r -ps | iconv -f=UTF-16BE -t=UTF-8' % hexstr).read()
-
-
-def init_gsm():
-    retcode = subprocess.call("wb-gsm restart_if_broken", shell=True)
-    if retcode != 0:
-        raise RuntimeError("gsm init failed")
-
-def init_baudrate():
-    retcode = subprocess.call("wb-gsm init_baud", shell=True)
-    if retcode != 0:
-        raise RuntimeError("gsm init baudrate failed")
-
-def gsm_get_imei():
-    proc = subprocess.Popen("wb-gsm imei", shell=True, stdout=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
-    if proc.returncode != 0:
-        raise RuntimeError("get imei failed")
-
-    return stdout.strip()
-
-def split_imei(imei):
-    imei = str(imei)
-    if not imei.isdigit():
-        raise RuntimeError("imei is not a numerical")
-
-    if len(imei) != 15:
-        raise RuntimeError("wrong imei len")
-
-    prefix = imei[:8]
-    sn = imei[8:14]
-    crc = imei[14]
-
-    return int(prefix), int(sn), int(crc)
 
 class TestGSM(unittest.TestCase):
     @classmethod
@@ -50,7 +15,7 @@ class TestGSM(unittest.TestCase):
 
 class TestGSMMegafon(TestGSM):
     def test_number(self):
-        init_gsm()
+        gsm.init_gsm()
         #~ return
         ussd_number = '*205#'
         # ~ ussd_number = '*111*0887#'
@@ -66,7 +31,7 @@ class TestGSMMegafon(TestGSM):
         self.assertTrue(bool(matches))
         self.assertEquals(len(matches), 1)
 
-        ussd_response = gsm_decode(matches[0])
+        ussd_response = gsm.gsm_decode(matches[0])
         print "test number stdout: ", ussd_response
 
         match = re.match('.*(7\d{10}).*', ussd_response)
@@ -79,7 +44,7 @@ class TestGSMMegafon(TestGSM):
 
 class TestGSMMTS(TestGSM):
     def test_number(self):
-        init_gsm()
+        gsm.init_gsm()
         ussd_number = '*111*0887#'
 
         # MTS sends SMS following USSD request
@@ -108,8 +73,8 @@ class TestGSMRTC(unittest.TestCase):
     RTC_TIMEOUT_SECONDS = 2
 
     def test_rtc(self):
-        init_gsm()
-        
+        gsm.init_gsm()
+
         # large capacitor parallel to battery in WB4 prevent it from working...
 
         subprocess.call("wb-gsm-rtc save_time", shell=True)
@@ -119,7 +84,7 @@ class TestGSMRTC(unittest.TestCase):
 
         print "Sleep for %s seconds to allow RTC cap to discarge" % rtc_timeout
         time.sleep(rtc_timeout)
-        init_gsm()
+        gsm.init_gsm()
 
         proc = subprocess.Popen('wb-gsm-rtc read', shell=True, stdout=subprocess.PIPE)
         stdout, stderr = proc.communicate()
@@ -129,7 +94,6 @@ class TestGSMRTC(unittest.TestCase):
 
         year = int(time_read.split('/')[0])
         self.assertGreater(year, 10)
-
 
 if __name__ == '__main__':
     unittest.main()
