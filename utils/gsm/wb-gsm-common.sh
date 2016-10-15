@@ -2,6 +2,7 @@
 . /etc/wb_env.sh
 
 PORT=/dev/ttyAPP0
+DEFAULT_BAUDRATE=115200
 
 PWRKEY_GPIO=/sys/class/gpio/gpio${WB_GPIO_GSM_PWRKEY}
 RESET_GPIO=/sys/class/gpio/gpio${WB_GPIO_GSM_RESET}
@@ -136,15 +137,52 @@ function reset() {
 }
 
 function set_speed() {
-    stty -F $PORT  115200 -icrnl
+    if [ -z "$1" ]; then
+        BAUDRATE=${DEFAULT_BAUDRATE}
+    else
+        BAUDRATE=$1
+    fi
+
+    stty -F $PORT  ${BAUDRATE} -icrnl
+}
+
+function _try_set_baud() {
+    local RC=1
+    if [[ $(test_connection) == 0 ]] ; then
+        debug "Got answer from modem, now set the fixed baudrate"
+        echo  -e "AT+IPR=115200\r\n" > $PORT
+        RC=0
+    fi
+    echo $RC
 }
 
 function init_baud() {
+    # Sets module baudrate to fixed 115200.
+    # Handles both models with auto baud rate detection (SIM9xx/SIM8xx)
+    #  and models with some fixed preset speed (Neoway M660A)
+
+
+    ensure_on
+
+    # Step 1: sets default baudrate, then try to make modem to detect
+    # baudrate by sending AAA bytes
+
     set_speed
     echo  -e "AAAAAAAAAAAAAAAAAAAT\r\n" > $PORT
     sleep 1
-    echo  -e "AT+IPR=115200\r\n" > $PORT
-    sleep 1
+    if [[ $(_try_set_baud) == 0 ]] ; then
+        return
+    fi
+
+    # connection test failed...
+    # Step 2: try to connect at lower speed
+    set_speed 9600
+    if [[ $(_try_set_baud) == 0 ]] ; then
+        # connection at the lower baud rate succeded, not set the default baudrate
+        set_speed
+        return
+    fi
+    debug "ERROR: couldn't establish connection with modem"
 }
 
 function imei() {
@@ -218,8 +256,8 @@ function switch_off() {
 function ensure_on() {
     if [ ${WB_GSM_HAS_STATUS_PIN} = "1" ]; then
         if [ "`gpio_get_value ${WB_GPIO_GSM_STATUS}`" = "1" ]; then
-            debug "need to switch off"
-            switch_off
+            debug "Modem is already switched on"
+            return
         fi
     else
         switch_off
@@ -267,7 +305,8 @@ function restart_if_broken() {
     if [[ $RC == 0 ]]; then
         RC=$(test_connection)
         if [[ $RC != 0 ]] ; then
-            debug "connection test error!"
+            debug "WARNING: connection test error!"
+            switch_off
         fi
     fi
 

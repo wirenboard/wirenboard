@@ -60,8 +60,8 @@ class WBMQTT(object):
     def __del__(self):
         self.close()
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    time.sleep(1)
-    print wbmqtt.get_last_value('wb-adc', 'A1')
-    wbmqtt.close()
+#    time.sleep(1)
+#    print wbmqtt.get_last_value('wb-adc', 'A1')
+#    wbmqtt.close()

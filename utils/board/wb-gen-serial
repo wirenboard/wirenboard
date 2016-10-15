@@ -9,9 +9,8 @@ import string
 
 sys.path.insert(0, "/usr/lib/wb-test-suite/common/")
 
-from uid import get_cpuinfo_serial, get_mmc_serial
-import gsm
-import wifi
+from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
+from wb_common import gsm, wifi
 
 # Filename for random generated serial number seed
 FALLBACK_SEED_FILE = "/var/lib/wirenboard/serial-seed"
@@ -237,21 +236,24 @@ def get_mac(mac_type="best", version=2):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate unique device information: serial number or MAC address")
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--serial", help="Get device serial number",
-                       action="store_true")
+                       action="store_const", dest="mode", const="serial")
     group.add_argument("-m", "--mac", help="Generate eth0 MAC address",
-                       action="store_true")
+                       action="store_const", dest="mode", const="mac")
+    parser.set_defaults(mode="mac")
+
     parser.add_argument("-v", "--version", help="Select version of serial number (1 - old, 2 - new), default - 2",
                         type=int, default=2, choices=[1, 2])
-    parser.add_argument("-t", "--type", help="MAC generator type for version 1",
-                        default="best", choices=["best", "wifi", "cpu", "gsm", "rand"])
+
+    parser.add_argument("type", help="MAC generator type for version 1",
+                        default="best", nargs="?", choices=["best", "wifi", "cpu", "gsm", "rand"])
 
     args = parser.parse_args()
 
-    if args.serial:
+    if args.mode == "serial":
         print get_serial(args.version)
-    elif args.mac:
+    elif args.mode == "mac":
         print get_mac(args.type, args.version)
 
 

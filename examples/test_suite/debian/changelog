@@ -3,7 +3,13 @@ wb-test-suite (1.5) stable; urgency=medium
   * use new wb-gen-serial from wb-utils
   * move 'common' dir to separate package python-wb-common
 
- -- Nikita Maslov <n.maslov@contactless.ru>  Mon, 11 Jul 2016 12:46:29 +0300
+ -- Nikita Maslov <n.maslov@contactless.ru>  Mon, 14 Oct 2016 12:46:29 +0300
+
+wb-test-suite (1.4.4) stable; urgency=medium
+
+  * handle GSM modules with incorrect initial baudrate settings
+
+ -- Evgeny Boger <boger@contactless.ru>  Wed, 05 Oct 2016 22:15:05 +0300
 
 wb-test-suite (1.4.3) stable; urgency=medium
 

@@ -6,18 +6,18 @@ import subprocess
 
 import argparse
 
-from wb_common import leds, gsm, w1, sysinfo
+from wb_common import leds, sysinfo, beeper
 
-#~ import gpio
-from wb_common import rs485
+import gsm, w1, rs485, network, rf433, wifi, test_can
+
 #~ import relay
-from wb_common import network, beeper, rf433, wifi, can
 
 import wb5_adc
 import wb5_modrtc
 
-from wb_common.gdocs import GSheetsLog
+from gdocs import GSheetsLog
 from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
+
 
 
 class WB5TestW1(w1.TestW1):
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         (wb5_adc.TestADC55 if (wb_version == '55') else wb5_adc.TestADC52, 4),
         (WB5TestW1, 5),
         (network.TestNetwork, 1),
-        (can.TestCAN, 2),
+        (test_can.TestCAN, 2),
         (gsm_test, 0),
         (gsm.TestGSMRTC, 3),
         (wb5_modrtc.TestModGSMRTC, 9),
@@ -120,6 +120,7 @@ if __name__ == '__main__':
 
 
     try:
+        gsm.init_baudrate()
         gsm.init_gsm()
     except RuntimeError:
         print "No GSM modem detected"

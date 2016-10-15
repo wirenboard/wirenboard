@@ -23,7 +23,7 @@ RUN apt-get update && \
       valgrind libgtest-dev google-mock cmake config-package-dev \
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
-      aptly
+      aptly python-setuptools
 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
