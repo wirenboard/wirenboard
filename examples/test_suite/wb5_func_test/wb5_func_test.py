@@ -6,9 +6,9 @@ import subprocess
 
 import argparse
 
-from wb_common import leds, sysinfo, beeper
+from wb_common import leds, sysinfo, beeper, wifi, gsm
 
-import gsm, w1, rs485, network, rf433, wifi, test_can
+import gsm as gsm_test, w1, rs485, network, rf433, wifi as wifi_test, test_can
 
 #~ import relay
 
@@ -41,8 +41,8 @@ class WB5TestRFM69(rf433.TestRFM69):
     IRQ_GPIO = 38
 
 
-gsm_test = gsm.TestGSMMTS
-# gsm_test = gsm.TestGSMegafon
+gsm_test_gs = gsm_test.TestGSMMTS
+# gsm_test_gs = gsm_test.TestGSMegafon
 
 
 def suite(mapping):
@@ -98,14 +98,14 @@ if __name__ == '__main__':
 
     mapping = OrderedDict([
         (WB5TestRS485, 6),
-        (wifi.TestWifi, 7),
+        (wifi_test.TestWifi, 7),
         (WB5TestRFM69, 8),
         (wb5_adc.TestADC55 if (wb_version == '55') else wb5_adc.TestADC52, 4),
         (WB5TestW1, 5),
         (network.TestNetwork, 1),
         (test_can.TestCAN, 2),
-        (gsm_test, 0),
-        (gsm.TestGSMRTC, 3),
+        (gsm_test_gs, 0),
+        (gsm_test.TestGSMRTC, 3),
         (wb5_modrtc.TestModGSMRTC, 9),
     ])
 
