@@ -17,6 +17,8 @@ import leds
 import beeper
 from wbmqtt import WBMQTT
 
+from test_ms_common import TestSPL, TestTH, TestEEPROMPersistence, parse_comma_separated_set
+
 def suite(mapping):
     suite = unittest.TestSuite()
 
@@ -25,150 +27,9 @@ def suite(mapping):
 
     return suite
 
-def parse_comma_separated_set(list_str):
-    return set(int(x) for x in list_str.strip().split(',')) if list_str else set()
-
 wbmqtt = None
 
-class SerialDriverHandler(object):
-    def __init__(self, config_fname):
-        self.config_fname = config_fname
-        self.serial_driver_proc = None
-
-    def start(self):
-        self.kill_existing()
-        self.serial_driver_proc = subprocess.Popen(['wb-mqtt-serial', '-c', self.config_fname])
-        time.sleep(2)
-
-    def stop(self):
-        self.serial_driver_proc.kill()
-        self.serial_driver_proc.communicate()
-
-    def is_running(self):
-        return (self.serial_driver_proc is not None) and (self.serial_driver_proc.poll() is None)
-
-    def ensure_running(self):
-        if not self.is_running():
-            self.start()
-
-    def kill_existing(self):
-        subprocess.call("killall -9 wb-mqtt-serial", shell=True)
-
-class SerialDeviceHandler(object):
-    power_fet = ('wb-gpio', 'A4_OUT')
-
-    def __init__(self, config_template, port='/dev/ttyAPP4', slave_id = 1, device_id=None):
-        config = json.load(open(config_template))
-
-        assert 1 <= slave_id <= 247
-
-        self.port = port
-        self.slave_id = slave_id
-
-        config[u'ports'][0]['path'] = self.port
-        assert len(config[u'ports'][0]['devices']) == 1
-        config[u'ports'][0]['devices'][0]['slave_id'] = self.slave_id
-        if device_id:
-            config[u'ports'][0]['devices'][0]['id'] = device_id
-
-
-        self.tmpfile = tempfile.NamedTemporaryFile(delete=False)
-        self.tmpfile.write(json.dumps(config))
-        self.tmpfile.close()
-
-        self.serial_driver = SerialDriverHandler(self.tmpfile.name)
-
-        self.device_id = device_id
-
-    def start_driver(self):
-        self.serial_driver.start()
-
-    def stop_driver(self):
-        self.serial_driver.stop()
-
-    def get_serial(self):
-        return int(wbmqtt.get_next_value(self.device_id, "Serial"))
-
-    def get_fw_ver(self):
-        chars = []
-        for i in xrange(9):
-            c = wbmqtt.get_next_value(self.device_id, "fw_ver_%d" % i)
-            chars.append(c)
-        return "".join(chars).strip()
-
-    def set_serial(self, serial):
-        wbmqtt.send_value(self.device_id, "Serial", serial)
-
-
-    def broadcast_set_address(self):
-        self.serial_driver.kill_existing()
-
-        subprocess.call("modbus_client -m rtu -pnone -s2 %s -a0 -t0x06 -r0x80 %d" % (self.port, self.slave_id), shell=True)
-
-    def power_off(self):
-        wbmqtt.send_value(self.power_fet[0], self.power_fet[1], '0')
-
-    def power_on(self):
-        wbmqtt.send_value(self.power_fet[0], self.power_fet[1], '1')
-
-
 serial_device = None
-
-class TestEEPROMPersistence(unittest.TestCase):
-    def test_persistence(self):
-        # Serial shouldn't change after power cycle
-        serial = wbmqtt.get_last_or_next_value(serial_device.device_id, 'Serial')
-
-        spl_slow_rc_cur = wbmqtt.get_last_or_next_value(serial_device.device_id, 'SPL_SLOW_RC')
-        spl_slow_rc_cur = int(spl_slow_rc_cur)
-        if spl_slow_rc_cur % 2 == 0:
-            spl_slow_rc = spl_slow_rc_cur + 10
-        else:
-            spl_slow_rc = spl_slow_rc_cur - 10
-
-        wbmqtt.send_value(serial_device.device_id, 'SPL_SLOW_RC', spl_slow_rc)
-
-        time.sleep(500E-3)
-
-        serial_device.stop_driver()
-        serial_device.power_off()
-        time.sleep(500E-3)
-        serial_device.power_on()
-        serial_device.start_driver()
-
-        self.assertEqual(
-            wbmqtt.get_next_value(serial_device.device_id, 'Serial'),
-            serial)
-
-        self.assertIsNone(wbmqtt.get_last_error(serial_device.device_id, 'Serial'))
-
-        self.assertEqual(
-            int(wbmqtt.get_next_value(serial_device.device_id, 'SPL_SLOW_RC')),
-            spl_slow_rc)
-
-class TestSPL(unittest.TestCase):
-    SOUND_LEVEL = 76.3
-    AMBIENT_MAX = 61
-    @classmethod
-    def setUpClass(cls):
-        serial_device.serial_driver.ensure_running()
-
-    def test_ambient(self):
-        time.sleep(200E-3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=2)
-        self.assertIsNotNone(spl_value)
-        self.assertLess(float(spl_value), self.AMBIENT_MAX)
-
-    def test_s600hz(self):
-        #sox -n -r 44100 600hz_0.01_10s.wav  synth 10 sine 600 vol 0.01
-        fname = '600hz_0.03_10s.wav'
-        proc = subprocess.Popen(['aplay', fname, '-d', '5'])
-        time.sleep(3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=1)
-        proc.communicate()
-        proc.wait()
-        self.assertIsNotNone(spl_value)
-        self.assertAlmostEqual(float(spl_value), self.SOUND_LEVEL, delta = 2.5)
 
 
 
@@ -177,41 +38,17 @@ class TestBuzzer(unittest.TestCase):
     def setUpClass(cls):
         serial_device.serial_driver.ensure_running()
 
-    def test_buzzer_on(self):
-        wbmqtt.send_value(serial_device.device_id, 'Buzzer', '1')
-        time.sleep(600E-3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=1)
-        self.assertIsNotNone(spl_value)
-        self.assertGreater(float(spl_value), 78)
+    def tearDown(self):
         wbmqtt.send_value(serial_device.device_id, 'Buzzer', '0')
 
+    def test_buzzer_on(self):
+        wbmqtt.send_value(serial_device.device_id, 'Buzzer', '1')
+        time.sleep(1100E-3)
+        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=0.5)
+        self.assertIsNotNone(spl_value)
+        self.assertGreater(float(spl_value), 75)
 
 
-
-class TestTH(unittest.TestCase):
-    def test_humidity(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Humidity')
-        print "Humidity: %s" % value
-        self.assertIsNotNone(value)
-        self.assertGreaterEqual(float(value), 25)
-        self.assertLessEqual(float(value), 70)
-
-    def test_temperature(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Temperature')
-        print "Temperature: %s" % value
-        self.assertIsNotNone(value)
-        self.assertAlmostEqual(float(value), 25, delta=3)
-
-    def test_error_count(self):
-        while True:
-            am2320_reads = int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
-            if am2320_reads < 5:
-                continue
-
-            am2320_errors = int(wbmqtt.get_last_or_next_value(serial_device.device_id, 'AM2320 errors'))
-            self.assertLess(am2320_errors, am2320_reads / 2 + 1)
-
-            return
 
 
 class TestCO2(unittest.TestCase):
@@ -222,43 +59,6 @@ class TestCO2(unittest.TestCase):
         self.assertGreaterEqual(float(value), 380)
         self.assertLessEqual(float(value), 2000)
 
-class TestIlluminance(unittest.TestCase):
-    LIGHT_SWITCH = ('wb-gpio', 'A3_OUT')
-    MAX_AMBIENT = 50
-    ILLUMINATED_DIFF = 4500
-    ILLUMINATED_DIFF_ERR = 0.12
-    # @classmethod
-    # def setUpClass(cls):
-    #     wbmqtt.watch_channel(cls.LIGHT_SWITCH[0], cls.LIGHT_SWITCH[1])
-
-    @classmethod
-    def _switch_light(self, on):
-        wbmqtt.send_value(self.LIGHT_SWITCH[0], self.LIGHT_SWITCH[1], '1' if on else '0')
-
-    def _get_lux(self):
-        return float(wbmqtt.get_next_value(serial_device.device_id, 'Illuminance'))
-
-    def _get_lux_stable(self):
-        return wbmqtt.get_stable_value(serial_device.device_id, 'Illuminance', timeout=10, jitter=10)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls._switch_light(False)
-
-    def test_ambient(self):
-        self._switch_light(False)
-        time.sleep(2000E-3)
-        lux = self._get_lux()
-        print "Ambient illuminance: %s lx" % lux
-        self.assertLess(lux, self.MAX_AMBIENT)
-
-    def test_illuminated(self):
-        ambient_lux = self._get_lux_stable()
-        self._switch_light(True)
-        time.sleep(2000E-3)
-        lux = self._get_lux_stable() - ambient_lux
-        print "Illuminance difference: %s lx" %  lux
-        self.assertAlmostEqual(lux, self.ILLUMINATED_DIFF , delta = self.ILLUMINATED_DIFF * self.ILLUMINATED_DIFF_ERR)
 
 
 
@@ -504,6 +304,8 @@ if __name__ == '__main__':
     while 1:
         try:
             wbmqtt = WBMQTT()
+            wbmqtt.watch_device('am2320')
+
             Tester().main()
         finally:
             wbmqtt.close()
