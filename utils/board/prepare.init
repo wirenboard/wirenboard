@@ -260,8 +260,6 @@ wb_firstboot()
     local flag="/var/lib/firstboot_done.flag"
     local wb_dir="/var/lib/wirenboard"
     local serial="$wb_dir/serial.conf"
-    local short_sn=`wb-gen-serial -s`
-    local ssid="WirenBoard-$short_sn"
 
     [[ -f $flag ]] && return 0
 
@@ -273,6 +271,13 @@ wb_firstboot()
         rm -rf $wb_dir
         mkdir -p $wb_dir
     }
+
+    log_action_begin_msg "Fixing GSM modem baudrate"
+    wb-gsm init_baud
+    log_end_msg $? || return $?
+    
+    local short_sn=`wb-gen-serial -s`
+    local ssid="WirenBoard-$short_sn"
 
     [[ ! -f "$serial" ]] && {
         log_action_begin_msg "Get WB serial number"

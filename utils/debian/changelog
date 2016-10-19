@@ -1,3 +1,9 @@
+wb-utils (1.68) stable; urgency=medium
+
+  * fix GSM modem baudrate on first boot
+
+ -- Nikita Maslov <n.maslov@contactless.ru>  Wed, 19 Oct 2016 18:24:17 +0300
+
 wb-utils (1.67) stable; urgency=medium
 
   * rework wb-gen-serial to generate both serial number and MAC
