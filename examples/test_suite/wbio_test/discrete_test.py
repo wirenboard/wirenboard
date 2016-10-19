@@ -3,6 +3,7 @@ from collections import OrderedDict
 import sys
 from select import select
 import subprocess
+import argparse
 
 sys.path.insert(0, "../common")
 
@@ -64,15 +65,25 @@ class TestWBIO(unittest.TestCase):
         self._set_single_channel(channel, polarity)
         self.assertEqual(self._get_in_state(channel), polarity)
 
-    def _test_single_channel_toggle_state(self, channel, polarity):
+    # def _test_single_channel(self, channel):
+    #     self._set_out_state(channel, False)
+    #     for polarity in (True, False):
+    #         self._set_out_state(channel, polarity)
+    #         self.assertEqual(
+    #             self._get_in_state(channel, timeout=0.2),
+    #             polarity,
+    #             "I/O channel %d: input erroneously reports %s state" % (channel, not polarity))
+
+    def _test_single_channel_toggle_state(self, channel, polarity, check_turn_back=True):
         self._set_out_state(channel, polarity)
 
-        if polarity:
-            # the delay is here
-            # to check if the switching element won't turn back off
-            time.sleep(0.1) 
-        else:
-            time.sleep(0.05) 
+        if check_turn_back:
+            if polarity:
+                # the delay is here
+                # to check if the switching element won't turn back off
+                time.sleep(0.05) 
+
+        time.sleep(0.05) 
 
         self.assertEqual(
             self._get_in_state(channel, timeout=0.05),
@@ -112,7 +123,7 @@ class TestWBIO(unittest.TestCase):
 
 
 
-    def _test_single_channel_alt(self, channel):
+    def _test_single_channel_alt(self, channel, check_turn_back=True):
         for i in xrange(1, self.NUM_CHANNELS + 1):
             self._set_out_state(i, False)
 
@@ -120,7 +131,7 @@ class TestWBIO(unittest.TestCase):
             self._get_in_state(channel, timeout = 0.3), False,
                     "I/O channel %d: input erroneously reports on state" % channel)
 
-        self._test_single_channel_toggle_state(channel, True)
+        self._test_single_channel_toggle_state(channel, True, check_turn_back=check_turn_back)
         time.sleep(0.1)
 
         for i in xrange(1, self.NUM_CHANNELS + 1):
@@ -148,27 +159,70 @@ class TestWBIO16(TestWBIO):
 
 for i in xrange(1, TestWBIO16.NUM_CHANNELS + 1):
     setattr(TestWBIO16, 'test_1_pos_ch%s' % str(i).zfill(2) ,
+        (lambda i: lambda self: self._test_single_channel_alt(i, check_turn_back=False))(i))
+
+class TestInputs16(TestWBIO):
+    NUM_CHANNELS = 16
+
+for i in xrange(1, TestInputs16.NUM_CHANNELS + 1):
+    setattr(TestInputs16, 'test_1_pos_ch%s' % str(i).zfill(2) ,
+        (lambda i: lambda self: self._test_single_channel_alt(i, check_turn_back=False))(i))
+
+class TestWBIO8(TestWBIO):
+    NUM_CHANNELS = 8
+
+for i in xrange(1, TestWBIO8.NUM_CHANNELS + 1):
+    setattr(TestWBIO8, 'test_1_pos_ch%s' % str(i).zfill(2) ,
         (lambda i: lambda self: self._test_single_channel_alt(i))(i))
+
 
 class TestR1G16(TestWBIO16):
     pass
-    # def test_all_multiple_toggle(self):
-    #     self._test_all_multiple_toggle(10)
-for i in xrange(1, TestWBIO16.NUM_CHANNELS + 1):
-    setattr(TestWBIO16, 'test_2_toggle_ch%s' % str(i).zfill(2) ,
+
+for i in xrange(1, TestR1G16.NUM_CHANNELS + 1):
+    setattr(TestR1G16, 'test_2_toggle_ch%s' % str(i).zfill(2) ,
         (lambda i: lambda self: self._test_single_channel_multiple_toggle(i, 10))(i))
-    
+
+class TestR1G12(TestWBIO16):
+    NUM_CHANNELS = 12
+for i in xrange(1, TestR1G12.NUM_CHANNELS + 1):
+    setattr(TestR1G12, 'test_2_toggle_ch%s' % str(i).zfill(2) ,
+        (lambda i: lambda self: self._test_single_channel_multiple_toggle(i, 10))(i))
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='WBIO Testing Tool', add_help=False)
+
+    parser.add_argument('module', choices  = ['r1g16', 'r1g12', 'wbio8', 'hvd16'],
+                     help='Module to test')
+
+    parser.add_argument('-f', dest='failfast', action='store_true',
+                     help='Fall after first failed test')
+
+    args = parser.parse_args()
+
+
+
     wbmqtt = WBMQTT()
     wbmqtt.watch_device('wb-gpio')
     time.sleep(1)
     print "==="
 
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TestR1G16))
-    failfast = False
+
+    if args.module == 'r1g16':
+        test_class = TestR1G16
+    elif args.module == 'r1g12':
+        test_class = TestR1G12
+    elif args.module == 'hvd16':
+        test_class = TestInputs16
+    elif args.module == 'wbio8':
+        test_class = TestWBIO8
+    else:
+        raise RuntimeError("unknown module to test")
+
+    suite.addTest(unittest.makeSuite(test_class))
+    failfast = args.failfast
     beep = beeper.Beeper(3)
     beep.setup()
 
