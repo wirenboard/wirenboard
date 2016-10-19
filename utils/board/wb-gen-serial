@@ -65,15 +65,13 @@ def random_word(length):
 
 
 def _get_serial_2():
-    wifi_mac = wifi.get_wlan_mac()
-
     imei = _get_imei()
 
     cpuinfo_serial = str(get_cpuinfo_serial())
 
     mmc_serial = str(get_mmc_serial())
 
-    seed_string = str(wifi_mac) + str(imei) + cpuinfo_serial + mmc_serial
+    seed_string = str(imei) + cpuinfo_serial + mmc_serial
 
     # Generate random serial number if no seed is presented
     if len(seed_string) == 0:
