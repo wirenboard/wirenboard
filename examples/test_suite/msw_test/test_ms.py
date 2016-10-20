@@ -27,8 +27,8 @@ class TestIlluminanceMS(TestIlluminance):
     ILLUMINATED_DIFF_ERR = 0.07
 
 class TestSPLMS(TestSPL):
-    SOUND_LEVEL_MIN = 73
-    SOUND_LEVEL_MAX = 79
+    SOUND_LEVEL_MIN = 72.7
+    SOUND_LEVEL_MAX = 79.6
     AMBIENT_MAX = 63
 
 
