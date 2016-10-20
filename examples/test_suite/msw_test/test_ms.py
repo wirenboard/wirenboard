@@ -27,11 +27,14 @@ class TestIlluminanceMS(TestIlluminance):
     ILLUMINATED_DIFF_ERR = 0.07
 
 class TestSPLMS(TestSPL):
-    SOUND_LEVEL = 76
+    SOUND_LEVEL_MIN = 73
+    SOUND_LEVEL_MAX = 79
     AMBIENT_MAX = 63
 
 
 class Tester(MSTesterBase):
+    MQTT_DEVICE_ID = 'wbms-test'
+    CONFIG_FNAME = "wbms.conf"
     def init_mapping(self):
         self.mapping = OrderedDict([
                 (TestSPLMS, 2),
