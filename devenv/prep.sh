@@ -16,7 +16,8 @@ chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
     valgrind libgtest-dev google-mock cmake liblircclient-dev liblog4cpp5-dev python-setuptools \
     cdbs libpng12-dev libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
-    libusb-1.0-0-dev knxd-dev knxd-tools
+    libusb-1.0-0-dev knxd-dev knxd-tools \
+    cdbs libpng12-dev libqt4-dev
 
 # install git from backports to support desktop latest Git configs
 chr apt-get install -y -t wheezy-backports git git-man
