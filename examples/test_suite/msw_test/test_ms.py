@@ -23,7 +23,7 @@ import test_ms_common
 
 class TestIlluminanceMS(TestIlluminance):
     MAX_AMBIENT = 50
-    ILLUMINATED_DIFF =  4850
+    ILLUMINATED_DIFF =  4970
     ILLUMINATED_DIFF_ERR = 0.07
 
 class TestSPLMS(TestSPL):
