@@ -20,8 +20,6 @@ for line in open(sys.argv[1]):
         val_raw = math.exp((val - SND_DB_COEFF_A) / SND_DB_COEFF_B )
         h_raw.Fill(val_raw)
 
-
-
 h.Draw()
 c2 = ROOT.TCanvas("c2")
 c2.cd()

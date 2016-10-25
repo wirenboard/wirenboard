@@ -192,8 +192,6 @@ class Test1Wire(unittest.TestCase):
         self._test_1wire_temp(2)
 
 class TestSPL(unittest.TestCase):
-    SOUND_LEVEL = 78
-    SOUND_LEVEL_DELTA = 3
     AMBIENT_MAX = 63
     @classmethod
     def setUpClass(cls):
@@ -202,7 +200,7 @@ class TestSPL(unittest.TestCase):
     def test_ambient(self):
         time.sleep(200E-3)
         spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=2)
-	print ("Ambient value: %s" % spl_value)
+        print ("Ambient value: %s" % spl_value)
         self.assertIsNotNone(spl_value)
         self.assertLess(float(spl_value), self.AMBIENT_MAX)
 
@@ -222,7 +220,8 @@ class TestSPL(unittest.TestCase):
         proc.communicate()
         proc.wait()
         self.assertIsNotNone(spl_value)
-        self.assertAlmostEqual(float(spl_value), self.SOUND_LEVEL, delta = self.SOUND_LEVEL_DELTA)
+        self.assertGreaterEqual(float(spl_value), self.SOUND_LEVEL_MIN)
+        self.assertLessEqual(float(spl_value), self.SOUND_LEVEL_MAX)
 
 
 class TestEEPROMPersistence(unittest.TestCase):
