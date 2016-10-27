@@ -26,10 +26,10 @@ import test_ms_common
 
 class TestIlluminanceMSW2(TestIlluminance):
     MAX_AMBIENT = 50
-    ILLUMINATED_DIFF = 4390
-    ILLUMINATED_DIFF_ERR = 0.08
+    ILLUMINATED_DIFF = 4400
+    ILLUMINATED_DIFF_ERR = 0.10
 
-class TestSPLMSW(TesterstSPL):
+class TestSPLMSW(TestSPL):
     SOUND_LEVEL_MIN = 75.4
     SOUND_LEVEL_MAX = 81.5
     AMBIENT_MAX = 63
