@@ -10,7 +10,9 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
-font_path = "LiberationMono-Bold.ttf"
+
+font_path = os.path.join(os.path.dirname(__file__), "LiberationMono-Bold.ttf")
+
 def make_font(path, size):
     return ImageFont.truetype(path, size)
 

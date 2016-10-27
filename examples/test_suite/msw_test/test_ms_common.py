@@ -15,6 +15,9 @@ import json
     
 import leds
 import beeper
+
+import labels
+
 from wbmqtt import WBMQTT
 wbmqtt = None
 
@@ -574,7 +577,14 @@ class MSTesterBase(object):
                 values_row[4] = test.last_spl_on
 
         row += values_row
-        
+
+        if sn_assigned:
+            label_fname = '/tmp/label.png'
+            labels.make_barcode_w_caption(label_fname,
+                barcode_contents=str(sn),
+                caption_contents='A:%d SN:%d' % (self.args.modbus_address, sn))
+            labels.print_label(label_fname)
+            print "The label has been printed"
 
         test_log.send_data(sn_assigned, row)
 
