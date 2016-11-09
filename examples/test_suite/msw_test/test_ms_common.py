@@ -578,12 +578,28 @@ class MSTesterBase(object):
 
         row += values_row
 
-        if sn_assigned:
+        # label is printed if
+        # 1) S/N was assigned for the first time, regardless of Q.C. status
+        # 2) Q.C. is passed, in which case a set of TWO labels is printed
+        #   each with "OK" status printed on it
+
+        if sn_assigned or not has_real_errors:
             label_fname = '/tmp/label.png'
+            label_caption = 'A:%d SN:%d' % (self.args.modbus_address, sn)
+
+            if has_real_errors:
+                copies = 1
+            else:
+                label_caption += ' OK'
+                copies = 2
+
+
             labels.make_barcode_w_caption(label_fname,
                 barcode_contents=str(sn),
-                caption_contents='A:%d SN:%d' % (self.args.modbus_address, sn))
-            labels.print_label(label_fname)
+                caption_contents=label_caption)
+            labels.print_label(label_fname, copies=copies)
+
+
             print "The label has been printed"
 
         test_log.send_data(sn_assigned, row)
