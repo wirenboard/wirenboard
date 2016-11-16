@@ -169,7 +169,7 @@ def _get_mac_1_wifi():
     wifi_mac = wifi.get_wlan_mac()
 
     if wifi_mac:
-        return MAC_PREFIX + ":41:" + wifi_mac[8:]
+        return MAC_PREFIX + ":41:" + wifi_mac[9:]
     else:
         return ""
 
