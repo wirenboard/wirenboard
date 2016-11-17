@@ -8,7 +8,7 @@ Homepage: <insert the upstream URL, if relevant>
 
 Package: wb-configs
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, wb-utils (>= 1.53), inotify-tools, mosquitto (>= 1.4.7-1), watchdog
+Depends: ${shlibs:Depends}, ${misc:Depends}, wb-utils (>= 1.69), inotify-tools, mosquitto (>= 1.4.7-1), watchdog
 Provides: ${diverted-files}, mqtt-wss
 Conflicts: ${diverted-files}, mqtt-wss
 Replaces: mqtt-wss

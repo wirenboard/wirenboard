@@ -11,8 +11,6 @@ allow-hotplug wlan0
 #    wpa-ssid wifiessid
 #    wpa-psk wifipassword
 
-
-
 iface wlan0 inet static
   address 192.168.42.1
   netmask 255.255.255.0
@@ -20,9 +18,13 @@ iface wlan0 inet static
 
 auto eth0
 iface eth0 inet dhcp
-   pre-up ifconfig eth0 hw ether `cat /var/lib/wirenboard/serial.conf` || /bin/true
+   pre-up ifconfig eth0 hw ether `cat /var/lib/wirenboard/eth0_mac.conf` || /bin/true
    hostname WirenBoard
 
+allow-hotplug eth1
+iface eth1 inet dhcp
+   pre-up ifconfig eth1 hw ether `cat /var/lib/wirenboard/eth1_mac.conf` || /bin/true
+   hostname WirenBoard
 
 
 ## The gsm pptp interface
@@ -32,11 +34,4 @@ iface eth0 inet dhcp
 #iface ppp0 inet ppp
 ## select provider: megafon, mts or beeline below
 #  provider megafon
-
-
-
-
-allow-hotplug eth1
-iface eth1 inet dhcp
-
 
