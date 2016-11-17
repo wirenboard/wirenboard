@@ -337,7 +337,9 @@ wb_firstboot()
             (sed -i.orig "s/^ssid=.*/ssid=$ssid/" "/etc/hostapd.conf.wb") &&
             (wb-gen-serial -m > $serial) &&
             {
+                service watchdog stop
                 service networking restart
+                service watchdog start
                 service hostapd restart
             }
         log_end_msg $? || return $?
