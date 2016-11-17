@@ -254,6 +254,54 @@ wb_prepare_filesystems()
     wb_check_alt_rootfs
 }
 
+wb_fix_macs()
+{
+    local wb_dir="/var/lib/wirenboard"
+    local serial="$wb_dir/serial.conf"
+    local eth0_mac="$wb_dir/eth0_mac.conf"
+    local eth1_mac="$wb_dir/eth1_mac.conf"
+
+    local network_restart_needed=false
+
+    if [[ ! -f "${eth0_mac}" ]]; then
+        log_action_begin_msg "Getting eth0 MAC address"
+
+        if [[ -e "/mnt/data/${eth0_mac}" ]]; then
+            cp "/mnt/data/${eth0_mac}" "${eth0_mac}"
+        elif [[ -e "$serial" ]]; then
+            cp "$serial" "${eth0_mac}"
+        elif [[ -e "/mnt/data/$serial" ]]; then
+            cp "/mnt/data/$serial" "${eth0_mac}"
+        else
+            wb-gen-serial -m 0 > ${eth0_mac}
+        fi
+
+        log_end_msg $?
+        network_restart_needed=true
+    fi
+
+    if [[ ! -f "${eth1_mac}" ]]; then
+        log_action_begin_msg "Getting eth1 MAC address"
+
+        if [[ -e "/mnt/data/${eth1_mac}" ]]; then
+            cp "/mnt/data/${eth1_mac}" "${eth1_mac}"
+        else
+            wb-gen-serial -m 1 > ${eth1_mac}
+        fi
+
+        log_end_msg $?
+        network_restart_needed=true
+    fi
+
+    if [ "${network_restart_needed}" = true ]; then
+        service watchdog stop
+        service networking restart
+        service watchdog start
+    fi
+
+    return 0
+}
+
 # This function should be called only on first boot of the rootfs
 wb_firstboot()
 {
@@ -275,9 +323,11 @@ wb_firstboot()
     log_action_begin_msg "Fixing GSM modem baudrate"
     wb-gsm init_baud
     log_end_msg $? || return $?
-    
+
     local short_sn=`wb-gen-serial -s`
     local ssid="WirenBoard-$short_sn"
+
+    wb_fix_macs
 
     [[ ! -f "$serial" ]] && {
         log_action_begin_msg "Get WB serial number"
@@ -286,7 +336,10 @@ wb_firstboot()
             (echo "wirenboard-$short_sn" > "/etc/hostname.wb") &&
             (sed -i.orig "s/^ssid=.*/ssid=$ssid/" "/etc/hostapd.conf.wb") &&
             (wb-gen-serial -m > $serial) &&
-            reboot
+            {
+                service networking restart
+                service hostapd restart
+            }
         log_end_msg $? || return $?
     }
 
@@ -366,10 +419,14 @@ case "$1" in
   status)
 	 exit 0;
 	;;
+  fix_macs)
+    wb_fix_macs
+    exit 0
+  ;;
 
 
   *)
-	echo "Usage: $SCRIPTNAME {start|stop|status}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|fix_macs}" >&2
 	exit 3
 	;;
 esac

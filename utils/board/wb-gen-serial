@@ -143,11 +143,10 @@ def get_serial(version=2):
     else:
         return _get_serial_1()
 
-
-def _get_mac_2():
-    # generate mac address according to serial
+def _get_24bit_serial_v2():
     # serial is 40-bit value,
     # translate it to 24 bit
+
     serial = unpack_long(_get_serial_2())
 
     serial_reduced = long()
@@ -156,13 +155,26 @@ def _get_mac_2():
         serial_reduced ^= serial & (2**24 - 1)
         serial >>= 16
 
+    return serial_reduced
+
+def _get_eth_mac_v2(iface = 0):
+    if iface == 0:
+        third_octet = '40'
+    elif iface == 1:
+        third_octet = '39'
+    else:
+        raise RuntimeError('invalid interface index')
+
+    # generate mac address according to serial
+    serial_reduced = _get_24bit_serial_v2()
+
     mac_suffix = ""
 
     for i in range(3):
         mac_suffix += ":%02x" % (serial_reduced & 255)
         serial_reduced >>= 8
 
-    return MAC_PREFIX + ":40" + mac_suffix
+    return MAC_PREFIX + ":" + third_octet + mac_suffix
 
 
 def _get_mac_1_wifi():
@@ -225,9 +237,9 @@ def _get_mac_1(mac_type):
                _get_mac_1_rand()
 
 
-def get_mac(mac_type="best", version=2):
+def get_mac(mac_type="best", version=2, iface=0):
     if version == 2:
-        return _get_mac_2()
+        return _get_eth_mac_v2(iface)
     else:
         return _get_mac_1(mac_type)
 
@@ -236,11 +248,13 @@ def main():
     parser = argparse.ArgumentParser(description="Generate unique device information: serial number or MAC address")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--serial", help="Get device serial number",
-                       action="store_const", dest="mode", const="serial")
-    group.add_argument("-m", "--mac", help="Generate eth0 MAC address",
-                       action="store_const", dest="mode", const="mac")
-    parser.set_defaults(mode="mac")
+                       action="store_const", dest="mode", const="serial", default=None)
 
+    group.add_argument("-m", "--mac", help="Generate eth<N> MAC address (eth0 by default)",
+                       action="store", type=int, nargs="?",
+                       choices=[0,1],
+                       dest="mode_eth_mac", const=0, default=0)
+    
     parser.add_argument("-v", "--version", help="Select version of serial number (1 - old, 2 - new), default - 2",
                         type=int, default=2, choices=[1, 2])
 
@@ -251,8 +265,8 @@ def main():
 
     if args.mode == "serial":
         print get_serial(args.version)
-    elif args.mode == "mac":
-        print get_mac(args.type, args.version)
+    elif args.mode_eth_mac is not None:
+        print get_mac(args.type, args.version, args.mode_eth_mac)
 
 
 if __name__ == "__main__":
