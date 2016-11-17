@@ -114,7 +114,7 @@ do_stop()
             echo 0 > /sys/class/leds/green/brightness
         ;;
 
-        "52" | "55" )
+        "52" | "55" | "58" )
             #  blink red led
             echo timer > /sys/class/leds/red/trigger
             echo 0 > /sys/class/leds/green/brightness
