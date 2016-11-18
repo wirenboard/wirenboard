@@ -1,3 +1,9 @@
+wb-configs (1.69.1) stable; urgency=medium
+
+  * disable SSHd watchdog check
+
+ -- Evgeny Boger <boger@contactless.ru>  Fri, 18 Nov 2016 17:00:27 +0300
+
 wb-configs (1.69) stable; urgency=medium
 
   * adds support for 2nd Ethernet on WB5.8

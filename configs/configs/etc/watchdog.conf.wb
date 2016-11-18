@@ -20,7 +20,7 @@ min-memory		= 256
 
 # Test if vital daemons are running
 pidfile		= /var/run/syslogd.pid 
-pidfile		= /var/run/sshd.pid
+#pidfile		= /var/run/sshd.pid
 pidfile		= /var/run/mosquitto.pid
 pidfile		= /var/run/nginx.pid
 
