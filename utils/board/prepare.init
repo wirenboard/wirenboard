@@ -294,9 +294,7 @@ wb_fix_macs()
     fi
 
     if [ "${network_restart_needed}" = true ]; then
-        service watchdog stop
         service networking restart
-        service watchdog start
     fi
 
     return 0
@@ -312,6 +310,7 @@ wb_firstboot()
     [[ -f $flag ]] && return 0
 
     log_action_msg "Preparing rootfs for the first boot"
+    service watchdog stop
 
     mkdir -p /mnt/data
 
@@ -337,9 +336,7 @@ wb_firstboot()
             (sed -i.orig "s/^ssid=.*/ssid=$ssid/" "/etc/hostapd.conf.wb") &&
             (wb-gen-serial -m > $serial) &&
             {
-                service watchdog stop
                 service networking restart
-                service watchdog start
                 service hostapd restart
             }
         log_end_msg $? || return $?
