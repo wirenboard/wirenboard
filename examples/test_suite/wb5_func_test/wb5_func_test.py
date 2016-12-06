@@ -7,6 +7,8 @@ import subprocess
 
 import argparse
 
+import sys; sys.path.insert(0, "../hw_test_common")
+
 from wb_common import leds, sysinfo, beeper, wifi, gsm
 
 import gsm as gsm_test, w1, rs485, network, rf433, wifi as wifi_test, test_can
@@ -15,10 +17,10 @@ import gsm as gsm_test, w1, rs485, network, rf433, wifi as wifi_test, test_can
 
 import wb5_adc
 import wb5_modrtc
+import wb5_usb
 
 from gdocs import GSheetsLog
 from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
-import sys; sys.path.insert(0, "../hw_test_common")
 
 
 
@@ -109,7 +111,9 @@ if __name__ == '__main__':
         (gsm_test_gs, 0),
         (gsm_test.TestGSMRTC, 3),
         (wb5_modrtc.TestModGSMRTC, 9),
+        (wb5_usb.TestUSBSerialData, 10),
     ])
+    max_test_number = 20
 
 
     skip_tests = parse_comma_separated_set(args.skip_tests)
@@ -157,7 +161,7 @@ if __name__ == '__main__':
     else:
         subprocess.call("wb-hwconf-helper init wb5-mod2 wbe-i-can-iso", shell=True)
 
-    results_row = ['--', ] * (max(mapping.values()) + 1)
+    results_row = ['--', ] * (max_test_number + 1)
 
     # delete tests we would like to skip
     if skip_tests:
