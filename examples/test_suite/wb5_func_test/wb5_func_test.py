@@ -101,7 +101,7 @@ if __name__ == '__main__':
         (WB5TestRS485, 6),
         (wifi_test.TestWifi, 7),
         (WB5TestRFM69, 8),
-        (wb5_adc.TestADC55 if (wb_version == '55') else wb5_adc.TestADC52, 4),
+        (wb5_adc.TestADC52 if (wb_version in ('50', '52')) else wb5_adc.TestADC55, 4),
         (WB5TestW1, 5),
         (network.TestNetwork, 1),
         (test_can.TestCAN, 2),
