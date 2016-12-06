@@ -18,6 +18,7 @@ import wb5_modrtc
 
 from gdocs import GSheetsLog
 from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
+import sys; sys.path.insert(0, "../hw_test_common")
 
 
 
