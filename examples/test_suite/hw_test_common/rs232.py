@@ -8,10 +8,11 @@ import time
 
 class _TestRS232_Base(unittest.TestCase):
     port = None
+    BAUDRATE = 19200
 
     def setUp(self):
         assert self.port is not None
-        self.ser = serial.Serial(self.port, 19200, timeout=3)
+        self.ser = serial.Serial(self.port, self.BAUDRATE, timeout=3)
         self.ser.flush()
         self.ser.flushInput()
         self.ser.flushOutput()
@@ -30,25 +31,3 @@ class _TestRS232_Base(unittest.TestCase):
 
     def tearDown(self):
         self.ser.close()
-
-class TestRS232Front(_TestRS232_Base):
-    port = '/dev/ttyNSC2'
-
-class TestRS232Back(_TestRS232_Base):
-    port = '/dev/ttyNSC3'
-
-
-
-
-
-if __name__ == '__main__':
-    suite = unittest.TestSuite()
-
-    suite.addTest(unittest.makeSuite(TestRS232Back))
-    suite.addTest(unittest.makeSuite(TestRS232Front))
-
-
-
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-

@@ -9,7 +9,7 @@ import w1
 import adc
 import gpio
 import rs485
-import rs232
+import kmon_rs232
 import relay
 import network
 import sht1x_test
@@ -20,8 +20,8 @@ from gdocs import GSheetsLog
 mapping = OrderedDict([
     ( button.TestProgButton, 9),
     ( rs485.TestRS485      , 6 ),
-    ( rs232.TestRS232Front , 7 ),
-    ( rs232.TestRS232Back  , 8 ),
+    ( kmon_rs232.TestRS232Front , 7 ),
+    ( kmon_rs232.TestRS232Back  , 8 ),
     ( gpio.TestGPIO        , 3 ),
     ( adc.TestADC          , 4 ),
     ( w1.TestW1            , 5 ),
