@@ -2,6 +2,7 @@
 import unittest
 from collections import OrderedDict
 import datetime
+import time
 import subprocess
 
 import argparse
@@ -208,6 +209,7 @@ if __name__ == '__main__':
         leds.set_brightness('green', 0)
 
     print "sending data to google..."
+    t = time.time()
 
     log = GSheetsLog('https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0',
                      '../common/Commissioning-30b68b322b7c.json')
@@ -218,6 +220,7 @@ if __name__ == '__main__':
                     [ wb_version, fw_version, test_date]
                     )
 
+    print "sending to google took %.1f seconds" % (time.time() - t)
     print "Done!"
 
     if has_real_errors:
