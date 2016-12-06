@@ -1,16 +1,14 @@
 import json
 import gspread
-from oauth2client.client import SignedJwtAssertionCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 class GSheetsLog(object):
     BOARD_ID_COL = 3
 
     def __init__(self, url, key_fname):
-        json_key = json.load(open(key_fname))
         scope = ['https://spreadsheets.google.com/feeds']
-
-        credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(key_fname, scope)
         self.gc = gspread.authorize(credentials)
 
         self.wks = self.gc.open_by_url(url)
