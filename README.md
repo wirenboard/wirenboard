@@ -152,3 +152,12 @@ To update wbdev image and wbdev script, use the following commands
 docker pull contactless/devenv
 wget -O /path/to/your/wbdev-script https://raw.githubusercontent.com/contactless/wirenboard/master/wbdev
 ```
+
+Split repositories
+==================
+
+Following directories from this repository were moved to separate repositories:
+* [common](https://github.com/contactless/wb-common)
+* [configs](https://github.com/contactless/wb-configs)
+* [utils](https://github.com/contactless/wb-utils)
+* [system\_rules](https://github.com/contactless/wb-rules-system)

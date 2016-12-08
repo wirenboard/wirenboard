@@ -1,8 +1,0 @@
-#!/bin/sh
-set -e
-
-invoke-rc.d wb-rules restart
-
-#DEBHELPER#
-
-exit 0

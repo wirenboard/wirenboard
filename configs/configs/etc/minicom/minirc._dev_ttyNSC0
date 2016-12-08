@@ -1,3 +1,0 @@
-# Machine-generated file - use "minicom -s" to change parameters.
-pu port             /dev/ttyNSC0
-pu rtscts           No 
