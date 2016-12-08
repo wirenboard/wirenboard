@@ -1,3 +1,0 @@
-[gammu]
-port = /dev/ttyAPP0
-connection = at115200
