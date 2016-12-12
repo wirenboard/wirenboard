@@ -53,13 +53,15 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 COPY build.sh /root/
 COPY rootfs /root/rootfs
 COPY prep.sh /root/
-COPY configs /root/
 COPY entrypoint.sh /sbin/
 COPY projects.list /
 COPY chr /usr/local/bin/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 
-COPY configs/configs/etc/locale.gen.wb /etc/locale.gen
+RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+RUN echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen
+
 RUN locale-gen && update-locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
