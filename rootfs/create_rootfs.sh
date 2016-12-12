@@ -78,7 +78,6 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-CONFIG_DIR="${CONFIG_DIR:-$SCRIPT_DIR/../configs/configs}"
 
 ROOTFS_BASE_TARBALL="$(dirname ${OUTPUT})/rootfs_base.tar.gz"
 
@@ -140,7 +139,12 @@ else
 	modprobe binfmt_misc || true
 
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
-	cp ${CONFIG_DIR}/etc/hosts.wb ${OUTPUT}/etc/hosts
+	echo "127.0.0.1       wirenboard localhost" > ${OUTPUT}/etc/hosts
+	echo "::1     localhost ip6-localhost ip6-loopback" >> ${OUTPUT}/etc/hosts
+	echo "fe00::0     ip6-localnet" >> ${OUTPUT}/etc/hosts
+	echo "ff00::0     ip6-mcastprefix" >> ${OUTPUT}/etc/hosts
+	echo "ff02::1     ip6-allnodes" >> ${OUTPUT}/etc/hosts
+	echo "ff02::2     ip6-allrouters" >> ${OUTPUT}/etc/hosts
 	echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
 
 	echo "Second debootstrap stage"
@@ -158,9 +162,10 @@ else
         echo "deb http://security.debian.org wheezy/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
-	cp ${CONFIG_DIR}/etc/apt/sources.list.d/*.list ${OUTPUT}/etc/apt/sources.list.d/
 	#echo "deb [arch=armel,all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
-	cp ${CONFIG_DIR}/etc/gai.conf.wb ${OUTPUT}/etc/gai.conf     # workaround for IPv6 lags
+	echo "deb [arch=armel,all] http://releases.contactless.ru/ wheezy main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	echo "deb http://http.debian.net/debian wheezy-backports main" > ${OUTPUT}/etc/apt/sources.list.d/wheezy-backports.list
+	echo "precedence ::ffff:0:0/96  100" > ${OUTPUT}/etc/gai.conf # workaround for IPv6 lags
 
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
@@ -174,7 +179,9 @@ else
 	chr apt-get -y upgrade
 
 	echo "Setup locales"
-	cp ${CONFIG_DIR}/etc/locale.gen.wb ${OUTPUT}/etc/locale.gen
+	echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
+	echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
+	echo "ru_RU.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
 	chr /usr/sbin/locale-gen
 	chr update-locale
 
