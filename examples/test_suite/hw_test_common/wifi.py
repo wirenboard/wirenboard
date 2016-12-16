@@ -16,7 +16,7 @@ class TestWifi(unittest.TestCase):
 
     def test_wifi_presence(self):
         wlan_ifaces = wifi.get_wlan_ifaces()
-        self.assertEqual(len(wlan_ifaces), 1)
+        self.assertGreaterEqual(len(wlan_ifaces), 1)
 
     def test_iwlist(self):
         essid = 'contactless.ru'
