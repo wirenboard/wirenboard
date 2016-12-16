@@ -210,10 +210,6 @@ pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquit
 pkgs+=" openssl ca-certificates"
 
 pkgs+=" avahi-daemon pps-tools"
-
-# knxd deps
-pkgs+=" autoconf automake libtool libpthsem-dev libpthsem20 libusb-1.0-0-dev"
-
 chr_apt --force-yes $pkgs
 
 # stop mosquitto on host
