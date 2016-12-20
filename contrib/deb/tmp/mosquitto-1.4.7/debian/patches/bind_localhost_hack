@@ -1,0 +1,53 @@
+Hack to allow websocket listener bind to localhost
+ .
+ mosquitto (1.4.7-1) unstable; urgency=low
+ .
+   * New upstream release. Includes support for libwebsockets 1.6.
+   * Add dependency link between libmosquittopp-dev and libmosquitto-dev
+     (closes: #805506).
+   * Dropped misc:Pre-Depends line for libmosquitto1. See #783898.
+   * libc-ares2 Depends is handled by shlib:Depends for libmosquitto1.
+Author: Roger A. Light <roger@atchoo.org>
+Bug-Debian: http://bugs.debian.org/805506
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- mosquitto-1.4.7.orig/src/websockets.c
++++ mosquitto-1.4.7/src/websockets.c
+@@ -565,6 +565,7 @@ struct libwebsocket_context *mosq_websoc
+ 	int protocol_count;
+ 	int i;
+ 	struct libws_mqtt_hack *user;
++	char * iface;
+ 
+ 	/* Count valid protocols */
+ 	for(protocol_count=0; protocols[protocol_count].name; protocol_count++);
+@@ -601,6 +602,17 @@ struct libwebsocket_context *mosq_websoc
+ 	info.options |= LWS_SERVER_OPTION_DISABLE_IPV6;
+ #endif
+ 
++
++	if (!strncmp(listener->host, "127.0.0.1", 9) || !strncmp(listener->host, "localhost", 9)) {
++		info.iface = _mosquitto_strdup("lo");
++		if(!info.iface){
++			_mosquitto_log_printf(NULL, MOSQ_LOG_ERR, "Out of memory.");
++			return NULL;
++		}
++	}
++
++	
++
+ 	user = _mosquitto_calloc(1, sizeof(struct libws_mqtt_hack));
+ 	if(!user){
+ 		_mosquitto_free(p);

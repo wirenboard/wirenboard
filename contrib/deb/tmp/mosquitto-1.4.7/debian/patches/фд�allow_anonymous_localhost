@@ -1,0 +1,55 @@
+Allow anonymous localhost access
+ .
+ mosquitto (1.4.7-1+wbwslo1) unstable; urgency=low
+ .
+   * bind websockets on local
+   * remove apparmor
+Author: root <root@96153e471364>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: http://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- mosquitto-1.4.7.orig/src/conf.c
++++ mosquitto-1.4.7/src/conf.c
+@@ -626,6 +626,8 @@ int _config_read_file_core(struct mqtt3_
+ #endif
+ 				}else if(!strcmp(token, "allow_anonymous")){
+ 					if(_conf_parse_bool(&token, "allow_anonymous", &config->allow_anonymous, saveptr)) return MOSQ_ERR_INVAL;
++				}else if(!strcmp(token, "allow_anonymous_localhost")){
++					if(_conf_parse_bool(&token, "allow_anonymous_localhost", &config->allow_anonymous_localhost, saveptr)) return MOSQ_ERR_INVAL;
+ 				}else if(!strcmp(token, "allow_duplicate_messages")){
+ 					if(_conf_parse_bool(&token, "allow_duplicate_messages", &config->allow_duplicate_messages, saveptr)) return MOSQ_ERR_INVAL;
+ 				}else if(!strcmp(token, "allow_zero_length_clientid")){
+--- mosquitto-1.4.7.orig/src/read_handle_server.c
++++ mosquitto-1.4.7/src/read_handle_server.c
+@@ -383,7 +383,9 @@ int mqtt3_handle_connect(struct mosquitt
+ 			password = NULL;
+ 		}
+ 
+-		if(!username_flag && db->config->allow_anonymous == false){
++		if(!username_flag && db->config->allow_anonymous == false && 
++			!((db->config->allow_anonymous_localhost == true) && !strncmp(context->address, "127.0.0.1", 9)))
++		{
+ 			_mosquitto_send_connack(context, 0, CONNACK_REFUSED_NOT_AUTHORIZED);
+ 			rc = 1;
+ 			goto handle_connect_error;
+--- mosquitto-1.4.7.orig/src/mosquitto_broker.h
++++ mosquitto-1.4.7/src/mosquitto_broker.h
+@@ -103,6 +103,7 @@ struct mqtt3_config {
+ 	char *config_file;
+ 	char *acl_file;
+ 	bool allow_anonymous;
++	bool allow_anonymous_localhost;
+ 	bool allow_duplicate_messages;
+ 	bool allow_zero_length_clientid;
+ 	char *auto_id_prefix;
