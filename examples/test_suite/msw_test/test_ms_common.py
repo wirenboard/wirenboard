@@ -276,7 +276,7 @@ class TestEEPROMPersistence(unittest.TestCase):
 
         wbmqtt.send_value(serial_device.device_id, slow_rc_control, spl_slow_rc)
 
-        time.sleep(500E-3)
+        time.sleep(1200E-3) # at least 1 second to save settings to EEPROM
 
         uptime_before = self._get_uptime_counter()
 
