@@ -64,15 +64,26 @@ class SerialDriverHandler(object):
 class SerialDeviceHandler(object):
     power_fet = ('wb-gpio', 'EXT1_HS7')
 
-    def __init__(self, config_template, port='/dev/ttyAPP4', slave_id = 1, device_id=None):
+    def __init__(self, config_template, port='/dev/ttyAPP4', slave_id = 1,
+                 device_id=None, stop_bits=2, baud_rate=9600, parity='N'):
         config = json.load(open(config_template))
 
         assert 1 <= slave_id <= 247
 
         self.port = port
         self.slave_id = slave_id
+        self.stop_bits = stop_bits
+        self.baud_rate = baud_rate
+        self.parity = parity
 
         config[u'ports'][0]['path'] = self.port
+        assert self.stop_bits in (1, 2)
+        config[u'ports'][0]['stop_bits'] = self.stop_bits
+        config[u'ports'][0]['baud_rate'] = self.baud_rate
+        assert self.parity in ('N', 'E', 'O')
+
+        config[u'ports'][0]['parity'] = self.parity
+
         assert len(config[u'ports'][0]['devices']) == 1
         config[u'ports'][0]['devices'][0]['slave_id'] = self.slave_id
         if device_id:
@@ -105,11 +116,29 @@ class SerialDeviceHandler(object):
     def set_serial(self, serial):
         wbmqtt.send_value(self.device_id, "Serial", serial)
 
-
-    def broadcast_set_address(self):
+    def set_settings(self):
         self.serial_driver.kill_existing()
 
-        subprocess.call("modbus_client -m rtu -pnone -s2 %s -a0 -t0x06 -r0x80 %d" % (self.port, self.slave_id), shell=True)
+        for cmd_parity in ('none', 'even', 'odd'):
+            for cmd_stop_bits in (2, 1):
+                for cmd_baud_rate in (9600, 19200):
+                    cmd_str_prefix = "modbus_client -m rtu -o100 -pnone -s%d -b%d %s " % (
+                                            cmd_stop_bits, cmd_baud_rate,
+                                            self.port)
+
+                    print cmd_str_prefix
+                    # trying to set address
+                    subprocess.call(cmd_str_prefix + "-t0x06 -a0 -r0x80 %d" % (self.slave_id), shell=True)
+
+                    # trying to set proper uart settings (baud rate, parity, stop bits)
+                    ret = subprocess.call(cmd_str_prefix + "-t0x10 -a%d -r110 %d %d %d" % (self.slave_id, self.baud_rate / 100,
+                        {'N': 0, 'O' : 1, 'E': 2}[self.parity],
+                        self.stop_bits), shell=True)
+
+                    if ret == 0:
+                        return
+
+                    time.sleep(0.1)
 
     def power_off(self):
         wbmqtt.send_value(self.power_fet[0], self.power_fet[1], '0')
@@ -493,6 +522,18 @@ class MSTesterBase(object):
         self._add_parser_argument('-p', '--batch', dest='batch_no', type=str,
                                  help='Batch #', default='??')
 
+        self._add_parser_argument('--stop-bits', dest='stop_bits', type=int,
+                                 help='Stop bits', default=2,
+                                 choices=(1,2))
+
+        self._add_parser_argument('--baud-rate', dest='baud_rate', type=int,
+                                 help='Baud rate', default=9600,
+                                 choices=(9600, 19200, 38400, 57600, 115200))
+
+        self._add_parser_argument('--parity', dest='parity',
+                                 help='Parity', default='N',
+                                 choices=('N', 'E', 'O'))
+
 
     def indicate_status(self, sn, overall_status, has_real_errors):
 
@@ -521,13 +562,18 @@ class MSTesterBase(object):
         self.parse_skipped_tests()
 
 
-        serial_device = SerialDeviceHandler(self.CONFIG_FNAME,device_id = self.MQTT_DEVICE_ID, slave_id = self.args.modbus_address)
+        serial_device = SerialDeviceHandler(self.CONFIG_FNAME, device_id = self.MQTT_DEVICE_ID,
+                                            slave_id=self.args.modbus_address,
+                                            stop_bits=self.args.stop_bits,
+                                            baud_rate=self.args.baud_rate,
+                                            parity=self.args.parity
+                                            )
         wbmqtt.watch_device(        serial_device.device_id)
 
 
         serial_device.power_on()
         time.sleep(50E-3)
-        serial_device.broadcast_set_address()
+        serial_device.set_settings()
 
         serial_device.start_driver()
 
