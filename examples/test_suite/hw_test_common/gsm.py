@@ -6,65 +6,34 @@ import re
 import subprocess
 import time
 
+from gsmmodem.modem import GsmModem
+
+# import logging
+# logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
 class TestGSM(unittest.TestCase):
+    MIN_SIGNAL_STRENGTH = 21
+
     @classmethod
     def setUpClass(cls):
         open("/etc/gammurc", "wt").write("[gammu]\nport = /dev/ttyAPP0\nconnection = at115200\n")
 
-
-class TestGSMMegafon(TestGSM):
-    def test_number(self):
+    def _init_modem(self):
         gsm.init_gsm()
-        #~ return
-        ussd_number = '*205#'
-        # ~ ussd_number = '*111*0887#'
 
-        proc = subprocess.Popen('gammu getussd %s' % ussd_number, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #~ | grep "Service reply" | sed -e "s/.*\"\(.*\)\".*/\1/" | xxd -r -ps | iconv -f=UTF-16BE -t=UTF-8
-        stdout, stderr = proc.communicate()
+        self.modem = GsmModem('/dev/ttyAPP0')
+        self.modem.connect()
 
-        self.assertEquals(proc.returncode, 0, "Gammu error: " + stdout + stderr)
+    def setUp(self):
+        self._init_modem()
 
-        matches = re.findall('Service reply\s+:\s+"(.*)"', stdout)
+    def tearDown(self):
+        self.modem.close()
 
-        self.assertTrue(bool(matches))
-        self.assertEquals(len(matches), 1)
-
-        ussd_response = gsm.gsm_decode(matches[0])
-        print "test number stdout: ", ussd_response
-
-        match = re.match('.*(7\d{10}).*', ussd_response)
-        self.assertTrue(bool(match), "ussd response: " + ussd_response)
-
-        number = match.group(1)
-
-        self.assertTrue(number.startswith('7'))
-
-
-class TestGSMMTS(TestGSM):
-    def test_number(self):
-        gsm.init_gsm()
-        ussd_number = '*111*0887#'
-
-        # MTS sends SMS following USSD request
-        # so delete all sms first
-
-        subprocess.call("gammu deleteallsms  1", shell=True)
-
-        proc = subprocess.Popen('gammu getussd %s' % ussd_number, shell=True, stdout=subprocess.PIPE)
-        #~ | grep "Service reply" | sed -e "s/.*\"\(.*\)\".*/\1/" | xxd -r -ps | iconv -f=UTF-16BE -t=UTF-8
-        stdout, stderr = proc.communicate()
-
-        self.assertEquals(proc.returncode, 0, "Gammu send USSD error: " + stdout)
-
-        proc = subprocess.Popen('gammu geteachsms', shell=True, stdout=subprocess.PIPE)
-        stdout, stderr = proc.communicate()
-        self.assertEquals(proc.returncode, 0, "Gammu get SMS error: " + stdout)
-
-        print "Got SMS: ", stdout.decode('utf-8')
-
-        self.assertIn(u'Ваш номер телефона:+', stdout.decode('utf-8'))
+    def test_registration(self):
+        timeout = 10 # seconds
+        csq = self.modem.waitForNetworkCoverage(timeout)
+        self.assertGreaterEqual(csq, self.MIN_SIGNAL_STRENGTH)
 
 
 class TestGSMRTC(unittest.TestCase):

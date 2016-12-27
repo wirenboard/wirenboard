@@ -45,8 +45,6 @@ class WB5TestRFM69(rf433.TestRFM69):
     IRQ_GPIO = 38
 
 
-gsm_test_gs = gsm_test.TestGSMMTS
-# gsm_test_gs = gsm_test.TestGSMegafon
 
 
 def suite(mapping):
@@ -108,7 +106,7 @@ if __name__ == '__main__':
         (WB5TestW1, 5),
         (network.TestNetwork, 1),
         (test_can.TestCAN, 2),
-        (gsm_test_gs, 0),
+        (gsm_test.TestGSM, 0),
         (gsm_test.TestGSMRTC, 3),
         (wb5_modrtc.TestModGSMRTC, 9),
         (wb5_usb.TestUSBSerialData, 10),
@@ -127,6 +125,7 @@ if __name__ == '__main__':
 
     try:
         gsm.init_baudrate()
+        time.sleep(2)
         gsm.init_gsm()
     except RuntimeError:
         print "No GSM modem detected"
@@ -217,7 +216,7 @@ if __name__ == '__main__':
     t = time.time()
 
     log = GSheetsLog('https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0',
-                     '../common/Commissioning-30b68b322b7c.json')
+                     '../hw_test_common/Commissioning-30b68b322b7c.json')
     test_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log.update_data(board_id, short_sn, overall_status,
                     [imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] +
