@@ -50,7 +50,8 @@ class GSheetsLog(object):
 
 if __name__ == '__main__':
     log = GSheetsLog(
-        'https://docs.google.com/a/contactless.ru/spreadsheets/d/1g6hC75iE88_vwFXX7P2semwyADEWB13KMc0nDmB62LI/edit#gid=0')
+        'https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0',
+        'Commissioning-30b68b322b7c.json')
     print log.find_row('342')
-    #~ log.insert_row(5, ['1','OK','3','4','5'])
-    log.update_data('868204001111112', 'OK', ['test1', 'test2'])
+    log.insert_row(5, ['1','OK','3','4','5'])
+    log.update_data('868204001111112', 'testtest','OK', ['test1', 'test2'])

@@ -14,5 +14,5 @@ PASSWORD="wirenboard"
 echo "Connecting to $HOST ..."
 
 ssh-keygen -f ~/.ssh/known_hosts -R $HOST
-sshpass -p ${PASSWORD} scp  -o StrictHostKeyChecking=no common/${CREDENTIALS_FNAME} root@${HOST}:/dev/shm/credentials.json
-sshpass -p ${PASSWORD} ssh  -o StrictHostKeyChecking=no -t root@${HOST} "ln -s -f /dev/shm/credentials.json /usr/lib/wb-test-suite/common/${CREDENTIALS_FNAME}; service ntp restart; cd /usr/lib/wb-test-suite/wb5_func_test; bash"
+sshpass -p ${PASSWORD} scp  -o StrictHostKeyChecking=no hw_test_common/${CREDENTIALS_FNAME} root@${HOST}:/dev/shm/credentials.json
+sshpass -p ${PASSWORD} ssh  -o StrictHostKeyChecking=no -t root@${HOST} "ln -s -f /dev/shm/credentials.json /usr/lib/wb-test-suite/hw_test_common/${CREDENTIALS_FNAME}; service ntp restart; cd /usr/lib/wb-test-suite/wb5_func_test; bash"
