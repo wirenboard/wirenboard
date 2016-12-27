@@ -1,3 +1,9 @@
+wb-test-suite (1.7) stable; urgency=medium
+
+  * New GSM test
+
+ -- Evgeny Boger <boger@contactless.ru>  Tue, 27 Dec 2016 20:35:27 +0300
+
 wb-test-suite (1.6.1) stable; urgency=medium
 
   * fix WiFi test on newer firmwares
