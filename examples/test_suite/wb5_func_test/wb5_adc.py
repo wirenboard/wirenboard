@@ -1,4 +1,5 @@
 # coding: utf-8
+import sys
 import unittest
 
 from wb_common import wbmqtt
@@ -44,7 +45,7 @@ class TestADCBase(unittest.TestCase):
         self.assertFalse(di_state)
 
         self.wbmqtt.send_value('wb-gpio', fet_control, '0')
-        time.sleep(2000E-3)
+        time.sleep(100E-3)
         self._test_adc_value(adc_control, self.ref_5v, 4)
 
         di_state = bool(int(self.wbmqtt.get_last_value('wb-gpio', di_control)))
