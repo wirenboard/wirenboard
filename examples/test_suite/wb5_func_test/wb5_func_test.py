@@ -19,7 +19,6 @@ import wb5_adc
 import wb5_modrtc
 import wb5_usb
 
-from gdocs import GSheetsLog
 from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
 
 
@@ -215,14 +214,16 @@ if __name__ == '__main__':
     print "sending data to google..."
     t = time.time()
 
-    log = GSheetsLog('https://docs.google.com/spreadsheets/d/1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw/edit#gid=0',
+    from gsheets import GSheetsLog
+    log = GSheetsLog('1wKNCMss9ZSyhtr0GFNvRgaGyw2RRPn9weE8w7qjxHiw',
                      '../hw_test_common/Commissioning-30b68b322b7c.json')
+
     test_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log.update_data(board_id, short_sn, overall_status,
-                    [imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] +
-                    results_row +
-                    [ wb_version, fw_version, test_date]
-                    )
+
+    row = [overall_status, short_sn, board_id, imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] + results_row + [ wb_version, fw_version, test_date]
+
+    SN_COLUMN = 2
+    log.update_row_by_primary_key(SN_COLUMN, row)
 
     print "sending to google took %.1f seconds" % (time.time() - t)
     print "Done!"
