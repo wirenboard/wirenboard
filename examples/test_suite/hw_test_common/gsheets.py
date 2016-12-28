@@ -2,15 +2,10 @@
 
 import httplib2
 import os
-# import json
-
-# from apiclient import discovery
 import oauth2client
 import oauth2client.file
-# from oauth2client import client
-# from oauth2client import tools
-# import googleapiclient
-# import googleapiclient.errors
+
+
 from oauth2client.service_account import ServiceAccountCredentials
 
 # import httplib
@@ -88,38 +83,18 @@ class GSheetsLog(object):
 
     def __init__(self, spreadsheet_id, key_fname):
         credentials = self._get_credentials(key_fname)
-        # auth_headers = {}
-        # credentials.apply(auth_headers)
-
-        # self.session = requests.Session()
-        # self.session.headers.update(auth_headers)
-        # self.session.headers.update({'Content-Type' : 'application/json'})
 
         self.http = credentials.authorize(httplib2.Http())
-        print self.http.authorizations
-        # print http
-
-        # discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-        #                 'version=v4')
-        # self.service = discovery.build('sheets', 'v4', http=self.http,
-        #                           discoveryServiceUrl=discoveryUrl)
 
         self.spreadsheet_id = spreadsheet_id
 
 
     def get_range_contents(self, range_spec):
-        
         range_spec = urllib.quote(range_spec)
         url = 'https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s?alt=json' % (self.spreadsheet_id, range_spec)
-        # return json.loads(self.session.get(url).text).get('values')
 
         response, content = self.http.request(url)
         return json.loads(content).get('values')
-
-        # result = self.service.spreadsheets().values().get(
-        #     spreadsheetId=self.spreadsheet_id, range=range_spec).execute()
-
-        # return result.get('values')
 
     def get_cell_content(self, row_number, column_number):
         range_spec = self.get_addr_int(row_number, column_number)
@@ -140,17 +115,6 @@ class GSheetsLog(object):
 
 
     def append_row(self, row, position=1):
-        # result = self.service.spreadsheets().values().append(spreadsheetId=self.spreadsheet_id,
-        #         range='A:F',
-        #         body = {
-        #             'values' : [row,]
-        #             }
-        # ,
-        # valueInputOption='USER_ENTERED',
-        # insertDataOption='INSERT_ROWS',
-        #             ).execute()
-
-
         url = 'https://sheets.googleapis.com/v4/spreadsheets/%s/values/A%%3AF:append?alt=json&insertDataOption=INSERT_ROWS&valueInputOption=USER_ENTERED' % (self.spreadsheet_id,)
 
         req_obj = {'values' : [row,] }
@@ -175,16 +139,6 @@ class GSheetsLog(object):
         name_end = self.get_addr_int(row_number, position + len(row) - 1)
 
         range_spec = "%s:%s" % (name_begin, name_end)
-        # result = self.service.spreadsheets().values().update(spreadsheetId=self.spreadsheet_id,
-        #         range = range_spec,
-        #         body = {
-        #              "majorDimension": 'ROWS',
-        #             'values' : [row,]
-        #             }
-        # ,
-        # valueInputOption='RAW',
-        #             ).execute()
-        # print result
 
         url = 'https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s?alt=json&valueInputOption=RAW' % (self.spreadsheet_id, urllib.quote(range_spec))
 
@@ -193,9 +147,6 @@ class GSheetsLog(object):
                   }
 
         response, content = self.http.request(url, method='PUT', body=json.dumps(req_obj))
-        # print response, content
-
-
 
 if __name__ == '__main__':
     log = GSheetsLog('1gN56RBi__Y7n44XVklc1vjl_FRCkizIJeHsrXZRItr0', 'Commissioning-30b68b322b7c.json')
