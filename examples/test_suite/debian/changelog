@@ -1,3 +1,9 @@
+wb-test-suite (1.9) stable; urgency=medium
+
+  * allow to set batch number and tester name
+
+ -- Evgeny Boger <boger@contactless.ru>  Wed, 28 Dec 2016 22:49:21 +0300
+
 wb-test-suite (1.8) stable; urgency=medium
 
   * Speed-up ADC test
