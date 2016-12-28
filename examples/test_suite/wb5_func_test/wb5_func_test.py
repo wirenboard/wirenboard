@@ -5,11 +5,11 @@ import datetime
 import time
 import subprocess
 
-import argparse
+from wb_common import leds, sysinfo, beeper, wifi, gsm
 
 import sys; sys.path.insert(0, "../hw_test_common")
 
-from wb_common import leds, sysinfo, beeper, wifi, gsm
+from arg_printing_parser import ArgPrintingParser
 
 import gsm as gsm_test, w1, rs485, network, rf433, wifi as wifi_test, test_can
 
@@ -20,8 +20,6 @@ import wb5_modrtc
 import wb5_usb
 
 from wb_common.uid import get_cpuinfo_serial, get_mmc_serial
-
-
 
 class WB5TestW1(w1.TestW1):
     NUMBER_REQUIRED = 1
@@ -71,24 +69,6 @@ def get_mac():
 
 def get_serial():
     return subprocess.Popen(['wb-gen-serial', '-s'], stdout=subprocess.PIPE).stdout.read().strip()
-
-class ArgPrintingParser(argparse.ArgumentParser):
-    def __init__(self, *args, **kwargs):
-        super(ArgPrintingParser, self).__init__(*args, **kwargs)
-        self.__parser_arguments = {}
-
-    def add_argument(self, *args, **kwargs):
-        dest = kwargs.get('dest')
-        self.__parser_arguments[dest] = kwargs.get('help')
-        return super(ArgPrintingParser, self).add_argument(*args, **kwargs)
-
-    def print_args(self, args):
-        print "======== Command-line parameters: =========="
-        for k, v in args._get_kwargs():
-            if k in self.__parser_arguments:
-                print "%s: %s" % (self.__parser_arguments[k], v)
-        print "============================================"
-
 
 if __name__ == '__main__':
     parser = ArgPrintingParser(description='WB5 Function Testing Tool', add_help=False)

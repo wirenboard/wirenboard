@@ -8,7 +8,9 @@ import time
 import subprocess
 sys.path.insert(0, "../common")
 
+from arg_printing_parser import ArgPrintingParser
 import argparse
+
 import tempfile
 import json
 
@@ -457,12 +459,12 @@ class MSTesterBase(object):
         return has_real_errors, overall_status, results_row
 
     def init_argparser(self):
-        self.parser = argparse.ArgumentParser(description='MSW Testing Tool', add_help=True, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        self.parser = ArgPrintingParser(description='MSW Testing Tool', add_help=True, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        self._add_parser_argument('-i', '--ignore-tests', dest='ignore_tests', type=str,
+        self.parser.add_argument('-i', '--ignore-tests', dest='ignore_tests', type=str,
                          help='List of tests to ignore (but still perform)', default='')
 
-        self._add_parser_argument('-s', '--skip-tests', dest='skip_tests', type=str,
+        self.parser.add_argument('-s', '--skip-tests', dest='skip_tests', type=str,
                          help='List of tests to skip', default='')
 
     def parse_skipped_tests(self):
@@ -484,53 +486,44 @@ class MSTesterBase(object):
                 else:
                     filtered_mapping[test_class] = test_index
             self.mapping = filtered_mapping
+
     def parse_args(self):
         self.args = self.parser.parse_args()
 
     def print_args(self):
-        print "======== Command-line parameters: =========="
-        for k, v in self.args._get_kwargs():
-            if k in self._parser_arguments:
-                print "%s: %s" % (self._parser_arguments[k], v)
-        print "============================================"
-
-
-    def _add_parser_argument(self, *args, **kwargs):
-        dest = kwargs.get('dest')
-        self._parser_arguments[dest] = kwargs.get('help')
-        return self.parser.add_argument(*args, **kwargs)
+        self.parser.print_args(self.args)
 
     def add_testing_params(self):
-        self._add_parser_argument('-a', '--address', dest='modbus_address', type=int,
+        self.parser.add_argument('-a', '--address', dest='modbus_address', type=int,
                          help='Modbus address (slave id) to assign', default=1)
 
-        self._add_parser_argument('-b', '--serial-base', dest='serial_base', type=int,
+        self.parser.add_argument('-b', '--serial-base', dest='serial_base', type=int,
                                  help='S/N base', default=1100000)
 
-        self._add_parser_argument('-c', '--comments', dest='comments', type=str,
+        self.parser.add_argument('-c', '--comments', dest='comments', type=str,
                                  help='Comments', default='')
 
-        self._add_parser_argument('-r', '--hw-rev', dest='hw_rev', type=str,
+        self.parser.add_argument('-r', '--hw-rev', dest='hw_rev', type=str,
                                  help='HW revision', default='')
 
-        self._add_parser_argument('-m', '--model', dest='device_model', type=str,
+        self.parser.add_argument('-m', '--model', dest='device_model', type=str,
                                  help='Device model', default='??')
 
-        self._add_parser_argument('-t', '--tester', dest='tester_name', type=str,
+        self.parser.add_argument('-t', '--tester', dest='tester_name', type=str,
                                  help='Who operates the testing stand', default='??')
 
-        self._add_parser_argument('-p', '--batch', dest='batch_no', type=str,
+        self.parser.add_argument('-p', '--batch', dest='batch_no', type=str,
                                  help='Batch #', default='??')
 
-        self._add_parser_argument('--stop-bits', dest='stop_bits', type=int,
+        self.parser.add_argument('--stop-bits', dest='stop_bits', type=int,
                                  help='Stop bits', default=2,
                                  choices=(1,2))
 
-        self._add_parser_argument('--baud-rate', dest='baud_rate', type=int,
+        self.parser.add_argument('--baud-rate', dest='baud_rate', type=int,
                                  help='Baud rate', default=9600,
                                  choices=(9600, 19200, 38400, 57600, 115200))
 
-        self._add_parser_argument('--parity', dest='parity',
+        self.parser.add_argument('--parity', dest='parity',
                                  help='Parity', default='N',
                                  choices=('N', 'E', 'O'))
 
