@@ -72,9 +72,26 @@ def get_mac():
 def get_serial():
     return subprocess.Popen(['wb-gen-serial', '-s'], stdout=subprocess.PIPE).stdout.read().strip()
 
+class ArgPrintingParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        super(ArgPrintingParser, self).__init__(*args, **kwargs)
+        self.__parser_arguments = {}
+
+    def add_argument(self, *args, **kwargs):
+        dest = kwargs.get('dest')
+        self.__parser_arguments[dest] = kwargs.get('help')
+        return super(ArgPrintingParser, self).add_argument(*args, **kwargs)
+
+    def print_args(self, args):
+        print "======== Command-line parameters: =========="
+        for k, v in args._get_kwargs():
+            if k in self.__parser_arguments:
+                print "%s: %s" % (self.__parser_arguments[k], v)
+        print "============================================"
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='WB5 Function Testing Tool', add_help=False)
+    parser = ArgPrintingParser(description='WB5 Function Testing Tool', add_help=False)
 
     parser.add_argument('-i', '--ignore-tests', dest='ignore_tests', type=str,
                      help='List of tests to ignore (but still perform)', default='')
@@ -82,7 +99,16 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--skip-tests', dest='skip_tests', type=str,
                      help='List of tests to skip', default='')
 
+
+    parser.add_argument('-p', '--batch', dest='batch_no', type=str,
+                             help='Batch #', default='??')
+
+    parser.add_argument('-t', '--tester', dest='tester_name', type=str,
+                             help='Who operates the testing stand', default='??')
+
+
     args = parser.parse_args()
+    parser.print_args(args)
 
 
 
@@ -114,13 +140,7 @@ if __name__ == '__main__':
 
 
     skip_tests = parse_comma_separated_set(args.skip_tests)
-    if skip_tests:
-        print "Will skip tests: " + ",".join(str(x) for x in skip_tests)
-
     ignore_tests = parse_comma_separated_set(args.ignore_tests)
-    if ignore_tests:
-        print "Will ignore tests: " + ",".join(str(x) for x in ignore_tests)
-
 
     try:
         gsm.init_baudrate()
@@ -220,7 +240,7 @@ if __name__ == '__main__':
 
     test_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    row = [overall_status, short_sn, board_id, imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] + results_row + [ wb_version, fw_version, test_date]
+    row = [overall_status, short_sn, board_id, imei, wifi_mac, mac, cpuinfo_serial, mmc_serial] + results_row + [ wb_version, fw_version, test_date, args.batch_no, args.tester_name]
 
     SN_COLUMN = 2
     log.update_row_by_primary_key(SN_COLUMN, row)
