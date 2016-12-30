@@ -1,3 +1,9 @@
+wb-test-suite (1.10) stable; urgency=medium
+
+  * add test for 2nd ethernet
+
+ -- Evgeny Boger <boger@contactless.ru>  Thu, 29 Dec 2016 22:32:24 +0300
+
 wb-test-suite (1.9) stable; urgency=medium
 
   * allow to set batch number and tester name
