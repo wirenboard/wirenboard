@@ -157,8 +157,8 @@ else
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
 
         echo "Install primary sources.list"
-        echo "deb http://httpredir.debian.org/debian wheezy main" >${OUTPUT}/etc/apt/sources.list
-        echo "deb http://httpredir.debian.org/debian wheezy-updates main" >>${OUTPUT}/etc/apt/sources.list
+        echo "deb http://mirror.yandex.ru/debian wheezy main" >${OUTPUT}/etc/apt/sources.list
+        echo "deb http://mirror.yandex.ru/debian wheezy-updates main" >>${OUTPUT}/etc/apt/sources.list
         echo "deb http://security.debian.org wheezy/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
