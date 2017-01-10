@@ -1,11 +1,8 @@
 #!/bin/bash
 set -e
 #set -x
-ADD_PACKAGES=netbase,ifupdown,iproute,openssh-server,iputils-ping,wget,udev,\
-net-tools,ntpdate,ntp,vim,nano,less,tzdata,console-tools,module-init-tools,mc,\
-wireless-tools,usbutils,i2c-tools,udhcpc,wpasupplicant,psmisc,curl,dnsmasq,gammu,\
-python-serial,memtester,apt-utils,dialog,locales,python3-minimal,unzip,minicom,\
-iw,ppp,libmodbus5,python-smbus,ssmtp,moreutils
+
+
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
 OUTPUT="rootfs"
@@ -127,7 +124,6 @@ else
 	#~ exit
 	debootstrap \
 		--foreign \
-		--include=${ADD_PACKAGES} \
 		--verbose \
 		--arch armel \
 		--variant=minbase \
@@ -147,8 +143,28 @@ else
 	echo "ff02::2     ip6-allrouters" >> ${OUTPUT}/etc/hosts
 	echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
 
+    echo "Delete unused locales"
+    /bin/sh -c "find ${OUTPUT}/usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'ru*' | xargs rm -r"
+
+    mkdir -p ${OUTPUT}/etc/dpkg/dpkg.cfg.d/
+
+    /bin/cat <<EOM > ${OUTPUT}/etc/dpkg/dpkg.cfg.d/01_nodoc
+path-exclude /usr/share/locale/*
+path-include /usr/share/locale/en*
+path-include /usr/share/locale/ru*
+path-exclude /usr/share/doc/*
+path-include /usr/share/doc/*/copyright
+path-exclude /usr/share/man/*
+path-exclude /usr/share/groff/*
+path-exclude /usr/share/info/*
+path-exclude /usr/share/lintian/*
+path-exclude /usr/share/linda/*
+EOM
+
+
 	echo "Second debootstrap stage"
 	chr /debootstrap/debootstrap --second-stage
+
 
 	prepare_chroot
 	services_disable
@@ -157,8 +173,8 @@ else
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
 
         echo "Install primary sources.list"
-        echo "deb http://httpredir.debian.org/debian wheezy main" >${OUTPUT}/etc/apt/sources.list
-        echo "deb http://httpredir.debian.org/debian wheezy-updates main" >>${OUTPUT}/etc/apt/sources.list
+        echo "deb ${REPO} wheezy main" >${OUTPUT}/etc/apt/sources.list
+        echo "deb ${REPO} wheezy-updates main" >>${OUTPUT}/etc/apt/sources.list
         echo "deb http://security.debian.org wheezy/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
@@ -178,24 +194,39 @@ else
 	chr apt-get update
 	chr apt-get -y upgrade
 
+
 	echo "Setup locales"
+    chr_apt locales
 	echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
 	echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
 	echo "ru_RU.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
 	chr /usr/sbin/locale-gen
 	chr update-locale
 
+    echo "Install additional packages"
+    chr_apt --force-yes netbase ifupdown iproute openssh-server \
+        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
+        tzdata console-tools module-init-tools mc wireless-tools usbutils \
+        i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
+        python-serial memtester apt-utils dialog locales \
+        python3-minimal unzip minicom iw ppp libmodbus5 \
+        python-smbus ssmtp moreutils
+
 	echo "Install realtek firmware"
 	wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
 
-        WD=`pwd`
+    WD="`pwd`"
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
 	tar czpf $WD/$ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
+
+echo "Cleanup rootfs"
+chr_nofail dpkg -r geoip-database
+
 
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
