@@ -7,6 +7,8 @@ ssh_opts=
 if [ -n "$SSH_AUTH_SOCK" ]; then
     ssh_opts="-e SSH_AUTH_SOCK=/ssh-agent -v $SSH_AUTH_SOCK:/ssh-agent"
 fi
+
+IMAGE=${IMAGE:-contactless/devenv}
 docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \
@@ -15,5 +17,5 @@ docker run $DOCKER_TTY_OPTS --privileged --rm \
        -v $HOME:$HOME \
        $ssh_opts \
        -h wbdevenv \
-       contactless/devenv \
+       $IMAGE \
        "$@"
