@@ -1,8 +1,18 @@
 #!/bin/bash
 set -u -e
 cd /root
-export CONFIG_DIR=/root/configs
-time /root/rootfs/create_rootfs.sh /rootfs 5
+
+export ROOTFS_DIR="/rootfs/wheezy-armhf"
+export RELEASE=wheezy
+export ARCH=armhf
+time /root/rootfs/create_rootfs.sh $ROOTFS_DIR 5
+rm -f rootfs_base.tar.gz
+/root/prep.sh
+
+export ROOTFS_DIR="/rootfs/wheezy-armel"
+export RELEASE=wheezy
+export ARCH=armel
+time /root/rootfs/create_rootfs.sh $ROOTFS_DIR 5
 rm -f rootfs_base.tar.gz
 /root/prep.sh
 # TBD: run chroot:

@@ -14,11 +14,12 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/a
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     dpkg --add-architecture armel && \
+    dpkg --add-architecture armhf && \
     dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y git mercurial curl wget debootstrap \
-      proot build-essential pkg-config pkg-config:armel debhelper npm \
-      nodejs-legacy bash-completion nano gcc-arm-linux-gnueabi sudo locales \
+      proot build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper npm \
+      nodejs-legacy bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
       devscripts python-virtualenv git equivs \
       libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.9 g++-4.9 libmodbus-dev \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
