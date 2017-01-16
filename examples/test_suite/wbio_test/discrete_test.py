@@ -8,9 +8,9 @@ import argparse
 sys.path.insert(0, "../common")
 
 import time
-import leds
-import beeper
-from wbmqtt import WBMQTT
+from wb_common import leds
+from wb_common import beeper
+from wb_common.wbmqtt import WBMQTT
 
 wbmqtt = None
 
@@ -25,25 +25,36 @@ def raw_input_timeout(prompt, timeout=None):
         return None
 
 
+class TestDiscreteBase(unittest.TestCase):
+    NUM_CHANNELS = None
+
+    @classmethod
+    def _prepare(cls):
+        return
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prepare()
+
+        wbmqtt.watch_device(cls.IN_DEVICE_ID)
+        wbmqtt.watch_device(cls.OUT_DEVICE_ID)
 
 
-class TestWBIO(unittest.TestCase):
-    NUM_CHANNELS = 8
 
     def _set_out_state(self, channel, state):
-        control ='EXT1_K%d' % channel
+        control =self.OUT_CONTROL_ID_FMT % channel
         val = '1' if state else '0'
 
-        current_val = wbmqtt.get_last_or_next_value('wb-gpio', control)
+        current_val = wbmqtt.get_last_or_next_value(self.OUT_DEVICE_ID, control)
         # print "Current: %s==%s, requested: %s"  % (channel, current_val, val)
         if current_val != val:
-            wbmqtt.send_value('wb-gpio', control, val)
-            new_val = wbmqtt.get_next_or_last_value('wb-gpio', control, timeout=0.1)
+            wbmqtt.send_value(self.OUT_DEVICE_ID, control, val)
+            new_val = wbmqtt.get_next_or_last_value(self.OUT_DEVICE_ID, control, timeout=0.1)
             self.assertEquals(new_val, val)
 
     def _get_in_state(self, channel, timeout=0.1):
-        control = 'EXT2_DR%d' % channel
-        val = wbmqtt.get_next_or_last_value('wb-gpio', control, timeout=timeout)
+        control = self.IN_CONTROL_ID_FMT % channel
+        val = wbmqtt.get_next_or_last_value(self.IN_DEVICE_ID, control, timeout=timeout)
 
         self.assertIsNotNone(val)
         self.assertIn(val, ['1','0'])
@@ -148,6 +159,22 @@ class TestWBIO(unittest.TestCase):
 
 
 
+class TestWBIO(TestDiscreteBase):
+    NUM_CHANNELS = 8
+    OUT_DEVICE_ID = 'wb-gpio'
+    OUT_CONTROL_ID_FMT = 'EXT1_K%d'
+    IN_DEVICE_ID = 'wb-gpio'
+    IN_CONTROL_ID_FMT = 'EXT2_DR%d'
+
+    @classmethod
+    def _prepare(cls):
+        subprocess.call("service wb-homa-gpio stop ; for i in `seq 256 400`; do echo $i > /sys/class/gpio/unexport ; done ; modprobe  -r gpio_mcp23s08 ; modprobe  gpio_mcp23s08 && service wb-homa-gpio start", shell=True)
+
+        time.sleep(2)
+
+        leds.set_brightness('green', 0)
+        leds.set_brightness('red', 0)
+        beep.beep(0.05, 1)
 
 
 from functools import partial
@@ -190,10 +217,23 @@ for i in xrange(1, TestR1G12.NUM_CHANNELS + 1):
         (lambda i: lambda self: self._test_single_channel_multiple_toggle(i, 10))(i))
 
 
+class TestMR14(TestDiscreteBase):
+    NUM_CHANNELS = 14
+    OUT_DEVICE_ID = 'wb-mr14_12'
+    OUT_CONTROL_ID_FMT = 'K%d'
+    IN_DEVICE_ID = 'wb-gpio'
+    IN_CONTROL_ID_FMT = 'EXT1_DR%d'
+
+for i in xrange(1, TestMR14.NUM_CHANNELS + 1):
+    setattr(TestMR14, 'test_1_pos_ch%s' % str(i).zfill(2) ,
+        (lambda i: lambda self: self._test_single_channel_alt(i))(i))
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='WBIO Testing Tool', add_help=False)
 
-    parser.add_argument('module', choices  = ['r1g16', 'r1g12', 'wbio8', 'hvd16'],
+    parser.add_argument('module', choices  = ['r1g16', 'r1g12', 'wbio8', 'hvd16', 'mr14'],
                      help='Module to test')
 
     parser.add_argument('-f', dest='failfast', action='store_true',
@@ -204,20 +244,18 @@ if __name__ == '__main__':
 
 
     wbmqtt = WBMQTT()
-    wbmqtt.watch_device('wb-gpio')
     time.sleep(1)
     print "==="
 
     suite = unittest.TestSuite()
 
-    if args.module == 'r1g16':
-        test_class = TestR1G16
-    elif args.module == 'r1g12':
-        test_class = TestR1G12
-    elif args.module == 'hvd16':
-        test_class = TestInputs16
-    elif args.module == 'wbio8':
-        test_class = TestWBIO8
+    test_classes = {'r1g16' : TestR1G16,
+                    'r1g12' : TestR1G12,
+                    'hvd16' : TestInputs16,
+                    'wbio8' : TestWBIO8,
+                    'mr14' : TestMR14 }
+    if args.module in test_classes:
+        test_class = test_classes[args.module]
     else:
         raise RuntimeError("unknown module to test")
 
@@ -230,16 +268,6 @@ if __name__ == '__main__':
     # else:
     
     while 1:
-        # subprocess.call("service wb-homa-gpio restart", shell=True)
-        subprocess.call("service wb-homa-gpio stop ; for i in `seq 256 400`; do echo $i > /sys/class/gpio/unexport ; done ; modprobe  -r gpio_mcp23s08 ; modprobe  gpio_mcp23s08 && service wb-homa-gpio start", shell=True)
-
-        time.sleep(2)
-
-        leds.set_brightness('green', 0)
-        leds.set_brightness('red', 0)
-        beep.beep(0.05, 1)
-
-
 
         result = unittest.TextTestRunner(verbosity=2, failfast=failfast).run(suite)
         if len(result.errors + result.failures) != 0:
