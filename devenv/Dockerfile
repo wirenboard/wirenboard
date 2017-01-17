@@ -3,7 +3,8 @@ MAINTAINER ivan4th <ivan4th@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
+RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
+    sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y curl ca-certificates && \
     curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - && \
