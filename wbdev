@@ -10,36 +10,29 @@ fi
 
 ROOTFS_DIR="/rootfs/wheezy-armel"
 TARGET_ARCH="armel"
-case "$1" in
-    --target)
-        shift
-        case "$1" in
-            wheezy-armhf)
-                ROOTFS_DIR="/rootfs/$1"
-                TARGET_ARCH="armhf"
-                shift
-                ;;
-            wheezy-armel)
-                ROOTFS_DIR="/rootfs/$1"
-                TARGET_ARCH="armel"
-                shift
-                ;;
-            jessie-armel|jessie-armhf)
-                echo "Jessie is not implemented yet"
-                exit 1
-                ;;
-            *)
-                echo "Unknown target: $1"
-                exit 1
-                ;;
-        esac
-        ;;
-    *)
-        echo "Warning: -target option is missing"
-        ;;
+
+case "$WBDEV_TARGET" in
+wheezy-armhf)
+    ROOTFS_DIR="/rootfs/wheezy-armhf"
+    TARGET_ARCH="armhf"
+    ;;
+wheezy-armel)
+    ROOTFS_DIR="/rootfs/wheezy-armel"
+    TARGET_ARCH="armel"
+    ;;
+jessie-armel|jessie-armhf)
+    echo "Jessie is not implemented yet"
+    exit 1
+    ;;
+*)
+    echo "Warning: WBDEV_TARGET is not set, defaulting to armel"
+    ;;
 esac
 
-IMAGE=${IMAGE:-contactless/devenv}
+IMAGE=${WBDEV_IMAGE:-contactless/devenv}
+
+echo $IMAGE $ROOTFS_DIR $TARGET_ARCH
+
 docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \
