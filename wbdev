@@ -8,12 +8,38 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
     ssh_opts="-e SSH_AUTH_SOCK=/ssh-agent -v $SSH_AUTH_SOCK:/ssh-agent"
 fi
 
-IMAGE=${IMAGE:-contactless/devenv}
+ROOTFS_DIR="/rootfs/wheezy-armel"
+TARGET_ARCH="armel"
+
+case "$WBDEV_TARGET" in
+wheezy-armhf)
+    ROOTFS_DIR="/rootfs/wheezy-armhf"
+    TARGET_ARCH="armhf"
+    ;;
+wheezy-armel)
+    ROOTFS_DIR="/rootfs/wheezy-armel"
+    TARGET_ARCH="armel"
+    ;;
+jessie-armel|jessie-armhf)
+    echo "Jessie is not implemented yet"
+    exit 1
+    ;;
+*)
+    echo "Warning: WBDEV_TARGET is not set, defaulting to armel"
+    ;;
+esac
+
+IMAGE=${WBDEV_IMAGE:-contactless/devenv}
+
+echo $IMAGE $ROOTFS_DIR $TARGET_ARCH
+
 docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \
        -e DEV_DIR="$PWD" \
        -e DEV_TERM="$TERM" \
+       -e ROOTFS_DIR="$ROOTFS_DIR" \
+       -e TARGET_ARCH="$TARGET_ARCH" \
        -v $HOME:$HOME \
        $ssh_opts \
        -h wbdevenv \

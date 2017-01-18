@@ -6,7 +6,8 @@ set -e
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
 OUTPUT="rootfs"
-RELEASE=wheezy
+RELEASE=${RELEASE:-wheezy}
+ARCH=${ARCH:-armel}
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 
@@ -125,7 +126,7 @@ else
 	debootstrap \
 		--foreign \
 		--verbose \
-		--arch armel \
+		--arch $ARCH \
 		--variant=minbase \
 		${RELEASE} ${OUTPUT} ${REPO}
 
@@ -173,14 +174,14 @@ EOM
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
 
         echo "Install primary sources.list"
-        echo "deb ${REPO} wheezy main" >${OUTPUT}/etc/apt/sources.list
-        echo "deb ${REPO} wheezy-updates main" >>${OUTPUT}/etc/apt/sources.list
-        echo "deb http://security.debian.org wheezy/updates main" >>${OUTPUT}/etc/apt/sources.list
+        echo "deb ${REPO} ${RELEASE} main" >${OUTPUT}/etc/apt/sources.list
+        echo "deb ${REPO} ${RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+        echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
-	#echo "deb [arch=armel,all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
-	echo "deb [arch=armel,all] http://releases.contactless.ru/ wheezy main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-	echo "deb http://http.debian.net/debian wheezy-backports main" > ${OUTPUT}/etc/apt/sources.list.d/wheezy-backports.list
+	#echo "deb [arch=${ARCH},all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
+	echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	echo "precedence ::ffff:0:0/96  100" > ${OUTPUT}/etc/gai.conf # workaround for IPv6 lags
 
 	echo "Install public key for contactless repo"
@@ -192,8 +193,7 @@ EOM
 
 	echo "Update&upgrade apt"
 	chr apt-get update
-	chr apt-get -y upgrade
-
+	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
     chr_apt locales
@@ -241,8 +241,9 @@ pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquit
 pkgs+=" openssl ca-certificates"
 
 pkgs+=" avahi-daemon pps-tools"
+chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 chr_apt --force-yes $pkgs
-
+chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 

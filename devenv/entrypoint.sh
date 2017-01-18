@@ -26,15 +26,17 @@ DEV_USER="${DEV_USER:-user}"
 DEV_GID="${DEV_GID:-$DEV_UID}"
 DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
 DEV_DIR="${DEV_DIR:-}"
+ROOTFS_DIR=${ROOTFS_DIR:-"/rootfs/wheezy-armel"}
+TARGET_ARCH=${TARGET_ARCH:-armel}
 
 export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
 
-rm -f /.devdir /rootfs/.devdir
+rm -f /.devdir $ROOTFS_DIR/.devdir
 if [ -n "$DEV_DIR" ]; then
     if [ -n "$shell_cmd" ]; then
         echo "$DEV_DIR" >/.devdir
-        echo "$DEV_DIR" >/rootfs/.devdir
+        echo "$DEV_DIR" >$ROOTFS_DIR/.devdir
     elif ! cd "$DEV_DIR"; then
         echo "WARNING: can't chdir to $DEV_DIR"
     fi
@@ -66,7 +68,7 @@ devsudo () {
 }
 
 chu () {
-    devsudo proot -R /rootfs -q qemu-arm-static $shell_cmd "$@"
+    devsudo proot -R $ROOTFS_DIR -q qemu-arm-static $shell_cmd "$@"
 }
 
 loadprojects() {
@@ -124,7 +126,14 @@ case "$cmd" in
         devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
-        devsudo CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc "$@"
+        case "$TARGET_ARCH" in
+            armel)
+                devsudo CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc "$@"
+                ;;
+            armhf)
+                devsudo CC=arm-linux-gnueabihf-gcc dpkg-buildpackage -b -aarmhf -us -uc "$@"
+                ;;
+        esac
         ;;
     hmake)
         devsudo make "$@"
@@ -142,7 +151,7 @@ case "$cmd" in
         chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
-        proot -R /rootfs -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+        proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
         ;;
     update-workspace)
         update_workspace
