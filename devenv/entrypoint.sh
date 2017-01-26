@@ -123,6 +123,7 @@ case "$cmd" in
         fi
         ;;
     ndeb)
+        mk-build-deps -ir
         devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
@@ -136,6 +137,7 @@ case "$cmd" in
         esac
         ;;
     hmake)
+        mk-build-deps -ir
         devsudo make "$@"
         ;;
     root)
@@ -145,9 +147,11 @@ case "$cmd" in
         chu "$@"
         ;;
     make)
+        proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
         chu make "$@"
         ;;
     cdeb)
+        proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
         chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
