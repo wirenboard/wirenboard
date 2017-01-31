@@ -31,6 +31,8 @@ case "$2" in
         exit 1
         ;;
 esac
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+. "${SCRIPT_DIR}"/rootfs_env.sh
 
 [[ -n "$__unshared" ]] || {
 	[[ $EUID == 0 ]] || {
@@ -44,48 +46,15 @@ esac
 
 OUTPUT=$1
 BOARD=$2
-
-die() {
-	local ret=$?
-	>&2 echo "!!! $@"
-	[[ $ret == 0 ]] && exit 1 || exit $ret
-}
-
-# Runs jq with given arguments and replaces the original file with result
-# Example: json_edit '.foo = 123'
-json_edit() {
-    [[ -e "$JSON" ]] || {
-        die "JSON file '$JSON' not found"
-        return 1
-    }
-
-    local tmp=`mktemp`
-    sed 's#//.*##' "$JSON" |    # there are // comments, strip them out
-    jq "$@" > "$tmp"
-    local ret=$?
-    [[ "$ret" == 0 ]] && cat "$tmp" > "$JSON"
-    rm "$tmp"
-    return $ret
-}
-
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 mkdir -p $OUTPUT
 
 export LC_ALL=C
-SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 ROOTFS_BASE_TARBALL="$(dirname "$(readlink -f ${OUTPUT})")/rootfs_base.tar.gz"
 
-ROOTFS_DIR=${OUTPUT}
-. "${SCRIPT_DIR}"/rootfs_env.sh
-
-chr_install_deb() {
-    DEB_FILE="$1"
-    cp ${DEB_FILE} ${OUTPUT}/
-    chr_nofail dpkg -i `basename ${DEB_FILE}`
-    rm ${OUTPUT}/`basename ${DEB_FILE}`
-}
+ROOTFS_DIR=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 setup_additional_repos() {
