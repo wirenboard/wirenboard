@@ -5,11 +5,9 @@ set -e
 
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-OUTPUT="rootfs"
 RELEASE=${RELEASE:-wheezy}
 ARCH=${ARCH:-armel}
 
-ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
@@ -77,7 +75,7 @@ mkdir -p $OUTPUT
 export LC_ALL=C
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-ROOTFS_BASE_TARBALL="$(dirname ${OUTPUT})/rootfs_base.tar.gz"
+ROOTFS_BASE_TARBALL="$(dirname "$(readlink -f ${OUTPUT})")/rootfs_base.tar.gz"
 
 ROOTFS_DIR=${OUTPUT}
 . "${SCRIPT_DIR}"/rootfs_env.sh
@@ -89,6 +87,7 @@ chr_install_deb() {
     rm ${OUTPUT}/`basename ${DEB_FILE}`
 }
 
+ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 setup_additional_repos() {
     # setup additional repos
 
@@ -218,10 +217,9 @@ EOM
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
 
-    WD="`pwd`"
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
-	tar czpf $WD/$ROOTFS_BASE_TARBALL --one-file-system ./
+	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
 
