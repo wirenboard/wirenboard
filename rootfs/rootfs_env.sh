@@ -56,7 +56,37 @@ chr_apt() {
     chr apt-get install -y --force-yes "$@"
 }
 
+chr_install_deb() {
+    DEB_FILE="$1"
+    cp ${DEB_FILE} ${OUTPUT}/
+    chr_nofail dpkg -i `basename ${DEB_FILE}`
+    rm ${OUTPUT}/`basename ${DEB_FILE}`
+}
+
 dbg() {
     chr ls -l /dev/pts
     chr ls -l /proc
+}
+
+die() {
+	local ret=$?
+	>&2 echo "!!! $@"
+	[[ $ret == 0 ]] && exit 1 || exit $ret
+}
+
+# Runs jq with given arguments and replaces the original file with result
+# Example: json_edit '.foo = 123'
+json_edit() {
+    [[ -e "$JSON" ]] || {
+        die "JSON file '$JSON' not found"
+        return 1
+    }
+
+    local tmp=`mktemp`
+    sed 's#//.*##' "$JSON" |    # there are // comments, strip them out
+    jq "$@" > "$tmp"
+    local ret=$?
+    [[ "$ret" == 0 ]] && cat "$tmp" > "$JSON"
+    rm "$tmp"
+    return $ret
 }
