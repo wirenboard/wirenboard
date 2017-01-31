@@ -47,7 +47,7 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="$(dirname "$(readlink -f ${OUTPUT})")/rootfs_base.tar.gz"
+ROOTFS_BASE_TARBALL="$(dirname "$(readlink -f ${OUTPUT})")/rootfs_base_${ARCH}.tar.gz"
 
 ROOTFS_DIR=$OUTPUT
 
