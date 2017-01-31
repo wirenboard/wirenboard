@@ -2,19 +2,17 @@
 set -u -e
 cd /root
 
-export ROOTFS_DIR="/rootfs/wheezy-armhf"
-export RELEASE=wheezy
-export ARCH=armhf
-time /root/rootfs/create_rootfs.sh $ROOTFS_DIR 5
-rm -f rootfs_base.tar.gz
-/root/prep.sh
+do_build() {
+	export RELEASE=$1 ARCH=$2 BOARD=$3
+	export ROOTFS_DIR="/rootfs/$RELEASE-$ARCH"
+	time /root/rootfs/create_rootfs.sh $ROOTFS_DIR $BOARD
+	rm -f rootfs_base_${ARCH}.tar.gz
+	/root/prep.sh
+}
 
-export ROOTFS_DIR="/rootfs/wheezy-armel"
-export RELEASE=wheezy
-export ARCH=armel
-time /root/rootfs/create_rootfs.sh $ROOTFS_DIR 5
-rm -f rootfs_base.tar.gz
-/root/prep.sh
+do_build wheezy armhf 6
+do_build wheezy armel 5
+
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash
 # TBD: -e USER=$USER, create user & group
