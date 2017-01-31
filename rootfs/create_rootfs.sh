@@ -65,7 +65,7 @@ setup_additional_repos() {
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
         echo "deb $repo testing main" >> $ADD_REPO_FILE
-        chr bash -c "wget $repo/repo.gpg.key -O- | apt-key add -"
+        wget $repo/repo.gpg.key -O- | chr apt-key add -
     done
 }
 
