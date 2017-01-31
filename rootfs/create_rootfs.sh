@@ -23,16 +23,15 @@ then
   exit 1
 fi
 
-case "$2" in
-    5|55|55P|58|55-ZERO|58-ZERO|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
-        ;;
-    *)
-        echo "Unknown board" 
-        exit 1
-        ;;
-esac
+OUTPUT=$1
+BOARD=$2
+
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 . "${SCRIPT_DIR}"/rootfs_env.sh
+
+[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
+
+[[ -e "${SCRIPT_DIR}/boards/${BOARD}.sh" ]] && . "${SCRIPT_DIR}/boards/${BOARD}.sh" || die "Unknown board $BOARD"
 
 [[ -n "$__unshared" ]] || {
 	[[ $EUID == 0 ]] || {
@@ -44,9 +43,6 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 	exec unshare -umi "$0" "$@"
 }
 
-OUTPUT=$1
-BOARD=$2
-[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 mkdir -p $OUTPUT
 
@@ -230,167 +226,7 @@ install_wb5_packages() {
     wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
 }
 
-case "$BOARD" in
-    "5" )
-        # Wiren Board 5
-        export FORCE_WB_VERSION=52
-        install_wb5_packages
-        set_fdt imx28-wirenboard52
-    ;;
-
-    "55" )
-        # Wiren Board 5
-        export FORCE_WB_VERSION=55
-        install_wb5_packages
-        set_fdt imx28-wirenboard55
-    ;;
-
-    "58" )
-        # Wiren Board 5.8
-        export FORCE_WB_VERSION=58
-        install_wb5_packages
-        set_fdt imx28-wirenboard58
-    ;;
-
-    "55P" )
-        # Wiren Board 5 for Proton
-        export FORCE_WB_VERSION=55
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd can-utils wb-test-suite wb-hwconf-manager wb-mqtt-dac
-
-        set_fdt imx28-wirenboard55
-
-        JSON=${OUTPUT}/etc/wb-hardware.conf
-        json_edit '.slots|=map(if .id=="wb55-mod1" then .module="wbe-do-r6c-1" else . end)'
-        json_edit '.slots|=map(if .id=="wb55-mod2" then .module="wbe-do-r6c-1" else . end)'
-        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
-
-    ;;
-
-    "55-ZERO" )
-        # Wiren Board Zero rev 5.5+
-        export FORCE_WB_VERSION=55
-        chr_apt wb-mqtt-homeui wb-homa-adc wb-rules wb-rules-system netplug wb-test-suite wb-hwconf-manager
-
-        set_fdt imx28-wirenboard55
-
-        JSON=${OUTPUT}/etc/wb-hardware.conf
-        json_edit '.slots|=map(select(.id !="wb55-mod1"))'
-        json_edit '.slots|=map(select(.id !="wb55-mod2"))'
-
-        for extio_n in {1..8}; do
-            json_edit '.slots|=map(select(.id !="wb5-extio'${extio_n}'"))'
-        done
-
-        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
-
-    ;;
-
-    "58-ZERO" )
-        # Wiren Board Zero rev 5.8+
-        export FORCE_WB_VERSION=58
-        chr_apt wb-mqtt-homeui wb-homa-adc wb-rules wb-rules-system netplug wb-test-suite wb-hwconf-manager
-
-        set_fdt imx28-wirenboard58
-
-        JSON=${OUTPUT}/etc/wb-hardware.conf
-        json_edit '.slots|=map(select(.id !="wb58-mod1"))'
-        json_edit '.slots|=map(select(.id !="wb58-mod2"))'
-
-        for extio_n in {1..8}; do
-            json_edit '.slots|=map(select(.id !="wb5-extio'${extio_n}'"))'
-        done
-
-        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
-
-    ;;
-
-    "4" )
-        # Wiren Board 4
-        export FORCE_WB_VERSION=41
-
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
-
-        echo "Add rtl8188 hostapd package"
-
-        RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-        chr_install_deb "${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB}"
-
-        set_fdt imx23-wirenboard41
-    ;;
-
-    "CQC10" )
-        # CQC10 device
-        export FORCE_WB_VERSION=CQC10
-        chr_apt wb-homa-w1 wb-homa-gpio wb-mqtt-spl-meter zabbix-agent wb-mqtt-homeui-mediamain
-
-        echo "Add wb-mqtt-tcs34725 package"
-        chr_install_deb /home/boger/work/board/cinema/wb-mqtt-tcs34725_1.1_all.deb
-        echo "Add wb-techneva package"
-        chr_install_deb /home/boger/work/board/cinema/wb-techneva/wb-techneva-cqc_1.1_all.deb
-
-        set_fdt imx23-wirenboard-cqc10
-
-    ;;
-    "32" )
-        # WB Smart Home specific
-        export FORCE_WB_VERSION=32
-
-
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
-
-        chr_apt netplug hostapd
-
-        set_fdt imx23-wirenboard32
-    ;;
-
-    "28" )
-        export FORCE_WB_VERSION=28
-        chr_apt wb-mqtt-homeui
-        set_fdt imx23-wirenboard28
-    ;;
-
-    "MKA3" )
-        # MKA3
-        export FORCE_WB_VERSION=KMON1
-
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-dbic
-
-        # https://github.com/contactless/wb-dbic
-        cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
-        chr /set_confidential.sh
-        rm ${OUTPUT}/set_confidential.sh
-
-        set_fdt imx23-wirenboard-kmon1
-    ;;
-
-    "MKA31" )
-        # MKA31 based on WB52 (netmon2-1)
-        export FORCE_WB_VERSION=52
-        chr_apt wb-mqtt-homeui wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-hwconf-manager wb-mqtt-am2320 zabbix-agent
-
-        cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
-        chr /set_confidential.sh
-        rm ${OUTPUT}/set_confidential.sh
-
-        set_fdt imx28-wirenboard52
-    ;;
-
-    "AC-E1" )
-        export FORCE_WB_VERSION=28
-
-        set_fdt imx23-wirenboard-ac-e1
-    ;;
-
-    "NETMON" )
-        # NETMON-1
-        export FORCE_WB_VERSION=KMON1
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-mqtt-serial wb-rules
-
-        chr_apt netplug
-
-        set_fdt imx23-wirenboard-kmon1
-    ;;
-esac
+board_install
 
 chr /etc/init.d/mosquitto stop
 
