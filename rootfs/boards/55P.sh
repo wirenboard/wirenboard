@@ -1,6 +1,8 @@
 # Wiren Board 5 for Proton
 export FORCE_WB_VERSION=55
 
+. ${SCRIPT_DIR}/boards/include/soc_imx28.sh
+
 board_install() {
 	chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd can-utils wb-test-suite wb-hwconf-manager wb-mqtt-dac
 

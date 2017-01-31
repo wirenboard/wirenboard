@@ -6,7 +6,6 @@ set -e
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
 RELEASE=${RELEASE:-wheezy}
-ARCH=${ARCH:-armel}
 
 
 # directly download firmware-realtek from jessie non-free repo
