@@ -28,6 +28,7 @@ DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
 DEV_DIR="${DEV_DIR:-}"
 ROOTFS_DIR=${ROOTFS_DIR:-"/rootfs/wheezy-armel"}
 TARGET_ARCH=${TARGET_ARCH:-armel}
+INSTALL_DEPS=${INSTALL_DEPS:-no}
 
 export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
@@ -123,7 +124,10 @@ case "$cmd" in
         fi
         ;;
     ndeb)
-        mk-build-deps -ir
+        if [ "$INSTALL_DEPS" = "yes" ]; then
+            apt-get update
+            mk-build-deps -ir
+        fi
         devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
@@ -137,7 +141,10 @@ case "$cmd" in
         esac
         ;;
     hmake)
-        mk-build-deps -ir
+        if [ "$INSTALL_DEPS" = "yes" ]; then
+            apt-get update
+            mk-build-deps -ir
+        fi
         devsudo make "$@"
         ;;
     root)
@@ -147,11 +154,17 @@ case "$cmd" in
         chu "$@"
         ;;
     make)
-        proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
+        if [ "$INSTALL_DEPS" = "yes" ]; then
+            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" apt-get update
+            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
+        fi
         chu make "$@"
         ;;
     cdeb)
-        proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
+        if [ "$INSTALL_DEPS" = "yes" ]; then
+            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" apt-get update
+            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
+        fi
         chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
