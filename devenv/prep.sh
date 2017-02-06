@@ -1,7 +1,7 @@
 #!/bin/bash
 set -u -e
 
-ROOTFS_DIR="/rootfs"
+ROOTFS_DIR=${ROOTFS_DIR:-"/rootfs"}
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR"/rootfs/rootfs_env.sh
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 prepare_chroot
 services_disable
 
-/bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >/rootfs/etc/apt/apt.conf.d/90forceyes
+/bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >$ROOTFS_DIR/etc/apt/apt.conf.d/90forceyes
 chr apt-get update
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.7 g++-4.7 libmodbus-dev \
@@ -22,7 +22,7 @@ chr apt-get install -y devscripts python-virtualenv equivs build-essential \
 # install git from backports to support desktop latest Git configs
 chr apt-get install -y -t wheezy-backports git git-man
 
-(rm -rf /rootfs/dh-virtualenv && cd /rootfs && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
+(rm -rf $ROOTFS_DIR/dh-virtualenv && cd $ROOTFS_DIR && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
 chr bash -c "dpkg -i /dh-virtualenv_*.deb"
 
@@ -33,7 +33,7 @@ cp /usr/src/gmock/CMakeLists.txt $ROOTFS_DIR/usr/src/gmock
 chr bash -c "cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/"
 
 
-cp /etc/profile.d/wbdev_profile.sh /rootfs/etc/profile.d/
+cp /etc/profile.d/wbdev_profile.sh $ROOTFS_DIR/etc/profile.d/
 
 chr apt-get clean
-rm -rf /rootfs/dh-virtualenv
+rm -rf $ROOTFS_DIR/dh-virtualenv

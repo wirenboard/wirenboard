@@ -1,3 +1,4 @@
 #!/bin/bash
 set -u -e
-proot -R /rootfs -q qemu-arm-static /bin/bash "$@"
+ROOTFS_DIR=${ROOTFS_DIR:-/rootfs/wheezy-armel}
+proot -R $ROOTFS_DIR -q qemu-arm-static /bin/bash "$@"

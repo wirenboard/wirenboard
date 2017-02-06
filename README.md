@@ -25,7 +25,7 @@ The development environment consists "host" environment which is
 Debian "jessie" Linux image used to build Python noarch packages,
 Go-based packages such as `wb-rules` and `wb-mqtt-confed` and
 `wb-mqtt-homeui` frontend. It also contains qemu chroot environment
-used to build C++-based armel packages such as those from
+used to build C++-based armel and armhf packages such as those from
 `wb-homa-drivers` project.
 
 When `wbdev` script is invoked, a user with the same user
@@ -78,10 +78,10 @@ Usage:
   built for Wiren Board.
 * `wbdev ndeb` builds a noarch deb from a project in the current
   directory.
-* `wbdev gdeb` builds an armel deb from a Go project in the current
+* `wbdev gdeb` builds an armel or armhf (see below) deb from a Go project in the current
   directory (should be used under a wbdev workspace, see **WBDEV
   Workspace** below).
-* `wbdev cdeb` builds an armel deb from a C++ project in the current
+* `wbdev cdeb` builds an armel or armhf deb from a C++ project in the current
   directory.
 * `wbdev make [args...]` invokes `make` in qemu chroot environment in
   the current directory.
@@ -90,6 +90,17 @@ Usage:
   on C++ projects.
 * `wbdev update-workspace` creates or updates wbdev workspace in
   `~/wbdev` (see **WBDEV Workspace** below).
+
+To change target architecture you should use environment variable
+WBDEV_TARGET. Possible values:
+
+* `wheezy-armel` build armel package for wheezy wirenboard image (default).
+* `wheezy-armhf` build armhf package for wheezy wirenboard image.
+* `jessie-armel` not yet implemented.
+* `jessie-armhf` not yet implemented.
+
+If required, another Docker image could be set via
+environment variable WBDEV_IMAGE.
 
 You may need to make changes to your shell init files such as
 `~/.bashrc` to avoid confusion between host machine and development
