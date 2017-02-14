@@ -126,7 +126,7 @@ case "$cmd" in
     ndeb)
         if [ "$INSTALL_DEPS" = "yes" ]; then
             apt-get update
-            mk-build-deps -ir
+            mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         devsudo dpkg-buildpackage -us -uc "$@"
         ;;
@@ -143,7 +143,7 @@ case "$cmd" in
     hmake)
         if [ "$INSTALL_DEPS" = "yes" ]; then
             apt-get update
-            mk-build-deps -ir
+            mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         devsudo make "$@"
         ;;
@@ -156,14 +156,14 @@ case "$cmd" in
     make)
         if [ "$INSTALL_DEPS" = "yes" ]; then
             proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" apt-get update
-            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
+            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu make "$@"
         ;;
     cdeb)
         if [ "$INSTALL_DEPS" = "yes" ]; then
             proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" apt-get update
-            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir
+            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu dpkg-buildpackage -us -uc "$@"
         ;;
