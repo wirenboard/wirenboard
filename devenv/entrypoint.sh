@@ -72,6 +72,10 @@ chu () {
     devsudo proot -R $ROOTFS_DIR -q qemu-arm-static $shell_cmd "$@"
 }
 
+chr () {
+    proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+}
+
 loadprojects() {
     n_projects=0
     while read projs[$n_projects] proj_base_dirs[$n_projects] \
@@ -155,20 +159,20 @@ case "$cmd" in
         ;;
     make)
         if [ "$INSTALL_DEPS" = "yes" ]; then
-            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" apt-get update
-            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir -t "apt-get --force-yes -y"
+            chr apt-get update
+            chr mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu make "$@"
         ;;
     cdeb)
         if [ "$INSTALL_DEPS" = "yes" ]; then
-            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" apt-get update
-            proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" mk-build-deps -ir -t "apt-get --force-yes -y"
+            chr apt-get update
+            chr mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
-        proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+        chr "$@"
         ;;
     update-workspace)
         update_workspace
