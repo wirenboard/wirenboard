@@ -15,6 +15,7 @@ wbmqtt = None
 
 class TestDiscreteBase(unittest.TestCase):
     NUM_CHANNELS = None
+    IN_CONTROL_TIMEOUT = 0.05
 
     @classmethod
     def _prepare(cls):
@@ -28,6 +29,21 @@ class TestDiscreteBase(unittest.TestCase):
         wbmqtt.watch_device(cls.OUT_DEVICE_ID)
 
 
+    def send_and_wait_for_value(self, device_id, control_id, new_value,
+        retain=False, poll_interval=10E-3, timeout=None):
+        """ Sends the value to control/on topic, 
+            then waits until control topic is updated by the corresponding 
+            driver to the new value"""
+        wbmqtt.send_value(device_id, control_id, new_value, retain)
+
+        started = time.time()
+        while wbmqtt.get_last_or_next_value(device_id, control_id) != new_value:
+            if timeout:
+                if time.time() - started > timeout:
+                    return False
+            time.sleep(poll_interval)
+
+        return True
 
     def _set_out_state(self, channel, state):
         control =self.OUT_CONTROL_ID_FMT % channel
@@ -36,9 +52,8 @@ class TestDiscreteBase(unittest.TestCase):
         current_val = wbmqtt.get_last_or_next_value(self.OUT_DEVICE_ID, control)
         # print "Current: %s==%s, requested: %s"  % (channel, current_val, val)
         if current_val != val:
-            wbmqtt.send_value(self.OUT_DEVICE_ID, control, val)
-            new_val = wbmqtt.get_next_or_last_value(self.OUT_DEVICE_ID, control, timeout=0.1)
-            self.assertEquals(new_val, val)
+            ret = self.send_and_wait_for_value(self.OUT_DEVICE_ID, control, val, timeout=0.5)
+            self.assertTrue(ret)
 
     def _get_in_state(self, channel, timeout=0.1):
         control = self.IN_CONTROL_ID_FMT % channel
@@ -80,14 +95,15 @@ class TestDiscreteBase(unittest.TestCase):
             if polarity:
                 # the delay is here
                 # to check if the switching element won't turn back off
-                time.sleep(0.05) 
+                time.sleep(self.IN_CONTROL_TIMEOUT) 
 
-        time.sleep(0.05) 
+        time.sleep(self.IN_CONTROL_TIMEOUT) 
 
         self.assertEqual(
-            self._get_in_state(channel, timeout=0.05),
+            self._get_in_state(channel, timeout=self.IN_CONTROL_TIMEOUT),
             polarity,
             "I/O channel %d: input erroneously reports %s state" % (channel, not polarity))
+
 
     def _test_single_channel_multiple_toggle(self, channel, repetitions):
         # start with off state
@@ -141,3 +157,5 @@ class TestDiscreteBase(unittest.TestCase):
                     "Possible crosstalk between channels %d and %d" % (channel, i))
 
         self._set_out_state(channel, False)
+        # self._test_single_channel_toggle_state(channel, False, check_turn_back=check_turn_back)
+        time.sleep(0.1)
