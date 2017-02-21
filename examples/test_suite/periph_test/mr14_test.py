@@ -20,10 +20,28 @@ class TestMR14Outputs(discrete_test.TestDiscreteBase):
     OUT_CONTROL_ID_FMT = 'K%d'
     IN_DEVICE_ID = 'wb-gpio'
     IN_CONTROL_ID_FMT = 'EXT2_K%d'
+    IN_CONTROL_TIMEOUT = 0.1
 
 for i in xrange(1, TestMR14Outputs.NUM_CHANNELS + 1):
     setattr(TestMR14Outputs, 'test_1_pos_ch%s' % str(i).zfill(2) ,
         (lambda i: lambda self: self._test_single_channel_alt(i, check_turn_back=True))(i))
+
+
+
+
+class TestMR14Inputs(discrete_test.TestDiscreteBase):
+    NUM_CHANNELS = 14
+    IN_DEVICE_ID = 'mr14'
+    IN_CONTROL_ID_FMT = 'Input %d'
+    OUT_DEVICE_ID = 'wb-gpio'
+    OUT_CONTROL_ID_FMT = 'EXT1_K%d'
+    IN_CONTROL_TIMEOUT = 0.2
+
+for i in xrange(1, TestMR14Inputs.NUM_CHANNELS + 1):
+    setattr(TestMR14Inputs, 'test_1_pos_ch%s' % str(i).zfill(2) ,
+        (lambda i: lambda self: self._test_single_channel_alt(i, check_turn_back=True))(i))
+
+
 
 
 
@@ -93,7 +111,7 @@ class TestEEPROMPersistence(unittest.TestCase):
 
 class Tester(PeriphTesterBase):
     MQTT_DEVICE_ID = 'mr14'
-    CONFIG_FNAME = "mr14ni.conf"
+    CONFIG_FNAME = "mr14.conf"
     POWER_FET=('wb-gpio', 'MOD1_OUT1')
 
     def init_mapping(self):
@@ -101,6 +119,7 @@ class Tester(PeriphTesterBase):
             (TestMR14Outputs, 3),
             (TestVoltage, 2),
             (TestEEPROMPersistence, 1),
+            (TestMR14Inputs, 4),
         ])
 
 

@@ -370,6 +370,9 @@ class PeriphTesterBase(object):
                                             power_fet=self.POWER_FET,
                                             support_uart_settings=self.SUPPORT_UART_SETTINGS
                                             )
+
+        serial_device.stop_driver()
+
         wbmqtt.watch_device(        serial_device.device_id)
 
 
