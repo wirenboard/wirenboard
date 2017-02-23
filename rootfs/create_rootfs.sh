@@ -248,7 +248,7 @@ chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.li
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes linux-headers-4.1.15-imxv5-x0.1 linux-image-4.1.15-imxv5-x0.1 linux-firmware-image-4.1.15-imxv5-x0.1 device-tree-compiler
+chr_apt --force-yes linux-image-4.1.15-imxv5-x0.1 linux-firmware-image-4.1.15-imxv5-x0.1 device-tree-compiler
 chr_apt --force-yes wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
