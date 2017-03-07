@@ -29,8 +29,8 @@ class TestIlluminanceMSW2(TestIlluminance):
     ILLUMINATED_DIFF_ERR = 0.10
 
 class TestSPLMSW(TestSPL):
-    SOUND_LEVEL_MIN = 75.4
-    SOUND_LEVEL_MAX = 81.5
+    SOUND_LEVEL_MIN = 77.5
+    SOUND_LEVEL_MAX = 79.5
     AMBIENT_MAX = 63
 
 

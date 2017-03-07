@@ -89,7 +89,7 @@ class Test1Wire(unittest.TestCase):
     def test_ext2(self):
         self._test_1wire_temp(2)
 
-class TestSPL(unittest.TestCase):
+class TestSPLBase(unittest.TestCase):
     AMBIENT_MAX = 63
     @classmethod
     def setUpClass(cls):
@@ -102,10 +102,37 @@ class TestSPL(unittest.TestCase):
         self.assertIsNotNone(spl_value)
         self.assertLess(float(spl_value), self.AMBIENT_MAX)
 
-    def test_s600hz(self):
+
+class TestSPLLegacy(TestSPLBase):
+    def test_s600hz_spdif(self):
         #sox -n -r 44100 600hz_0.01_10s.wav  synth 10 sine 600 vol 0.01
         fname = '600hz_0.03_10s.wav'
         proc = subprocess.Popen(['aplay', fname, '-d', '5'])
+        time.sleep(3)
+        spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=1)
+        print ("SPL VALUE: %s" % spl_value)
+
+        if spl_value is not None:
+            self.__class__.last_spl_600hz = float(spl_value)
+        else:
+            self.__class__.last_spl_600hz = spl_value
+
+        proc.communicate()
+        proc.wait()
+        self.assertIsNotNone(spl_value)
+        self.assertGreaterEqual(float(spl_value), self.SOUND_LEVEL_MIN)
+        self.assertLessEqual(float(spl_value), self.SOUND_LEVEL_MAX)
+
+class TestSPL(TestSPLBase):
+    SOUND_CARD_VOLUME = "68%"
+    def test_white_noise(self):
+        #sox -n -r 44100 600hz_0.01_10s.wav  synth 10 sine 600 vol 0.01
+        fname = 'white_noise_0.7_10s.wav'
+        snd_dev = 'default:CARD=DAC'
+
+        subprocess.call(['amixer', '-c1', 'sset', 'PCM', self.SOUND_CARD_VOLUME])
+
+        proc = subprocess.Popen(['aplay', '-D', snd_dev, fname, '-d', '5'])
         time.sleep(3)
         spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=1)
         print ("SPL VALUE: %s" % spl_value)
