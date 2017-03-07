@@ -6,7 +6,7 @@ import datetime
 import hashlib
 import time
 import subprocess
-sys.path.insert(0, "../common")
+sys.path.insert(0, "../hw_test_common")
 
 from arg_printing_parser import ArgPrintingParser
 import argparse
@@ -15,13 +15,16 @@ import tempfile
 import json
 
     
-import leds
-import beeper
+from wb_common import leds
+from wb_common import beeper
 
 import labels
 
-from wbmqtt import WBMQTT
-wbmqtt = None
+from wb_common.wbmqtt import WBMQTT
+wbmqtt = WBMQTT()
+
+def get_wbmqtt():
+    return wbmqtt
 
 def suite(mapping):
     suite = unittest.TestSuite()
@@ -48,8 +51,9 @@ class SerialDriverHandler(object):
         time.sleep(2)
 
     def stop(self):
-        self.serial_driver_proc.kill()
-        self.serial_driver_proc.communicate()
+        if self.serial_driver_proc:
+            self.serial_driver_proc.kill()
+            self.serial_driver_proc.communicate()
 
     def is_running(self):
         return (self.serial_driver_proc is not None) and (self.serial_driver_proc.poll() is None)
@@ -64,11 +68,15 @@ class SerialDriverHandler(object):
 
 
 class SerialDeviceHandler(object):
-    power_fet = ('wb-gpio', 'EXT1_HS7')
-
     def __init__(self, config_template, port='/dev/ttyAPP4', slave_id = 1,
-                 device_id=None, stop_bits=2, baud_rate=9600, parity='N'):
+                 device_id=None, stop_bits=2, baud_rate=9600, parity='N',
+                 power_fet=('wb-gpio','EXT1_HS7'),
+                 support_uart_settings=False):
+
         config = json.load(open(config_template))
+        self.power_fet = power_fet 
+        self.support_uart_settings = support_uart_settings
+
 
         assert 1 <= slave_id <= 247
 
@@ -106,39 +114,64 @@ class SerialDeviceHandler(object):
         self.serial_driver.stop()
 
     def get_serial(self):
-        return int(wbmqtt.get_next_value(self.device_id, "Serial"))
+        return int(wbmqtt.get_last_or_next_value(self.device_id, "Serial"))
 
     def get_fw_ver(self):
         chars = []
         for i in xrange(9):
-            c = wbmqtt.get_next_value(self.device_id, "fw_ver_%d" % i)
+            c = wbmqtt.get_last_or_next_value(self.device_id, "fw_ver_%d" % i)
             chars.append(c)
         return "".join(chars).strip()
 
     def set_serial(self, serial):
         wbmqtt.send_value(self.device_id, "Serial", serial)
 
+
+    def _get_modbus_client_cmd_prefix(self, cmd_baud_rate, cmd_stop_bits, cmd_parity):
+        cmd_str_prefix = "modbus_client -m rtu -o100 -pnone -s%d -b%d %s " % (
+                        cmd_stop_bits, cmd_baud_rate,
+                        self.port)
+
+        return cmd_str_prefix
+
+    def _set_modbus_address(self, cmd_baud_rate, cmd_stop_bits, cmd_parity):
+        cmd_str_prefix = self._get_modbus_client_cmd_prefix(cmd_baud_rate, 
+                                                            cmd_stop_bits, cmd_parity)
+
+        print cmd_str_prefix
+        # trying to set address
+        subprocess.call(cmd_str_prefix + "-t0x06 -a0 -r0x80 %d" % (self.slave_id), shell=True)
+
+    def _set_settings_w_uart(self, cmd_baud_rate, cmd_stop_bits, cmd_parity):
+        """ returns True if ok"""
+
+        cmd_str_prefix = self._get_modbus_client_cmd_prefix(cmd_baud_rate, 
+                                                            cmd_stop_bits, cmd_parity)
+
+        print cmd_str_prefix
+
+        # trying to set address
+        self._set_modbus_address(cmd_baud_rate, cmd_stop_bits, cmd_parity)
+
+        # trying to set proper uart settings (baud rate, parity, stop bits)
+        ret = subprocess.call(cmd_str_prefix + "-t0x10 -a%d -r110 %d %d %d" % (self.slave_id, self.baud_rate / 100,
+            {'N': 0, 'O' : 1, 'E': 2}[self.parity],
+            self.stop_bits), shell=True)
+
+        return (ret == 0)
+
     def set_settings(self):
         self.serial_driver.kill_existing()
+        if not self.support_uart_settings:
+            self._set_modbus_address(self.baud_rate, self.stop_bits, self.parity)
+        else:
+            for cmd_parity in ('none', 'even', 'odd'):
+                for cmd_stop_bits in (2, 1):
+                    for cmd_baud_rate in (9600, 19200):
+                        if self._set_settings_w_uart(cmd_baud_rate, cmd_stop_bits, cmd_parity):
+                            return
 
-        for cmd_parity in ('none', 'even', 'odd'):
-            for cmd_stop_bits in (2, 1):
-                for cmd_baud_rate in (9600, 19200):
-                    cmd_str_prefix = "modbus_client -m rtu -o100 -pnone -s%d -b%d %s " % (
-                                            cmd_stop_bits, cmd_baud_rate,
-                                            self.port)
-
-                    print cmd_str_prefix
-                    # trying to set address
-                    subprocess.call(cmd_str_prefix + "-t0x06 -a0 -r0x80 %d" % (self.slave_id), shell=True)
-
-                    # trying to set proper uart settings (baud rate, parity, stop bits)
-                    ret = subprocess.call(cmd_str_prefix + "-t0x10 -a%d -r110 %d %d %d" % (self.slave_id, self.baud_rate / 100,
-                        {'N': 0, 'O' : 1, 'E': 2}[self.parity],
-                        self.stop_bits), shell=True)
-
-                    if ret == 0:
-                        return
+        
 
                     time.sleep(0.1)
 
@@ -148,231 +181,6 @@ class SerialDeviceHandler(object):
     def power_on(self):
         wbmqtt.send_value(self.power_fet[0], self.power_fet[1], '1')
 
-
-class AM2320ReferenceMixin(object):
-    @classmethod
-    def _set_reference_humidity(cls):
-        cls.reference_humidity = float(wbmqtt.get_last_or_next_value('am2320', 'humidity'))
-    @classmethod
-    def _set_reference_temperature(cls):
-        cls.reference_temperature = float(wbmqtt.get_last_or_next_value('am2320', 'temperature'))
-
-
-class TestTH(unittest.TestCase, AM2320ReferenceMixin):
-    @classmethod
-    def setUpClass(cls):
-        cls._set_reference_temperature()
-        cls._set_reference_humidity()
-
-    def test_humidity(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Humidity')
-        print "Humidity: %s" % value
-
-        if value is None:
-            self.__class__.last_humidity = None
-        else:
-            self.__class__.last_humidity = float(value)
-
-        self.assertIsNotNone(value)
-        self.assertAlmostEqual(float(value), self.reference_humidity, delta = 7)
-
-    def test_temperature(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Temperature')
-        print "Temperature: %s" % value
-        self.assertIsNotNone(value)
-
-        self.assertAlmostEqual(float(value), self.reference_temperature, delta = 1.5)
-
-    def test_error_count(self):
-        while True:
-            am2320_reads = int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
-            if am2320_reads < 5:
-                continue
-
-            am2320_errors = int(wbmqtt.get_last_or_next_value(serial_device.device_id, 'AM2320 errors'))
-            self.assertLess(am2320_errors, am2320_reads / 2 + 1)
-
-            return
-
-class TestHStrict(unittest.TestCase, AM2320ReferenceMixin):
-    @classmethod
-    def setUpClass(cls):
-        cls._set_reference_humidity()
-
-    def test_humidity_strict(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Humidity')
-        print "Humidity: %s" % value
-
-        self.assertIsNotNone(value)
-        self.assertAlmostEqual(float(value), self.reference_humidity, delta = 3)
-
-class Test1Wire(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.reference_temperature = float(wbmqtt.get_last_or_next_value('am2320', 'temperature'))
-
-    def _test_1wire_temp(self, channel):
-        assert 1 <= channel <= 2
-        value = wbmqtt.get_next_value(serial_device.device_id, 'External Sensor %d' % channel, timeout=2)
-        print "Ext. sensor %d Temperature: %s" % (channel, value)
-        self.assertIsNotNone(value)
-
-        self.assertAlmostEqual(float(value), self.reference_temperature, delta = 7)
-
-    def test_ext1(self):
-        self._test_1wire_temp(1)
-
-    def test_ext2(self):
-        self._test_1wire_temp(2)
-
-class TestSPL(unittest.TestCase):
-    AMBIENT_MAX = 63
-    @classmethod
-    def setUpClass(cls):
-        serial_device.serial_driver.ensure_running()
-
-    def test_ambient(self):
-        time.sleep(200E-3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=2)
-        print ("Ambient value: %s" % spl_value)
-        self.assertIsNotNone(spl_value)
-        self.assertLess(float(spl_value), self.AMBIENT_MAX)
-
-    def test_s600hz(self):
-        #sox -n -r 44100 600hz_0.01_10s.wav  synth 10 sine 600 vol 0.01
-        fname = '600hz_0.03_10s.wav'
-        proc = subprocess.Popen(['aplay', fname, '-d', '5'])
-        time.sleep(3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=1)
-        print ("SPL VALUE: %s" % spl_value)
-
-        if spl_value is not None:
-            self.__class__.last_spl_600hz = float(spl_value)
-        else:
-            self.__class__.last_spl_600hz = spl_value
-
-        proc.communicate()
-        proc.wait()
-        self.assertIsNotNone(spl_value)
-        self.assertGreaterEqual(float(spl_value), self.SOUND_LEVEL_MIN)
-        self.assertLessEqual(float(spl_value), self.SOUND_LEVEL_MAX)
-
-
-class TestEEPROMPersistence(unittest.TestCase):
-    def _get_uptime_counter(self):
-        # use AM2320 reads counter as uptime
-        return int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
-
-    def test_persistence(self):
-        # Serial shouldn't change after power cycle
-        serial = wbmqtt.get_last_or_next_value(serial_device.device_id, 'Serial')
-
-        slow_rc_control = 'SPL_RC'
-
-        spl_slow_rc_cur = wbmqtt.get_last_or_next_value(serial_device.device_id, slow_rc_control)
-        spl_slow_rc_cur = int(spl_slow_rc_cur)
-        if spl_slow_rc_cur % 2 == 0:
-            spl_slow_rc = spl_slow_rc_cur + 10
-        else:
-            spl_slow_rc = spl_slow_rc_cur - 10
-
-        wbmqtt.send_value(serial_device.device_id, slow_rc_control, spl_slow_rc)
-
-        time.sleep(1200E-3) # at least 1 second to save settings to EEPROM
-
-        uptime_before = self._get_uptime_counter()
-
-        serial_device.stop_driver()
-        serial_device.power_off()
-        time.sleep(500E-3)
-        serial_device.power_on()
-        serial_device.start_driver()
-
-        uptime_after = self._get_uptime_counter()
-        self.assertLess(uptime_after, uptime_before, "device wasn't powered off!")
-
-        self.assertEqual(
-            wbmqtt.get_next_value(serial_device.device_id, 'Serial'),
-            serial)
-
-        self.assertIsNone(wbmqtt.get_last_error(serial_device.device_id, 'Serial'))
-
-        self.assertEqual(
-            int(wbmqtt.get_next_value(serial_device.device_id, slow_rc_control)),
-            spl_slow_rc)
-
-
-class TestIlluminance(unittest.TestCase):
-    LIGHT_SWITCH = ('wb-gpio', 'A3_OUT')
-    MAX_AMBIENT = 50
-    ILLUMINATED_DIFF = 4600
-    ILLUMINATED_DIFF_ERR = 0.12
-    # @classmethod
-    # def setUpClass(cls):
-    #     wbmqtt.watch_channel(cls.LIGHT_SWITCH[0], cls.LIGHT_SWITCH[1])
-
-    @classmethod
-    def _switch_light(self, on):
-        wbmqtt.send_value(self.LIGHT_SWITCH[0], self.LIGHT_SWITCH[1], '1' if on else '0')
-
-    def _get_lux(self):
-        return float(wbmqtt.get_next_value(serial_device.device_id, 'Illuminance'))
-
-    def _get_lux_stable(self):
-        return wbmqtt.get_stable_value(serial_device.device_id, 'Illuminance', timeout=10, jitter=10)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls._switch_light(False)
-
-    def test_ambient(self):
-        self._switch_light(False)
-        time.sleep(2000E-3)
-        lux = self._get_lux()
-        print "Ambient illuminance: %s lx" % lux
-        self.assertLess(lux, self.MAX_AMBIENT)
-
-    def test_illuminated(self):
-        ambient_lux = self._get_lux_stable()
-        self._switch_light(True)
-        time.sleep(2000E-3)
-        lux = self._get_lux_stable() - ambient_lux
-        print "Illuminance difference: %s lx" %  lux
-
-        self.__class__.last_lux_diff = lux
-
-        self.assertAlmostEqual(lux, self.ILLUMINATED_DIFF , delta = self.ILLUMINATED_DIFF * self.ILLUMINATED_DIFF_ERR)
-
-class TestBuzzer(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        serial_device.serial_driver.ensure_running()
-
-    def tearDown(self):
-        wbmqtt.send_value(serial_device.device_id, 'Buzzer', '0')
-
-    def test_buzzer_on(self):
-        wbmqtt.send_value(serial_device.device_id, 'Buzzer', '1')
-        time.sleep(1100E-3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=0.5)
-
-        if spl_value is not None:
-            self.__class__.last_spl_on = float(spl_value)
-        else:
-            self.__class__.last_spl_on = spl_value
-
-        self.assertIsNotNone(spl_value)
-        self.assertGreater(float(spl_value), 75)
-
-
-
-class TestCO2(unittest.TestCase):
-    def test_co2(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'CO2')
-        print "CO2: %s ppm" % value
-        self.assertIsNotNone(value)
-        self.assertGreaterEqual(float(value), 380)
-        self.assertLessEqual(float(value), 2000)
 
 
 class ModbusDeviceTestLog(object):
@@ -384,7 +192,7 @@ class ModbusDeviceTestLog(object):
         if self.log is None:
             from gsheets import GSheetsLog
             self.log = GSheetsLog('1gN56RBi__Y7n44XVklc1vjl_FRCkizIJeHsrXZRItr0',
-                             '../Commissioning-30b68b322b7c.json')
+                             '../hw_test_common/Commissioning-30b68b322b7c.json')
     def get_all_serials(self):
         range_spec = "%s:%s" % (self.log.get_addr_int(1, self.SN_COLUMN),
                         self.log.get_addr_int(10000, self.SN_COLUMN))
@@ -430,7 +238,8 @@ class ModbusDeviceTestLog(object):
 
 
 
-class MSTesterBase(object):
+class PeriphTesterBase(object):
+    SUPPORT_UART_SETTINGS = False
     def __init__(self):
         self.init_mapping()
         self._parser_arguments = {}
@@ -543,6 +352,8 @@ class MSTesterBase(object):
             leds.blink_fast('red')
             leds.set_brightness('green', 0)
 
+    def append_to_log_row(self):
+        return []
 
     def main(self):
         global serial_device
@@ -559,8 +370,13 @@ class MSTesterBase(object):
                                             slave_id=self.args.modbus_address,
                                             stop_bits=self.args.stop_bits,
                                             baud_rate=self.args.baud_rate,
-                                            parity=self.args.parity
+                                            parity=self.args.parity,
+                                            power_fet=self.POWER_FET,
+                                            support_uart_settings=self.SUPPORT_UART_SETTINGS
                                             )
+
+        serial_device.stop_driver()
+
         wbmqtt.watch_device(        serial_device.device_id)
 
 
@@ -590,6 +406,8 @@ class MSTesterBase(object):
 
         result = unittest.TextTestRunner(verbosity=2).run(suite(self.mapping))
 
+        serial_device.stop_driver()
+
         has_real_errors, overall_status, results_row = self.process_results(result)
 
         self.indicate_status(sn, overall_status, has_real_errors)
@@ -600,22 +418,11 @@ class MSTesterBase(object):
 
         row = [overall_status, self.args.device_model, sn, test_date, self.args.modbus_address, self.args.hw_rev, '', fw_ver, self.args.comments,  self.args.tester_name, self.args.batch_no,'',''] + results_row
 
-        values_row = ["", ] * 5
-        for test in self.mapping.iterkeys():
-            if issubclass(test, TestTH):
-                values_row[0] = test.last_humidity
-                values_row[1] = test.reference_humidity
 
-            if issubclass(test, TestIlluminance):
-                values_row[2] = test.last_lux_diff
 
-            if issubclass(test, TestSPL):
-                values_row[3] = test.last_spl_600hz
 
-            if issubclass(test, TestBuzzer):
-                values_row[4] = test.last_spl_on
+        row += self.append_to_log_row()
 
-        row += values_row
 
         # label is printed if
         # 1) S/N was assigned for the first time, regardless of Q.C. status
@@ -653,5 +460,4 @@ class MSTesterBase(object):
         # else:
         #     beep.beep(0.5, 3)
 
-        serial_device.stop_driver()
 

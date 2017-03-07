@@ -2,8 +2,8 @@ import argparse
 
 class ArgPrintingParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
-        super(ArgPrintingParser, self).__init__(*args, **kwargs)
         self.__parser_arguments = {}
+        super(ArgPrintingParser, self).__init__(*args, **kwargs)
 
     def add_argument(self, *args, **kwargs):
         dest = kwargs.get('dest')
