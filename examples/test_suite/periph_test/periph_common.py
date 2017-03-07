@@ -21,7 +21,10 @@ from wb_common import beeper
 import labels
 
 from wb_common.wbmqtt import WBMQTT
-wbmqtt = None
+wbmqtt = WBMQTT()
+
+def get_wbmqtt():
+    return wbmqtt
 
 def suite(mapping):
     suite = unittest.TestSuite()
@@ -48,8 +51,9 @@ class SerialDriverHandler(object):
         time.sleep(2)
 
     def stop(self):
-        self.serial_driver_proc.kill()
-        self.serial_driver_proc.communicate()
+        if self.serial_driver_proc:
+            self.serial_driver_proc.kill()
+            self.serial_driver_proc.communicate()
 
     def is_running(self):
         return (self.serial_driver_proc is not None) and (self.serial_driver_proc.poll() is None)

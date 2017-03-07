@@ -17,8 +17,10 @@ import leds
 import beeper
 from wbmqtt import WBMQTT
 
-from test_ms_common import TestIlluminance, TestSPL, TestTH, TestHStrict, TestEEPROMPersistence, parse_comma_separated_set, SerialDeviceHandler, SerialDriverHandler, ModbusDeviceTestLog, MSTesterBase, Test1Wire
-import test_ms_common
+
+from test_ms_common import TestCO2, TestBuzzer, TestIlluminance, TestSPL, TestTH, TestHStrict, TestEEPROMPersistence, MSTesterBase, Test1Wire
+from periph_common import parse_comma_separated_set, SerialDeviceHandler, SerialDriverHandler, ModbusDeviceTestLog, get_wbmqtt
+import periph_common
 
 
 class TestIlluminanceMS(TestIlluminance):
@@ -50,12 +52,10 @@ class Tester(MSTesterBase):
 if __name__ == '__main__':
     while 1:
         try:
-            test_ms_common.wbmqtt = WBMQTT()
-            wbmqtt = test_ms_common.wbmqtt
-            wbmqtt.watch_device('am2320')
+            periph_common.get_wbmqtt().watch_device('am2320')
             Tester().main()
         finally:
-            wbmqtt.close()
+            periph_common.get_wbmqtt().close()
 
         while 1:
             e = raw_input("press Enter to continue or Control+C to exit")

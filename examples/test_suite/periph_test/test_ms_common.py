@@ -9,16 +9,17 @@ import subprocess
 
 sys.path.insert(0, "../common")
 
-from periph_common import wbmqtt, PeriphTesterBase, serial_device
+from periph_common import PeriphTesterBase, get_wbmqtt
+import periph_common
 
 
 class AM2320ReferenceMixin(object):
     @classmethod
     def _set_reference_humidity(cls):
-        cls.reference_humidity = float(wbmqtt.get_last_or_next_value('am2320', 'humidity'))
+        cls.reference_humidity = float(periph_common.get_wbmqtt().get_last_or_next_value('am2320', 'humidity'))
     @classmethod
     def _set_reference_temperature(cls):
-        cls.reference_temperature = float(wbmqtt.get_last_or_next_value('am2320', 'temperature'))
+        cls.reference_temperature = float(periph_common.get_wbmqtt().get_last_or_next_value('am2320', 'temperature'))
 
 
 class TestTH(unittest.TestCase, AM2320ReferenceMixin):
@@ -28,7 +29,7 @@ class TestTH(unittest.TestCase, AM2320ReferenceMixin):
         cls._set_reference_humidity()
 
     def test_humidity(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Humidity')
+        value = periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'Humidity')
         print "Humidity: %s" % value
 
         if value is None:
@@ -40,7 +41,7 @@ class TestTH(unittest.TestCase, AM2320ReferenceMixin):
         self.assertAlmostEqual(float(value), self.reference_humidity, delta = 7)
 
     def test_temperature(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Temperature')
+        value = periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'Temperature')
         print "Temperature: %s" % value
         self.assertIsNotNone(value)
 
@@ -48,11 +49,11 @@ class TestTH(unittest.TestCase, AM2320ReferenceMixin):
 
     def test_error_count(self):
         while True:
-            am2320_reads = int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
+            am2320_reads = int(periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'AM2320 reads'))
             if am2320_reads < 5:
                 continue
 
-            am2320_errors = int(wbmqtt.get_last_or_next_value(serial_device.device_id, 'AM2320 errors'))
+            am2320_errors = int(periph_common.get_wbmqtt().get_last_or_next_value(periph_common.serial_device.device_id, 'AM2320 errors'))
             self.assertLess(am2320_errors, am2320_reads / 2 + 1)
 
             return
@@ -63,7 +64,7 @@ class TestHStrict(unittest.TestCase, AM2320ReferenceMixin):
         cls._set_reference_humidity()
 
     def test_humidity_strict(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'Humidity')
+        value = periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'Humidity')
         print "Humidity: %s" % value
 
         self.assertIsNotNone(value)
@@ -72,11 +73,11 @@ class TestHStrict(unittest.TestCase, AM2320ReferenceMixin):
 class Test1Wire(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.reference_temperature = float(wbmqtt.get_last_or_next_value('am2320', 'temperature'))
+        cls.reference_temperature = float(periph_common.get_wbmqtt().get_last_or_next_value('am2320', 'temperature'))
 
     def _test_1wire_temp(self, channel):
         assert 1 <= channel <= 2
-        value = wbmqtt.get_next_value(serial_device.device_id, 'External Sensor %d' % channel, timeout=2)
+        value = periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'External Sensor %d' % channel, timeout=2)
         print "Ext. sensor %d Temperature: %s" % (channel, value)
         self.assertIsNotNone(value)
 
@@ -92,11 +93,11 @@ class TestSPL(unittest.TestCase):
     AMBIENT_MAX = 63
     @classmethod
     def setUpClass(cls):
-        serial_device.serial_driver.ensure_running()
+        periph_common.serial_device.serial_driver.ensure_running()
 
     def test_ambient(self):
         time.sleep(200E-3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=2)
+        spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=2)
         print ("Ambient value: %s" % spl_value)
         self.assertIsNotNone(spl_value)
         self.assertLess(float(spl_value), self.AMBIENT_MAX)
@@ -106,7 +107,7 @@ class TestSPL(unittest.TestCase):
         fname = '600hz_0.03_10s.wav'
         proc = subprocess.Popen(['aplay', fname, '-d', '5'])
         time.sleep(3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=1)
+        spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=1)
         print ("SPL VALUE: %s" % spl_value)
 
         if spl_value is not None:
@@ -124,44 +125,44 @@ class TestSPL(unittest.TestCase):
 class TestEEPROMPersistence(unittest.TestCase):
     def _get_uptime_counter(self):
         # use AM2320 reads counter as uptime
-        return int(wbmqtt.get_next_value(serial_device.device_id, 'AM2320 reads'))
+        return int(periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'AM2320 reads'))
 
     def test_persistence(self):
         # Serial shouldn't change after power cycle
-        serial = wbmqtt.get_last_or_next_value(serial_device.device_id, 'Serial')
+        serial = periph_common.get_wbmqtt().get_last_or_next_value(periph_common.serial_device.device_id, 'Serial')
 
         slow_rc_control = 'SPL_RC'
 
-        spl_slow_rc_cur = wbmqtt.get_last_or_next_value(serial_device.device_id, slow_rc_control)
+        spl_slow_rc_cur = periph_common.get_wbmqtt().get_last_or_next_value(periph_common.serial_device.device_id, slow_rc_control)
         spl_slow_rc_cur = int(spl_slow_rc_cur)
         if spl_slow_rc_cur % 2 == 0:
             spl_slow_rc = spl_slow_rc_cur + 10
         else:
             spl_slow_rc = spl_slow_rc_cur - 10
 
-        wbmqtt.send_value(serial_device.device_id, slow_rc_control, spl_slow_rc)
+        periph_common.get_wbmqtt().send_value(periph_common.serial_device.device_id, slow_rc_control, spl_slow_rc)
 
         time.sleep(1200E-3) # at least 1 second to save settings to EEPROM
 
         uptime_before = self._get_uptime_counter()
 
-        serial_device.stop_driver()
-        serial_device.power_off()
+        periph_common.serial_device.stop_driver()
+        periph_common.serial_device.power_off()
         time.sleep(500E-3)
-        serial_device.power_on()
-        serial_device.start_driver()
+        periph_common.serial_device.power_on()
+        periph_common.serial_device.start_driver()
 
         uptime_after = self._get_uptime_counter()
         self.assertLess(uptime_after, uptime_before, "device wasn't powered off!")
 
         self.assertEqual(
-            wbmqtt.get_next_value(serial_device.device_id, 'Serial'),
+            periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'Serial'),
             serial)
 
-        self.assertIsNone(wbmqtt.get_last_error(serial_device.device_id, 'Serial'))
+        self.assertIsNone(periph_common.get_wbmqtt().get_last_error(periph_common.serial_device.device_id, 'Serial'))
 
         self.assertEqual(
-            int(wbmqtt.get_next_value(serial_device.device_id, slow_rc_control)),
+            int(periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, slow_rc_control)),
             spl_slow_rc)
 
 
@@ -172,17 +173,17 @@ class TestIlluminance(unittest.TestCase):
     ILLUMINATED_DIFF_ERR = 0.12
     # @classmethod
     # def setUpClass(cls):
-    #     wbmqtt.watch_channel(cls.LIGHT_SWITCH[0], cls.LIGHT_SWITCH[1])
+    #     periph_common.get_wbmqtt().watch_channel(cls.LIGHT_SWITCH[0], cls.LIGHT_SWITCH[1])
 
     @classmethod
     def _switch_light(self, on):
-        wbmqtt.send_value(self.LIGHT_SWITCH[0], self.LIGHT_SWITCH[1], '1' if on else '0')
+        periph_common.get_wbmqtt().send_value(self.LIGHT_SWITCH[0], self.LIGHT_SWITCH[1], '1' if on else '0')
 
     def _get_lux(self):
-        return float(wbmqtt.get_next_value(serial_device.device_id, 'Illuminance'))
+        return float(periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'Illuminance'))
 
     def _get_lux_stable(self):
-        return wbmqtt.get_stable_value(serial_device.device_id, 'Illuminance', timeout=10, jitter=10)
+        return periph_common.get_wbmqtt().get_stable_value(periph_common.serial_device.device_id, 'Illuminance', timeout=10, jitter=10)
 
     @classmethod
     def tearDownClass(cls):
@@ -209,15 +210,15 @@ class TestIlluminance(unittest.TestCase):
 class TestBuzzer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        serial_device.serial_driver.ensure_running()
+        periph_common.serial_device.serial_driver.ensure_running()
 
     def tearDown(self):
-        wbmqtt.send_value(serial_device.device_id, 'Buzzer', '0')
+        periph_common.get_wbmqtt().send_value(periph_common.serial_device.device_id, 'Buzzer', '0')
 
     def test_buzzer_on(self):
-        wbmqtt.send_value(serial_device.device_id, 'Buzzer', '1')
+        periph_common.get_wbmqtt().send_value(periph_common.serial_device.device_id, 'Buzzer', '1')
         time.sleep(1100E-3)
-        spl_value = wbmqtt.get_average_value(serial_device.device_id, 'Sound Level', interval=0.5)
+        spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=0.5)
 
         if spl_value is not None:
             self.__class__.last_spl_on = float(spl_value)
@@ -231,7 +232,7 @@ class TestBuzzer(unittest.TestCase):
 
 class TestCO2(unittest.TestCase):
     def test_co2(self):
-        value = wbmqtt.get_next_value(serial_device.device_id, 'CO2')
+        value = periph_common.get_wbmqtt().get_next_value(periph_common.serial_device.device_id, 'CO2')
         print "CO2: %s ppm" % value
         self.assertIsNotNone(value)
         self.assertGreaterEqual(float(value), 380)
