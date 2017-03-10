@@ -377,7 +377,8 @@ class PeriphTesterBase(object):
 
         serial_device.stop_driver()
 
-        wbmqtt.watch_device(        serial_device.device_id)
+        wbmqtt.clear_device(serial_device.device_id)
+        wbmqtt.watch_device(serial_device.device_id)
 
 
         serial_device.power_on()

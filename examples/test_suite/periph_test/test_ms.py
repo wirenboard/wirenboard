@@ -6,16 +6,13 @@ import datetime
 import hashlib
 import time
 import subprocess
-sys.path.insert(0, "../common")
+sys.path.insert(0, "../hw_test_common")
 
 import argparse
 import tempfile
 import json
 
     
-import leds
-import beeper
-from wbmqtt import WBMQTT
 
 
 from test_ms_common import TestCO2, TestBuzzer, TestIlluminance, TestSPL, TestTH, TestHStrict, TestEEPROMPersistence, MSTesterBase, Test1Wire
@@ -27,6 +24,12 @@ class TestIlluminanceMS(TestIlluminance):
     MAX_AMBIENT = 50
     ILLUMINATED_DIFF =  4970
     ILLUMINATED_DIFF_ERR = 0.07
+
+class TestIlluminanceMSB(TestIlluminance):
+    MAX_AMBIENT = 600
+    ILLUMINATED_DIFF =  7000
+    ILLUMINATED_DIFF_ERR = 0.25
+
 
 class TestSPLMS(TestSPL):
     SOUND_LEVEL_MIN = 72.7
@@ -40,7 +43,7 @@ class Tester(MSTesterBase):
     def init_mapping(self):
         self.mapping = OrderedDict([
                 (TestSPLMS, 2),
-                (TestIlluminanceMS, 3),
+                (TestIlluminanceMSB, 3),
                 (TestTH, 4),
                 (TestHStrict, 8),
                 (Test1Wire, 7),
@@ -50,19 +53,19 @@ class Tester(MSTesterBase):
 
 
 if __name__ == '__main__':
-    while 1:
-        try:
+    try:
+        while 1:
             periph_common.get_wbmqtt().watch_device('am2320')
             Tester().main()
-        finally:
-            periph_common.get_wbmqtt().close()
 
-        while 1:
-            e = raw_input("press Enter to continue or Control+C to exit")
-            if e == '':
-                break
+            while 1:
+                e = raw_input("press Enter to continue or Control+C to exit")
+                if e == '':
+                    break
 
-        print "\n" * 5
+            print "\n" * 5
 
 
 
+    finally:
+        periph_common.get_wbmqtt().close()
