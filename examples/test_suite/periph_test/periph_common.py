@@ -121,7 +121,7 @@ class SerialDeviceHandler(object):
         for i in xrange(9):
             c = wbmqtt.get_last_or_next_value(self.device_id, "fw_ver_%d" % i)
             chars.append(c)
-        return "".join(chars).strip()
+        return "".join(chars).strip().strip('\x00')
 
     def set_serial(self, serial):
         wbmqtt.send_value(self.device_id, "Serial", serial)
@@ -417,7 +417,10 @@ class PeriphTesterBase(object):
         test_log.init()
         test_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        row = [overall_status, self.args.device_model, sn, test_date, self.args.modbus_address, self.args.hw_rev, '', fw_ver, self.args.comments,  self.args.tester_name, self.args.batch_no,'',''] + results_row
+        row = [overall_status, self.args.device_model,
+                sn, test_date, self.args.modbus_address, self.args.hw_rev,
+                '', fw_ver, self.args.comments, 
+                self.args.tester_name, self.args.batch_no,'',''] + results_row
 
 
 

@@ -1,28 +1,27 @@
 import unittest
-from collections import OrderedDict
 import sys
-import os
-import datetime
-import hashlib
+import logging
 import time
 import subprocess
 
 sys.path.insert(0, "../common")
 
-from periph_common import PeriphTesterBase, get_wbmqtt
+from periph_common import PeriphTesterBase
 import periph_common
 
 
-class AM2320ReferenceMixin(object):
+class TTHReferenceMixin(object):
+    REFERENCE_DEVICE_ID = 'am2320'
+
     @classmethod
     def _set_reference_humidity(cls):
-        cls.reference_humidity = float(periph_common.get_wbmqtt().get_last_or_next_value('am2320', 'humidity'))
+        cls.reference_humidity = float(periph_common.get_wbmqtt().get_last_or_next_value(cls.REFERENCE_DEVICE_ID, 'humidity'))
     @classmethod
     def _set_reference_temperature(cls):
-        cls.reference_temperature = float(periph_common.get_wbmqtt().get_last_or_next_value('am2320', 'temperature'))
+        cls.reference_temperature = float(periph_common.get_wbmqtt().get_last_or_next_value(cls.REFERENCE_DEVICE_ID, 'temperature'))
 
 
-class TestTH(unittest.TestCase, AM2320ReferenceMixin):
+class TestTH(unittest.TestCase, TTHReferenceMixin):
     @classmethod
     def setUpClass(cls):
         cls._set_reference_temperature()
@@ -58,7 +57,7 @@ class TestTH(unittest.TestCase, AM2320ReferenceMixin):
 
             return
 
-class TestHStrict(unittest.TestCase, AM2320ReferenceMixin):
+class TestHStrict(unittest.TestCase, TTHReferenceMixin):
     @classmethod
     def setUpClass(cls):
         cls._set_reference_humidity()
@@ -89,6 +88,36 @@ class Test1Wire(unittest.TestCase):
     def test_ext2(self):
         self._test_1wire_temp(2)
 
+
+
+def _mqtt_get_min_value(wbmqtt, device_id, control_id, interval=1):
+    start = time.time()
+    val_min = 0
+    val_count = 0
+
+    while time.time() - start <= interval:
+        val = wbmqtt.get_next_value(device_id, control_id, timeout=interval)
+        if val is not None:
+            try:
+                val = float(val)
+            except ValueError:
+                logging.warning("cannot convert %s to float while calculating min" % val)
+                continue
+            else:
+                if val_count == 0:
+                    val_min = val
+                else:
+                    if val < val_min:
+                        val_min = val
+
+                val_count += 1
+
+    if val_count > 0:
+        return val_min
+    else:
+        return None
+
+
 class TestSPLBase(unittest.TestCase):
     AMBIENT_MAX = 63
     @classmethod
@@ -97,10 +126,14 @@ class TestSPLBase(unittest.TestCase):
 
     def test_ambient(self):
         time.sleep(200E-3)
-        spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=2)
+        spl_value = _mqtt_get_min_value(periph_common.get_wbmqtt(), periph_common.serial_device.device_id, 'Sound Level', interval=2)
+
         print ("Ambient value: %s" % spl_value)
+        self.__class__.last_spl_ambient = spl_value
+
         self.assertIsNotNone(spl_value)
         self.assertLess(float(spl_value), self.AMBIENT_MAX)
+
 
 
 class TestSPLLegacy(TestSPLBase):
@@ -113,9 +146,9 @@ class TestSPLLegacy(TestSPLBase):
         print ("SPL VALUE: %s" % spl_value)
 
         if spl_value is not None:
-            self.__class__.last_spl_600hz = float(spl_value)
+            self.__class__.last_spl_loud = float(spl_value)
         else:
-            self.__class__.last_spl_600hz = spl_value
+            self.__class__.last_spl_loud = spl_value
 
         proc.communicate()
         proc.wait()
@@ -123,30 +156,46 @@ class TestSPLLegacy(TestSPLBase):
         self.assertGreaterEqual(float(spl_value), self.SOUND_LEVEL_MIN)
         self.assertLessEqual(float(spl_value), self.SOUND_LEVEL_MAX)
 
-class TestSPL(TestSPLBase):
-    SOUND_CARD_VOLUME = "68%"
-    def test_white_noise(self):
+class TestSPLNew(TestSPLBase):
+    SOUND_CARD_VOLUME_LOUD = "68%"
+    SOUND_CARD_VOLUME_QUIET = "11%"
+
+    SOUND_LEVEL_QUIET_MAX = 0
+    SOUND_LEVEL_QUIET_MIN = 0
+    SOUND_LEVEL_LOUD_MAX = 0
+    SOUND_LEVEL_LOUD_MIN = 0
+
+    def _test_white_noise(self, volume, sound_level_min, sound_level_max, test_name=None):
         #sox -n -r 44100 600hz_0.01_10s.wav  synth 10 sine 600 vol 0.01
         fname = 'white_noise_0.7_10s.wav'
         snd_dev = 'default:CARD=DAC'
 
-        subprocess.call(['amixer', '-c1', 'sset', 'PCM', self.SOUND_CARD_VOLUME])
+        subprocess.call(['amixer', '-c1', 'sset', 'PCM', volume])
 
         proc = subprocess.Popen(['aplay', '-D', snd_dev, fname, '-d', '5'])
         time.sleep(3)
         spl_value = periph_common.get_wbmqtt().get_average_value(periph_common.serial_device.device_id, 'Sound Level', interval=1)
         print ("SPL VALUE: %s" % spl_value)
 
-        if spl_value is not None:
-            self.__class__.last_spl_600hz = float(spl_value)
-        else:
-            self.__class__.last_spl_600hz = spl_value
+        if test_name:
+            if spl_value is not None:
+                setattr(self.__class__, test_name, float(spl_value))
+            else:
+                setattr(self.__class__, test_name, spl_value)
 
         proc.communicate()
         proc.wait()
         self.assertIsNotNone(spl_value)
-        self.assertGreaterEqual(float(spl_value), self.SOUND_LEVEL_MIN)
-        self.assertLessEqual(float(spl_value), self.SOUND_LEVEL_MAX)
+        self.assertGreaterEqual(float(spl_value), sound_level_min)
+        self.assertLessEqual(float(spl_value), sound_level_max)
+
+    def test_white_noise_loud(self):
+        self._test_white_noise(self.SOUND_CARD_VOLUME_LOUD, self.SOUND_LEVEL_LOUD_MIN,
+                               self.SOUND_LEVEL_LOUD_MAX, 'last_spl_loud')
+
+    def test_white_noise_quiet(self):
+        self._test_white_noise(self.SOUND_CARD_VOLUME_QUIET, self.SOUND_LEVEL_QUIET_MIN,
+                               self.SOUND_LEVEL_QUIET_MAX, 'last_spl_quiet')
 
 
 class TestEEPROMPersistence(unittest.TestCase):
@@ -270,19 +319,25 @@ class MSTesterBase(PeriphTesterBase):
     SUPPORT_UART_SETTINGS = True
     POWER_FET = ('wb-gpio','EXT1_HS7')
     def append_to_log_row(self):
-        values_row = ["", ] * 5
+        values_row = ["", ] * 7
         for test in self.mapping.iterkeys():
             if issubclass(test, TestTH):
                 values_row[0] = test.last_humidity
                 values_row[1] = test.reference_humidity
-
-            if issubclass(test, TestIlluminance):
+            elif issubclass(test, TestIlluminance):
                 values_row[2] = test.last_lux_diff
 
-            if issubclass(test, TestSPL):
-                values_row[3] = test.last_spl_600hz
+            elif issubclass(test, TestSPLNew):
+                values_row[3] = test.last_spl_loud
+                values_row[5] = test.last_spl_ambient
+                values_row[6] = test.last_spl_quiet
 
-            if issubclass(test, TestBuzzer):
+            elif issubclass(test, TestSPLBase):
+                values_row[3] = test.last_spl_loud
+                values_row[5] = test.last_spl_ambient
+
+
+            elif issubclass(test, TestBuzzer):
                 values_row[4] = test.last_spl_on
 
         return values_row

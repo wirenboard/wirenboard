@@ -14,7 +14,7 @@ import json
 
     
 
-from test_ms_common import TestCO2, TestBuzzer, TestIlluminance, TestSPL, TestTH, TestHStrict, TestEEPROMPersistence, MSTesterBase, Test1Wire
+from test_ms_common import TestCO2, TestBuzzer, TestIlluminance, TestSPLNew, TestTH, TestHStrict, TestEEPROMPersistence, MSTesterBase, Test1Wire
 from periph_common import parse_comma_separated_set, SerialDeviceHandler, SerialDriverHandler, ModbusDeviceTestLog, get_wbmqtt
 import periph_common
 
@@ -26,11 +26,23 @@ class TestIlluminanceMSW2(TestIlluminance):
     ILLUMINATED_DIFF = 6500
     ILLUMINATED_DIFF_ERR = 0.10
 
-class TestSPLMSW(TestSPL):
-    SOUND_LEVEL_MIN = 83.8
-    SOUND_LEVEL_MAX = 86.2
-    AMBIENT_MAX = 57
+class TestSPLMSW(TestSPLNew):
+    SOUND_CARD_VOLUME_LOUD = "74%"
+    SOUND_LEVEL_LOUD_MIN = 81.1
+    SOUND_LEVEL_LOUD_MAX = 85.1
 
+    SOUND_CARD_VOLUME_QUIET = "11%"
+    SOUND_LEVEL_QUIET_MAX = 46.5
+    SOUND_LEVEL_QUIET_MIN = 40
+
+    AMBIENT_MAX = 42
+
+
+class TestTHMSW(TestTH):
+    REFERENCE_DEVICE_ID = 'hdc1080'
+
+class TestHStrictMSW(TestHStrict):
+    REFERENCE_DEVICE_ID = 'hdc1080'
 
 
 class Tester(MSTesterBase):
@@ -41,8 +53,8 @@ class Tester(MSTesterBase):
         self.mapping = OrderedDict([
                 (TestSPLMSW, 2),
                 (TestIlluminanceMSW2, 3),
-                (TestTH, 4),
-                (TestHStrict, 8),
+                (TestTHMSW, 4),
+                (TestHStrictMSW, 8),
                 (TestCO2, 5),
                 (TestBuzzer, 6),
                 (TestEEPROMPersistence, 1),
