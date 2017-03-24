@@ -338,7 +338,7 @@ case "$BOARD" in
 
         # disable 1-wire drivers to prevent floating pin from picking noise
 
-        echo "blacklist w1_gpio" > /etc/modprobe.d/wirenboard-zero-w1.conf
+        echo "blacklist w1_gpio" > ${OUTPUT}/etc/modprobe.d/wirenboard-zero-w1.conf
     ;;
 
     "4" )
