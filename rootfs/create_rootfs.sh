@@ -186,6 +186,7 @@ EOM
 
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AA549AA8
     
     # setup additional repositories
     echo "Install additional repos"
