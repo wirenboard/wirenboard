@@ -352,7 +352,6 @@ case "$BOARD" in
         install_wb5_packages
         rm -f ${OUTPUT}/etc/network/interfaces.wb-orig
         chr_apt ${S_NAME}-config
-        echo -e "deb http://release.${S_NAME}.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/$S_NAME.list
 
         set_fdt imx28-wirenboard58
 
