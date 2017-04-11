@@ -184,8 +184,13 @@ EOM
 	#echo "deb [arch=${ARCH},all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
 	echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 if [ "$BOARD" = "58-S" ]; then
-	echo -e "deb http://release.${S_NAME}.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-	echo "deb http://releases.contactless.ru/ ${RELEASE} main" >> ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	echo "deb http://release.${S_NAME}.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/01-${S_NAME}.list
+        echo <<EOF > ${OUTPUT}/etc/apt/preferences.d/01-${S_NAME}.list
+Package: *
+Pin: origin release.${S_NAME}.ru
+Pin-Priority: 800
+EOF
+
 fi
 	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	echo "precedence ::ffff:0:0/96  100" > ${OUTPUT}/etc/gai.conf # workaround for IPv6 lags
