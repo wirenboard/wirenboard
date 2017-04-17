@@ -193,6 +193,7 @@ EOM
 
 	echo "Update&upgrade apt"
 	chr apt-get update
+	chr apt-get install -y contactless-keyring
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
