@@ -26,7 +26,7 @@ then
 fi
 
 case "$2" in
-    5|55|55P|58|55-ZERO|58-ZERO|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
+    5|55|55P|58|55-ZERO|58-ZERO|58-S|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
         ;;
     *)
         echo "Unknown board" 
@@ -103,6 +103,8 @@ setup_additional_repos() {
 
 echo "Install dependencies"
 apt-get install -y qemu-user-static binfmt-support || true
+
+S_NAME=`echo -e "\\x73\\x65\\x6d\\x33\\x36\\x35"`
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	echo "Using existing $ROOTFS_BASE_TARBALL"
@@ -181,6 +183,15 @@ EOM
 	echo "Install initial repos"
 	#echo "deb [arch=${ARCH},all] http://lexs.blasux.ru/ repos/debian/contactless/" > $OUTPUT/etc/apt/sources.list.d/local.list
 	echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+if [ "$BOARD" = "58-S" ]; then
+	echo "deb http://release.${S_NAME}.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/01-${S_NAME}.list
+        echo <<EOF > ${OUTPUT}/etc/apt/preferences.d/01-${S_NAME}.list
+Package: *
+Pin: origin release.${S_NAME}.ru
+Pin-Priority: 800
+EOF
+
+fi
 	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	echo "precedence ::ffff:0:0/96  100" > ${OUTPUT}/etc/gai.conf # workaround for IPv6 lags
 
@@ -340,6 +351,19 @@ case "$BOARD" in
         # disable 1-wire drivers to prevent floating pin from picking noise
 
         echo "blacklist w1_gpio" > ${OUTPUT}/etc/modprobe.d/wirenboard-zero-w1.conf
+    ;;
+
+    "58-S" )
+        export FORCE_WB_VERSION=58
+        install_wb5_packages
+        rm -f ${OUTPUT}/etc/network/interfaces.wb-orig
+        chr_apt ${S_NAME}-config
+
+        set_fdt imx28-wirenboard58
+
+        JSON=${OUTPUT}/etc/wb-hardware.conf
+        json_edit '.slots|=map(if .id=="wb5-eth" then .module="" else . end)'
+
     ;;
 
     "4" )
