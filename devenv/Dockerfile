@@ -12,11 +12,13 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/a
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
     echo 'deb [arch=amd64] http://repo.mosquitto.org/debian jessie main' >/etc/apt/sources.list.d/mosquitto-jessie.list && \
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     dpkg --add-architecture armel && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture i386 && \
     apt-get update && \
+    apt-get install -y contactless-keyring && \
     apt-get install -y git mercurial curl wget debootstrap \
       build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper npm \
       nodejs-legacy bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
