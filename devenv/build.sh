@@ -4,9 +4,9 @@ cd /root
 
 do_build() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3
-	export ROOTFS_DIR="/rootfs/$RELEASE-$ARCH"
-	time /root/rootfs/create_rootfs.sh $ROOTFS_DIR $BOARD
-	rm -f rootfs_base_${ARCH}.tar.gz
+	export ROOTFS="/rootfs/$RELEASE-$ARCH"
+	time /root/rootfs/create_rootfs.sh $BOARD
+	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
 }
 

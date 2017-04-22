@@ -1,7 +1,7 @@
 # CQC10 device
 export FORCE_WB_VERSION=CQC10
 
-. ${SCRIPT_DIR}/boards/include/soc_imx23.sh
+board_include soc_imx23.sh
 
 board_install() {
 	chr_apt wb-homa-w1 wb-homa-gpio wb-mqtt-spl-meter zabbix-agent wb-mqtt-homeui-mediamain

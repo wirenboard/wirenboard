@@ -11,9 +11,10 @@ RELEASE=${RELEASE:-wheezy}
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
 
-if [[ ( "$#" < 2)  ]]
+if [[ ( "$#" < 1)  ]]
 then
-  echo "USAGE: $0 <path to rootfs> <BOARD> [list of additional repos]"
+  echo "USAGE: $0 <BOARD> [list of additional repos]"
+  echo "Override default rootfs path with ROOTFS env var"
   echo ""
   echo "How to attach additional repos:"
   echo -e "\t$0 <path to rootfs> <BOARD> \"http://localhost:8086/\""
@@ -22,15 +23,16 @@ then
   exit 1
 fi
 
-OUTPUT=$1
-BOARD=$2
+BOARD=$1
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 . "${SCRIPT_DIR}"/rootfs_env.sh
 
-[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
+. "$SCRIPT_DIR/../boards/init_board.sh"
 
-[[ -e "${SCRIPT_DIR}/boards/${BOARD}.sh" ]] && . "${SCRIPT_DIR}/boards/${BOARD}.sh" || die "Unknown board $BOARD"
+OUTPUT=${ROOTFS}	# FIXME: use ROOTFS var consistently in all scripts
+
+[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 [[ -n "$__unshared" ]] || {
 	[[ $EUID == 0 ]] || {
@@ -47,7 +49,7 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="$(dirname "$(readlink -f ${OUTPUT})")/rootfs_base_${ARCH}.tar.gz"
+ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
 
 ROOTFS_DIR=$OUTPUT
 

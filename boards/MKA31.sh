@@ -1,7 +1,7 @@
 # MKA31 based on WB52 (netmon2-1)
 export FORCE_WB_VERSION=52
 
-. ${SCRIPT_DIR}/boards/include/soc_imx28.sh
+board_include soc_imx28.sh
 
 board_install() {
 	chr_apt wb-mqtt-homeui wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-hwconf-manager wb-mqtt-am2320 zabbix-agent

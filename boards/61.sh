@@ -1,7 +1,7 @@
 # Wiren Board 6.1
 export FORCE_WB_VERSION=61
 
-. ${SCRIPT_DIR}/boards/include/soc_imx6ul.sh
+board_include soc_imx6ul.sh
 
 board_install() {
 	install_wb5_packages

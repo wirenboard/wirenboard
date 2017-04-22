@@ -2,7 +2,7 @@
 set -e
 
 if [ $# -lt 2 ] || [ $# -gt 3 ] ; then
-	echo "USAGE <board type> <tag> [fw version]"
+	echo "USAGE: $0 <board type> <tag> [fw version]"
 	echo "Override default rootfs path with ROOTFS env var"
 	exit 1
 fi
@@ -11,12 +11,7 @@ BOARD=$1
 TAG=$2
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-[[ -e "${SCRIPT_DIR}/../rootfs/boards/${BOARD}.sh" ]] && . "${SCRIPT_DIR}/../rootfs/boards/${BOARD}.sh" || {
-	echo "Unknown board $BOARD"
-	exit 2
-}
-
-ROOTFS=${ROOTFS:-rootfs/${BOARD}}	# FIXME: confirm directory layout
+. "$SCRIPT_DIR/../boards/init_board.sh"
 
 [[ -e "$ROOTFS" ]] || {
 	echo "$ROOTFS not exists"
@@ -39,13 +34,13 @@ if [ ! -z "$3" ]; then
 fi
 
 
-OUT_DIR="image/${BOARD}/${VERSION}"
+OUT_DIR="${IMAGES_DIR}/${VERSION}"
 mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${VERSION}_emmc_wb${TAG}.img"
 WEBUPD_NAME="${OUT_DIR}/${VERSION}_webupd_wb${TAG}.fit"
 
 rm -f ${IMG_NAME}
-./create_image.sh ${IMAGE_TYPE} ${ROOTFS} ../${U_BOOT} ${IMG_NAME}
+./create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
 zip ${IMG_NAME}.zip ${IMG_NAME}
 ./create_update.sh ${ROOTFS} ${WEBUPD_NAME}
 
