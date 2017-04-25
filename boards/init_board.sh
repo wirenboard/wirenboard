@@ -14,5 +14,5 @@ board_include() {
 	exit 1
 }
 
-ROOTFS=${ROOTFS:-${WORK_DIR}/${BOARD}/rootfs}
-IMAGES_DIR=${IMAGES_DIR:-${WORK_DIR}/${BOARD}/images}
+ROOTFS=${ROOTFS:-${WORK_DIR}/rootfs_wb${BOARD}}
+IMAGES_DIR=${IMAGES_DIR:-${WORK_DIR}/images}
