@@ -9,26 +9,12 @@ if [ $# -ne 4 ]; then
 	exit 1
 fi
 
+SOC_TYPE="$1"
 ROOTFS="$2"
 UBOOT="$3"
 IMGFILE="$4"
 
 UBOOT_BASENAME=$(basename "$UBOOT")
-
-case "$1" in
-    "mx23")
-        SOC_TYPE="MX23"
-        ;;
-    "mx28")
-        SOC_TYPE="MX28"
-        ;;
-    "mx6ul")
-        SOC_TYPE="MX6UL"
-        ;;
-    *)
-        echo "Can't determine SoC type"
-esac
-
 
 if [ "$IMGFILE" == "/dev/sda" ]; then
 	echo "Attempt to rewrite sda part table";
@@ -51,18 +37,18 @@ IMGSIZE=$[DATASIZE + 120] # in megabytes
 TOTAL_SECTORS=$[IMGSIZE*MB/SECTOR_SIZE]
 echo "IMGSIZE: $IMGSIZE"
 
-PART_START_MX23=$[4*MB/SECTOR_SIZE]
-write_uboot_MX23() {
+PART_START_mx23=$[4*MB/SECTOR_SIZE]
+write_uboot_mx23() {
 	sudo dd if=$UBOOT of=${DEV}p1 bs=$SECTOR_SIZE seek=4
 }
 
-PART_START_MX28=$[1*MB/SECTOR_SIZE]
-write_uboot_MX28() {
+PART_START_mx28=$[1*MB/SECTOR_SIZE]
+write_uboot_mx28() {
 	sudo dd if=$UBOOT of=${DEV}p1
 }
 
-PART_START_MX6UL=$[1*MB/SECTOR_SIZE]
-write_uboot_MX6UL() {
+PART_START_mx6ul=$[1*MB/SECTOR_SIZE]
+write_uboot_mx6ul() {
 	sudo dd if=$UBOOT of=${IMGFILE} bs=$SECTOR_SIZE seek=2 conv=notrunc,fdatasync
 }
 
