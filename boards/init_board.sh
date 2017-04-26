@@ -7,6 +7,10 @@ board_include() {
 	source "$BOARDS_DIR/include/$1"
 }
 
+board_override_repos() {
+	true
+}
+
 [[ -e "${BOARDS_DIR}/${BOARD}.sh" ]] && . "${BOARDS_DIR}/${BOARD}.sh" || {
 	echo "Unknown board $BOARD"
 	echo "Please specify one of:"

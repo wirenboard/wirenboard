@@ -151,6 +151,7 @@ EOM
 
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+	board_override_repos
     
     # setup additional repositories
     echo "Install additional repos"
