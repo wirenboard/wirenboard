@@ -154,7 +154,7 @@ EOM
     
     # setup additional repositories
     echo "Install additional repos"
-    setup_additional_repos "${@:3}"
+    setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
 	chr apt-get update
