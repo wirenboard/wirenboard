@@ -59,6 +59,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 COPY build.sh /root/
 COPY rootfs /root/rootfs
+COPY boards /root/boards
 COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
 COPY projects.list /
