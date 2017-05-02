@@ -5,18 +5,16 @@ set -e
 
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-OUTPUT="rootfs"
 RELEASE=${RELEASE:-wheezy}
-ARCH=${ARCH:-armel}
 
-ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
 
-if [[ ( "$#" < 2)  ]]
+if [[ ( "$#" < 1)  ]]
 then
-  echo "USAGE: $0 <path to rootfs> <BOARD> [list of additional repos]"
+  echo "USAGE: $0 <BOARD> [list of additional repos]"
+  echo "Override default rootfs path with ROOTFS env var"
   echo ""
   echo "How to attach additional repos:"
   echo -e "\t$0 <path to rootfs> <BOARD> \"http://localhost:8086/\""
@@ -25,14 +23,16 @@ then
   exit 1
 fi
 
-case "$2" in
-    5|55|55P|58|55-ZERO|58-ZERO|4|32|28|MKA3|MKA31|NETMON|CQC10|AC-E1)
-        ;;
-    *)
-        echo "Unknown board" 
-        exit 1
-        ;;
-esac
+BOARD=$1
+
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+. "${SCRIPT_DIR}"/rootfs_env.sh
+
+. "$SCRIPT_DIR/../boards/init_board.sh"
+
+OUTPUT=${ROOTFS}	# FIXME: use ROOTFS var consistently in all scripts
+
+[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 [[ -n "$__unshared" ]] || {
 	[[ $EUID == 0 ]] || {
@@ -44,51 +44,16 @@ esac
 	exec unshare -umi "$0" "$@"
 }
 
-OUTPUT=$1
-BOARD=$2
-
-die() {
-	local ret=$?
-	>&2 echo "!!! $@"
-	[[ $ret == 0 ]] && exit 1 || exit $ret
-}
-
-# Runs jq with given arguments and replaces the original file with result
-# Example: json_edit '.foo = 123'
-json_edit() {
-    [[ -e "$JSON" ]] || {
-        die "JSON file '$JSON' not found"
-        return 1
-    }
-
-    local tmp=`mktemp`
-    sed 's#//.*##' "$JSON" |    # there are // comments, strip them out
-    jq "$@" > "$tmp"
-    local ret=$?
-    [[ "$ret" == 0 ]] && cat "$tmp" > "$JSON"
-    rm "$tmp"
-    return $ret
-}
-
-[[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 mkdir -p $OUTPUT
 
 export LC_ALL=C
-SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
-ROOTFS_BASE_TARBALL="$(dirname ${OUTPUT})/rootfs_base.tar.gz"
+ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
 
-ROOTFS_DIR=${OUTPUT}
-. "${SCRIPT_DIR}"/rootfs_env.sh
+ROOTFS_DIR=$OUTPUT
 
-chr_install_deb() {
-    DEB_FILE="$1"
-    cp ${DEB_FILE} ${OUTPUT}/
-    chr_nofail dpkg -i `basename ${DEB_FILE}`
-    rm ${OUTPUT}/`basename ${DEB_FILE}`
-}
-
+ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 setup_additional_repos() {
     # setup additional repos
 
@@ -97,7 +62,7 @@ setup_additional_repos() {
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
         echo "deb $repo testing main" >> $ADD_REPO_FILE
-        chr bash -c "wget $repo/repo.gpg.key -O- | apt-key add -"
+        wget $repo/repo.gpg.key -O- | chr apt-key add -
     done
 }
 
@@ -115,7 +80,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 
     # setup additional repositories
     echo "Install additional repos"
-    setup_additional_repos "${@:3}"
+    setup_additional_repos "${@:2}"
 
 	echo "Updating"
 	chr apt-get update
@@ -189,7 +154,7 @@ EOM
     
     # setup additional repositories
     echo "Install additional repos"
-    setup_additional_repos "${@:3}"
+    setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
 	chr apt-get update
@@ -218,10 +183,9 @@ EOM
 	chr dpkg -i rtl_firmware.deb
 	rm ${OUTPUT}/rtl_firmware.deb
 
-    WD="`pwd`"
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
-	tar czpf $WD/$ROOTFS_BASE_TARBALL --one-file-system ./
+	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
 fi
 
@@ -233,6 +197,8 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install packages from contactless repo"
+chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
+
 pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
 pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
 
@@ -249,7 +215,6 @@ chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.li
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes linux-image-4.1.15-imxv5-x0.1 linux-firmware-image-4.1.15-imxv5-x0.1 device-tree-compiler
 chr_apt --force-yes wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
@@ -264,171 +229,7 @@ install_wb5_packages() {
     wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
 }
 
-case "$BOARD" in
-    "5" )
-        # Wiren Board 5
-        export FORCE_WB_VERSION=52
-        install_wb5_packages
-        set_fdt imx28-wirenboard52
-    ;;
-
-    "55" )
-        # Wiren Board 5
-        export FORCE_WB_VERSION=55
-        install_wb5_packages
-        set_fdt imx28-wirenboard55
-    ;;
-
-    "58" )
-        # Wiren Board 5.8
-        export FORCE_WB_VERSION=58
-        install_wb5_packages
-        set_fdt imx28-wirenboard58
-    ;;
-
-    "55P" )
-        # Wiren Board 5 for Proton
-        export FORCE_WB_VERSION=55
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd can-utils wb-test-suite wb-hwconf-manager wb-mqtt-dac
-
-        set_fdt imx28-wirenboard55
-
-        JSON=${OUTPUT}/etc/wb-hardware.conf
-        json_edit '.slots|=map(if .id=="wb55-mod1" then .module="wbe-do-r6c-1" else . end)'
-        json_edit '.slots|=map(if .id=="wb55-mod2" then .module="wbe-do-r6c-1" else . end)'
-        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
-
-    ;;
-
-    "55-ZERO" )
-        # Wiren Board Zero rev 5.5+
-        export FORCE_WB_VERSION=55
-        chr_apt wb-mqtt-homeui wb-homa-adc wb-rules wb-rules-system netplug wb-test-suite wb-hwconf-manager
-
-        set_fdt imx28-wirenboard55
-
-        JSON=${OUTPUT}/etc/wb-hardware.conf
-        json_edit '.slots|=map(select(.id !="wb55-mod1"))'
-        json_edit '.slots|=map(select(.id !="wb55-mod2"))'
-
-        for extio_n in {1..8}; do
-            json_edit '.slots|=map(select(.id !="wb5-extio'${extio_n}'"))'
-        done
-
-        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
-
-    ;;
-
-    "58-ZERO" )
-        # Wiren Board Zero rev 5.8+
-        export FORCE_WB_VERSION=58
-        chr_apt wb-mqtt-homeui wb-homa-adc wb-rules wb-rules-system netplug wb-test-suite wb-hwconf-manager
-
-        set_fdt imx28-wirenboard58
-
-        JSON=${OUTPUT}/etc/wb-hardware.conf
-        json_edit '.slots|=map(select(.id !="wb58-mod1"))'
-        json_edit '.slots|=map(select(.id !="wb58-mod2"))'
-
-        for extio_n in {1..8}; do
-            json_edit '.slots|=map(select(.id !="wb5-extio'${extio_n}'"))'
-        done
-
-        json_edit '.slots|=map(if .id=="wb55-gsm" then .module="wb56-mod-rtc" else . end)'
-        json_edit '.slots|=map(if .id=="wb5-eth" then .module="" else . end)'
-
-        # disable 1-wire drivers to prevent floating pin from picking noise
-
-        echo "blacklist w1_gpio" > ${OUTPUT}/etc/modprobe.d/wirenboard-zero-w1.conf
-    ;;
-
-    "4" )
-        # Wiren Board 4
-        export FORCE_WB_VERSION=41
-
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug
-
-        echo "Add rtl8188 hostapd package"
-
-        RTL8188_DEB=hostapd_1.1-rtl8188_armel.deb
-        chr_install_deb "${SCRIPT_DIR}/../contrib/rtl8188_hostapd/${RTL8188_DEB}"
-
-        set_fdt imx23-wirenboard41
-    ;;
-
-    "CQC10" )
-        # CQC10 device
-        export FORCE_WB_VERSION=CQC10
-        chr_apt wb-homa-w1 wb-homa-gpio wb-mqtt-spl-meter zabbix-agent wb-mqtt-homeui-mediamain
-
-        echo "Add wb-mqtt-tcs34725 package"
-        chr_install_deb /home/boger/work/board/cinema/wb-mqtt-tcs34725_1.1_all.deb
-        echo "Add wb-techneva package"
-        chr_install_deb /home/boger/work/board/cinema/wb-techneva/wb-techneva-cqc_1.1_all.deb
-
-        set_fdt imx23-wirenboard-cqc10
-
-    ;;
-    "32" )
-        # WB Smart Home specific
-        export FORCE_WB_VERSION=32
-
-
-        chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc python-nrf24 wb-rules wb-rules-system
-
-        chr_apt netplug hostapd
-
-        set_fdt imx23-wirenboard32
-    ;;
-
-    "28" )
-        export FORCE_WB_VERSION=28
-        chr_apt wb-mqtt-homeui
-        set_fdt imx23-wirenboard28
-    ;;
-
-    "MKA3" )
-        # MKA3
-        export FORCE_WB_VERSION=KMON1
-
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-dbic
-
-        # https://github.com/contactless/wb-dbic
-        cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
-        chr /set_confidential.sh
-        rm ${OUTPUT}/set_confidential.sh
-
-        set_fdt imx23-wirenboard-kmon1
-    ;;
-
-    "MKA31" )
-        # MKA31 based on WB52 (netmon2-1)
-        export FORCE_WB_VERSION=52
-        chr_apt wb-mqtt-homeui wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils wb-test-suite wb-hwconf-manager wb-mqtt-am2320 zabbix-agent
-
-        cp ${SCRIPT_DIR}/../../wb-dbic/set_confidential.sh ${OUTPUT}/
-        chr /set_confidential.sh
-        rm ${OUTPUT}/set_confidential.sh
-
-        set_fdt imx28-wirenboard52
-    ;;
-
-    "AC-E1" )
-        export FORCE_WB_VERSION=28
-
-        set_fdt imx23-wirenboard-ac-e1
-    ;;
-
-    "NETMON" )
-        # NETMON-1
-        export FORCE_WB_VERSION=KMON1
-        chr_apt wb-mqtt-homeui wb-homa-gpio wb-homa-adc wb-homa-w1 wb-mqtt-sht1x zabbix-agent wb-mqtt-serial wb-rules
-
-        chr_apt netplug
-
-        set_fdt imx23-wirenboard-kmon1
-    ;;
-esac
+board_install
 
 chr /etc/init.d/mosquitto stop
 

@@ -8,7 +8,7 @@ REPO_NAME=devel
 # name of distribution (ex. wheezy, jessie, stable, testing, sid in Debian)
 DISTRIBUTION=testing
 # list of arches
-ARCH=armel,all
+ARCH=armel,armhf,all
 
 # Aptly special config file name, with path
 CONFIG_FILE=~/.wbrepo/wbrepo.conf
