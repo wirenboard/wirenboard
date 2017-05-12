@@ -7,7 +7,7 @@
 /bin/mount -a
 /sbin/mdev -s
 
-MMCDEV="/dev/mmcblk0"
+mkdir -p /var/lock
 
 BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
 echo "Boot mode: $BOOTMODE"
@@ -38,8 +38,10 @@ case "$BOOTMODE" in
 
 	usbgadget|*)
 		echo "Starting USB Mass Storage gadget"
-		/sbin/modprobe g_mass_storage file=/dev/mmcblk0 iManufacturer="Wiren Board" iProduct="Wiren Board"
+		MMCDEV="/dev/mmcblk0"
+		/sbin/modprobe g_mass_storage file=$MMCDEV iManufacturer="Wiren Board" iProduct="Wiren Board"
 		;;
 esac
 
-/bin/sh
+TTY=$(sed -rn 's#.*console=(tty[a-zA-Z0-9]*).*#/dev/\1#p' /proc/cmdline)
+exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
