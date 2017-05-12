@@ -31,9 +31,28 @@ echo timer > /sys/class/leds/green/trigger
 echo 250 > /sys/class/leds/green/delay_on
 echo 250 > /sys/class/leds/green/delay_off
 
+
+check_fit_end_signature() {
+	local UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
+
+	local sig_len=`echo -n "$UPDATE_FIT_END_SIGNATURE" | wc -c`
+	local sig=`tail -c $sig_len $1`
+	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
+}
+
 case "$BOOTMODE" in
 	usbupdate)
-		echo "Firmware update from USB flash not supported yet"
+		USBDIR="/usb"
+		FIT_NAME="firmware.fit"
+		for USBDEV in /dev/sd*; do
+			echo "Looking for $FIT_NAME on $USBDEV"
+			mount "$USBDEV" "$USBDIR" || continue
+			[[ -e "$USBDIR/$FIT_NAME" ]] &&
+				check_fit_end_signature &&
+				wb-run-update --from-initramfs --no-mqtt "$USBDIR/$FIT_NAME"
+
+			umount "$USBDIR"
+		done
 		;;
 
 	usbgadget|*)
