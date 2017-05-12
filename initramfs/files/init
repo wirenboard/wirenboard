@@ -1,0 +1,45 @@
+#!/bin/busybox sh
+/bin/busybox --install -s
+
+/bin/mknod /dev/null c 1 3
+/bin/mknod /dev/tty c 5 0
+
+/bin/mount -a
+/sbin/mdev -s
+
+MMCDEV="/dev/mmcblk0"
+
+BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
+echo "Boot mode: $BOOTMODE"
+
+DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
+
+for compat in $DT_COMPAT_LIST; do
+	case "$compat" in
+		"contactless,imx6ul-wirenboard60" )
+			echo "Board is WB6, loading ci_hdrc_imx module"
+			modprobe ci_hdrc_imx
+			sleep 1
+			break
+	esac
+done
+
+echo none > /sys/class/leds/red/trigger
+echo 0 > /sys/class/leds/red/brightness
+
+echo timer > /sys/class/leds/green/trigger
+echo 250 > /sys/class/leds/green/delay_on
+echo 250 > /sys/class/leds/green/delay_off
+
+case "$BOOTMODE" in
+	usbupdate)
+		echo "Firmware update from USB flash not supported yet"
+		;;
+
+	usbgadget|*)
+		echo "Starting USB Mass Storage gadget"
+		/sbin/modprobe g_mass_storage file=/dev/mmcblk0 iManufacturer="Wiren Board" iProduct="Wiren Board"
+		;;
+esac
+
+/bin/sh
