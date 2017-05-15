@@ -41,6 +41,7 @@ EOF
 
 cat > $tmpdir/imx_usb.conf <<EOF
 0x15a2:0x0080, mx6_usb_work.conf
+0x15a2:0x007d, mx6_usb_work.conf
 EOF
 
 $IMX_USB -c $tmpdir
