@@ -6,7 +6,7 @@
 
 UBOOT=$(readlink -f "$1")
 ZIMAGE=$(readlink -f "$2")
-DTB=$(readlink -f "$2")
+DTB=$(readlink -f "$3")
 
 [[ -e "$UBOOT" ]] || {
 	echo "Can't find U-Boot at $UBOOT"
