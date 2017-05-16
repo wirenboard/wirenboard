@@ -1,11 +1,12 @@
 #!/bin/bash -x
-[[ "$#" == "2" ]] || {
-	echo "Usage: $0 <u-boot.imx> <zImage>"
+[[ "$#" == "3" ]] || {
+	echo "Usage: $0 <u-boot.imx> <zImage> <dtb>"
 	exit 1
 }
 
 UBOOT=$(readlink -f "$1")
 ZIMAGE=$(readlink -f "$2")
+DTB=$(readlink -f "$2")
 
 [[ -e "$UBOOT" ]] || {
 	echo "Can't find U-Boot at $UBOOT"
@@ -13,7 +14,12 @@ ZIMAGE=$(readlink -f "$2")
 }
 
 [[ -e "$ZIMAGE" ]] || {
-	echo "Can't find zImage at $zImage"
+	echo "Can't find zImage at $ZIMAGE"
+	exit 3
+}
+
+[[ -e "$DTB" ]] || {
+	echo "Can't find DTB at $DTB"
 	exit 3
 }
 
@@ -36,6 +42,7 @@ mx6_qsb
 hid,1024,0x910000,0x10000000,1G,0x00900000,0x40000
 ${UBOOT}:dcd
 ${ZIMAGE}:load 0x82000000
+${DTB}:load 0x83000000
 ${UBOOT}:clear_dcd,load,plug,jump header
 EOF
 
