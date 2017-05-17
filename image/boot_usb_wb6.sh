@@ -1,27 +1,56 @@
-#!/bin/bash -x
-[[ "$#" == "3" ]] || {
-	echo "Usage: $0 <u-boot.imx> <zImage> <dtb>"
+#!/bin/bash
+usage() {
+	echo "Usage: $0 <u-boot.imx> <command> [args]"
+	echo "Commands:"
+	echo "	usbgadget <zImage> <dtb>"
+	echo "	console"
 	exit 1
 }
 
-UBOOT=$(readlink -f "$1")
-ZIMAGE=$(readlink -f "$2")
-DTB=$(readlink -f "$3")
+[[ "$#" -ge 2 ]] || usage
 
+UBOOT=$(readlink -f "$1")
 [[ -e "$UBOOT" ]] || {
 	echo "Can't find U-Boot at $UBOOT"
 	exit 2
 }
 
-[[ -e "$ZIMAGE" ]] || {
-	echo "Can't find zImage at $ZIMAGE"
-	exit 3
+CMD="$2"
+shift 2
+
+BOOT_TYPE=""
+BODY=""
+add_cmd() {
+	BODY+="$(echo -e "\n${@}")"
 }
 
-[[ -e "$DTB" ]] || {
-	echo "Can't find DTB at $DTB"
-	exit 3
-}
+case "$CMD" in
+	usbgadget)
+		ZIMAGE=$(readlink -f "$1")
+		DTB=$(readlink -f "$2")
+
+		[[ -e "$ZIMAGE" ]] || {
+			echo "Can't find zImage at $ZIMAGE"
+			exit 3
+		}
+		
+		[[ -e "$DTB" ]] || {
+			echo "Can't find DTB at $DTB"
+			exit 3
+		}
+
+		BOOT_TYPE=1
+		add_cmd "${ZIMAGE}:load 0x82000000"
+		add_cmd "${DTB}:load 0x83000000"
+		;;
+
+	console)
+		BOOT_TYPE=2
+		;;
+
+	*)
+		usage
+esac
 
 [[ -z "$IMX_USB" ]] && IMX_USB=$(which imx_usb)
 [[ -e "$IMX_USB" ]] || {
@@ -41,8 +70,8 @@ mx6_qsb
  ram areas)
 hid,1024,0x910000,0x10000000,1G,0x00900000,0x40000
 ${UBOOT}:dcd
-${ZIMAGE}:load 0x82000000
-${DTB}:load 0x83000000
+${BODY}
+:write,0x82fffffc,$(printf '0xDEAD%04x' ${BOOT_TYPE})
 ${UBOOT}:clear_dcd,load,plug,jump header
 EOF
 
