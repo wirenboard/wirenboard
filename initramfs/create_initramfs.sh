@@ -59,6 +59,7 @@ rm -rf "$INITRAMFS"
 install_dir "/dev"
 install_dir "/proc"
 install_dir "/sys"
+install_dir "/dev/shm"
 
 install_dir "/sbin"
 install_dir "/usr/bin"
@@ -76,6 +77,7 @@ FROM_ROOTFS=(
 	/usr/bin/fw_setenv
 	/etc/fw_env.config
 	/usr/bin/fit_info
+	/usr/bin/pv
 	/sbin/mkfs.ext4
 	/usr/bin/wb-run-update
 )
