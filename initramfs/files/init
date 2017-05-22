@@ -24,13 +24,16 @@ for compat in $DT_COMPAT_LIST; do
 	esac
 done
 
-echo none > /sys/class/leds/red/trigger
-echo 0 > /sys/class/leds/red/brightness
+led() {
+	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
+}
 
-echo timer > /sys/class/leds/green/trigger
-echo 250 > /sys/class/leds/green/delay_on
-echo 250 > /sys/class/leds/green/delay_off
+led red trigger none
+led red brightness 0
 
+led green trigger timer
+led green delay_on 250
+led green delay_off 250
 
 check_fit_end_signature() {
 	local UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
