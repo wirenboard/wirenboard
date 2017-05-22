@@ -44,13 +44,14 @@ create_tarball() {
 include() {
 	local name=$1
 	local fpath=$2
-	local imagetype=$3
-	local description=$4
+	local description=$3
+	local extra=$4
 
 	cat <<EOF
 		$name {
 			description = "$description";
 			data = /incbin/("$fpath");
+			$extra
 			compression = "none";
 
 			hash@1 {
