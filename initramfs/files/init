@@ -36,22 +36,43 @@ check_fit_end_signature() {
 	local UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
 
 	local sig_len=`echo -n "$UPDATE_FIT_END_SIGNATURE" | wc -c`
-	local sig=`tail -c $sig_len $1`
+	local sig=`tail -c $sig_len "$1"`
 	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
 }
 
 case "$BOOTMODE" in
-	usbupdate)
+	usbupdate*)
+		echo "Starting USB update"
 		USBDIR="/usb"
-		FIT_NAME="firmware.fit"
+		USB_SETTLE_TIME=10
+		COUNT=0
+		while [[ ! -e /dev/sda && $COUNT -lt $USB_SETTLE_TIME ]]; do
+			echo "Waiting for USB to settle ($COUNT/$USB_SETTLE_TIME)"
+			sleep 1
+			COUNT=$[[COUNT+1]]
+		done
+	
+		mkdir -p "$USBDIR"
+		umount "$USBDIR"
+
+		FIT_NAME="${BOOTMODE#*,}"
+		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="update.fit"
+
 		for USBDEV in /dev/sd*; do
 			echo "Looking for $FIT_NAME on $USBDEV"
-			mount "$USBDEV" "$USBDIR" || continue
-			[[ -e "$USBDIR/$FIT_NAME" ]] &&
-				check_fit_end_signature &&
-				wb-run-update --from-initramfs --no-mqtt "$USBDIR/$FIT_NAME"
 
-			umount "$USBDIR"
+			umount "$USBDIR" 2>&1 >/dev/null || true
+			mount -t vfat "$USBDEV" "$USBDIR" || continue
+			cleanup() {
+				umount "$USBDIR"
+			}
+			trap cleanup EXIT
+
+			FIT="$USBDIR/$FIT_NAME"
+			[[ -e "$FIT" ]] &&
+				check_fit_end_signature "$FIT" &&
+				wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" ||
+				echo "Failed"
 		done
 		;;
 
