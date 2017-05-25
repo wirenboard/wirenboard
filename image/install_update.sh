@@ -24,8 +24,8 @@ info "Installing firmware update"
 MNT="$TMPDIR/rootfs"
 
 ROOT_DEV='mmcblk0'
-PART=`readlink /dev/root`
-if [[ -n "$PART" ]]; then
+if [[ -e "/dev/root" ]]; then
+	PART=`readlink /dev/root`
 	PART=${PART##*${ROOT_DEV}p}
 else
 	info "Getting mmcpart from U-Boot environment"
