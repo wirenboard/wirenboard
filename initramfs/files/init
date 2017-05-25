@@ -11,6 +11,7 @@ mkdir -p /dev/shm
 mkdir -p /var/lock
 
 BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
+#BOOTMODE="usbupdate,wb6_update.fit"
 echo "Boot mode: $BOOTMODE"
 
 DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
@@ -53,7 +54,7 @@ case "$BOOTMODE" in
 		while [[ ! -e /dev/sda && $COUNT -lt $USB_SETTLE_TIME ]]; do
 			echo "Waiting for USB to settle ($COUNT/$USB_SETTLE_TIME)"
 			sleep 1
-			COUNT=$[[COUNT+1]]
+			let COUNT++
 		done
 	
 		mkdir -p "$USBDIR"
