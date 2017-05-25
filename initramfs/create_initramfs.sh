@@ -59,7 +59,6 @@ rm -rf "$INITRAMFS"
 install_dir "/dev"
 install_dir "/proc"
 install_dir "/sys"
-install_dir "/dev/shm"
 
 install_dir "/sbin"
 install_dir "/usr/bin"
