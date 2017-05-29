@@ -236,7 +236,6 @@ chr /etc/init.d/mosquitto stop
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
-chr apt-get update
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
