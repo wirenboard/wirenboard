@@ -19,7 +19,7 @@ then
   echo "How to attach additional repos:"
   echo -e "\t$0 <path to rootfs> <BOARD> \"http://localhost:8086/\""
   echo -e "Additional repo must have a public key file on http://<hostname>/repo.gpg.key"
-  echo -e "In process, repo names will be expanded as \"deb <repo_address> testing main\""
+  echo -e "In process, repo names will be expanded as \"deb <repo_address> ${RELEASE} main\""
   exit 1
 fi
 
@@ -61,8 +61,9 @@ setup_additional_repos() {
     touch $ADD_REPO_FILE
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
-        echo "deb $repo testing main" >> $ADD_REPO_FILE
-        wget $repo/repo.gpg.key -O- | chr apt-key add -
+        echo "deb $repo ${RELEASE} main" >> $ADD_REPO_FILE
+        (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
+            echo "Warning: can't import repo.gpg.key for repo $repo"
     done
 }
 
