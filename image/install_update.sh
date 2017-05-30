@@ -85,5 +85,8 @@ rm_fit
 echo 255 > /sys/class/leds/green/brightness || true
 mqtt_status REBOOT
 trap EXIT
-reboot
+flag_set "from-initramfs" && {
+	sync
+	reboot -f
+} || reboot
 exit 0
