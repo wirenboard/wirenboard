@@ -6,7 +6,10 @@ S_NAME=`echo -e "\\x73\\x65\\x6d\\x33\\x36\\x35"`
 board_include soc_imx28.sh
 
 board_install() {
-	install_wb5_packages
+    chr_apt wb-mqtt-homeui wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+    wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils \
+    wb-test-suite wb-hwconf-manager wb-mqtt-dac
+
 	rm -f ${OUTPUT}/etc/network/interfaces.wb-orig
 	chr_apt ${S_NAME}-config
 
