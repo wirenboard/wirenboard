@@ -54,6 +54,7 @@ ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
 ROOTFS_DIR=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
+ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
     # setup additional repos
 
@@ -61,8 +62,9 @@ setup_additional_repos() {
     touch $ADD_REPO_FILE
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
-        echo "deb $repo testing main" >> $ADD_REPO_FILE
-        wget $repo/repo.gpg.key -O- | chr apt-key add -
+        echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
+        wget $repo/repo.gpg.key -O- | chr apt-key add - ||
+            echo "Warning: can't import repo.gpg.key for repo $repo"
     done
 }
 
