@@ -17,7 +17,7 @@ then
   echo "Override default rootfs path with ROOTFS env var"
   echo ""
   echo "How to attach additional repos:"
-  echo -e "\t$0 <path to rootfs> <BOARD> \"http://localhost:8086/\""
+  echo -e "\t$0 <BOARD> \"http://localhost:8086/\""
   echo -e "Additional repo must have a public key file on http://<hostname>/repo.gpg.key"
   echo -e "In process, repo names will be expanded as \"deb <repo_address> testing main\""
   exit 1
