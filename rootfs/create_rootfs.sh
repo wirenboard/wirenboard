@@ -230,6 +230,8 @@ install_wb5_packages() {
     wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
 }
 
+[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+
 board_install
 
 chr /etc/init.d/mosquitto stop
