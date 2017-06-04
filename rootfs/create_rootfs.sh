@@ -17,7 +17,7 @@ then
   echo "Override default rootfs path with ROOTFS env var"
   echo ""
   echo "How to attach additional repos:"
-  echo -e "\t$0 <path to rootfs> <BOARD> \"http://localhost:8086/\""
+  echo -e "\t$0 <BOARD> \"http://localhost:8086/\""
   echo -e "Additional repo must have a public key file on http://<hostname>/repo.gpg.key"
   echo -e "In process, repo names will be expanded as \"deb <repo_address> ${RELEASE} main\""
   exit 1
@@ -54,6 +54,7 @@ ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
 ROOTFS_DIR=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
+ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
     # setup additional repos
 
@@ -61,7 +62,7 @@ setup_additional_repos() {
     touch $ADD_REPO_FILE
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
-        echo "deb $repo ${RELEASE} main" >> $ADD_REPO_FILE
+        echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
     done
@@ -201,17 +202,15 @@ mkdir ${OUTPUT}/mnt/data
 echo "Install packages from contactless repo"
 chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
-pkgs="cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd"
-pkgs+=" libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples"
-
-# mqtt
-pkgs+=" libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto"
-
-pkgs+=" openssl ca-certificates"
-
-pkgs+=" avahi-daemon pps-tools"
+pkgs=(
+	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
+	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
+	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+	openssl ca-certificates
+	avahi-daemon pps-tools
+)
 chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
-chr_apt --force-yes $pkgs
+chr_apt --force-yes "${pkgs[@]}"
 chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
