@@ -171,7 +171,8 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt --force-yes netbase ifupdown iproute openssh-server \
+    DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
+        iproute openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
         tzdata console-tools module-init-tools mc wireless-tools usbutils \
         i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
