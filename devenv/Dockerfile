@@ -1,36 +1,40 @@
-FROM debian:jessie
+FROM debian:stretch
 MAINTAINER ivan4th <ivan4th@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
+RUN apt-get update && \
+    apt-get install -y gnupg1 apt-utils && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
+    apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
+    echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y curl ca-certificates && \
-    curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - && \
-    echo 'deb http://emdebian.org/tools/debian/ jessie main' >/etc/apt/sources.list.d/crosstools.list && \
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
-    echo 'deb [arch=amd64] http://repo.mosquitto.org/debian jessie main' >/etc/apt/sources.list.d/mosquitto-jessie.list && \
-    apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
+    echo 'deb [arch=amd64] http://repo.mosquitto.org/debian stretch main' >/etc/apt/sources.list.d/mosquitto-stretch.list && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     dpkg --add-architecture armel && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y contactless-keyring && \
+    apt-get install -y contactless-keyring --allow-unauthenticated && \
     apt-get install -y git mercurial curl wget debootstrap \
-      build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper npm \
-      nodejs-legacy bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
+      build-essential libssl-dev pkg-config debhelper \
+      bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
       devscripts python-virtualenv git equivs \
-      libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.9 g++-4.9 libmodbus-dev \
+      libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
       valgrind libgtest-dev google-mock cmake config-package-dev \
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
-      aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng12-dev libqt4-dev bc lzop bison flex kmod && \
+      aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
+
+# npm
+RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
+RUN apt-get install -y nodejs
 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
@@ -86,6 +90,7 @@ RUN (cd /tmp && \
 
 # build and install google test
 RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
+RUN (ln -s /usr/src/gtest /usr/src/gmock/gtest)
 RUN (cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/)
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh

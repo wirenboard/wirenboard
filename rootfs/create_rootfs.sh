@@ -6,10 +6,15 @@ set -e
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
 RELEASE=${RELEASE:-wheezy}
+C_RELEASE="wheezy"
 
 
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
+# libjsoncpp0
+LIBJSONCPP0_DEB="http://ftp.ru.debian.org/debian/pool/main/libj/libjsoncpp/libjsoncpp0_0.6.0~rc2-3.1_${ARCH}.deb"
+# liblog4cpp5
+LIBLOG4CPP5_DEB="http://ftp.ru.debian.org/debian/pool/main/l/log4cpp/liblog4cpp5_1.0-4_${ARCH}.deb"
 
 if [[ ( "$#" < 1)  ]]
 then
@@ -30,7 +35,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
-OUTPUT=${ROOTFS}	# FIXME: use ROOTFS var consistently in all scripts
+OUTPUT=${ROOTFS}
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
@@ -51,7 +56,7 @@ export LC_ALL=C
 
 ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
 
-ROOTFS_DIR=$OUTPUT
+ROOTFS=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
@@ -69,6 +74,7 @@ setup_additional_repos() {
 }
 
 echo "Install dependencies"
+apt-get update
 apt-get install -y qemu-user-static binfmt-support || true
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
@@ -86,7 +92,11 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 
 	echo "Updating"
 	chr apt-get update
-	chr apt-get -y upgrade
+	if [[ ${RELEASE} == "wheezy" ]]; then
+		chr apt-get -y upgrade
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		chr apt-get -y upgrade --allow-unauthenticated
+	fi
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
@@ -100,7 +110,7 @@ else
 	echo "Copy qemu to rootfs"
 	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-	modprobe binfmt_misc || true
+	modprobe binfmt_misc || true	
 
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
 	echo "127.0.0.1       wirenboard localhost" > ${OUTPUT}/etc/hosts
@@ -146,9 +156,16 @@ EOM
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
-	echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	echo "deb http://releases.contactless.ru/ ${C_RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 
+	if [[ ${RELEASE} == "stretch" ]]; then
+		echo "Install gnupg"
+		chr apt-get update
+		chr apt-get install -y gnupg1
+	fi
+	
+	
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
@@ -159,7 +176,11 @@ EOM
 
 	echo "Update&upgrade apt"
 	chr apt-get update
-	chr apt-get install -y contactless-keyring
+	if [[ ${RELEASE} == "wheezy" ]]; then
+		chr apt-get install -y contactless-keyring
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		chr apt-get install -y contactless-keyring --allow-unauthenticated
+	fi
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
@@ -171,19 +192,31 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
-        iproute openssh-server \
-        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-        tzdata console-tools module-init-tools mc wireless-tools usbutils \
-        i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
-        python-serial memtester apt-utils dialog locales \
-        python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils
+	if [[ ${RELEASE} == "wheezy" ]]; then
+		DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
+			iproute openssh-server \
+			iputils-ping wget udev net-tools ntpdate ntp vim nano less \
+			tzdata console-tools module-init-tools mc wireless-tools usbutils \
+			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
+			python-serial memtester apt-utils dialog locales \
+			python3-minimal unzip minicom iw ppp libmodbus5 \
+			python-smbus ssmtp moreutils
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
+			iproute openssh-server \
+			iputils-ping wget udev net-tools ntpdate ntp vim nano less \
+			tzdata console-utilities kmod mc wireless-tools usbutils \
+			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
+			python-serial memtester apt-utils dialog locales \
+			python3-minimal unzip minicom iw ppp libmodbus5 \
+			python-smbus ssmtp moreutils
+
+		chr_install_deb_url ${LIBJSONCPP0_DEB}
+		chr_install_deb_url ${LIBLOG4CPP5_DEB}
+	fi
 
 	echo "Install realtek firmware"
-	wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
-	chr dpkg -i rtl_firmware.deb
-	rm ${OUTPUT}/rtl_firmware.deb
+	chr_install_deb_url ${RTL_FIRMWARE_DEB}
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -202,14 +235,18 @@ echo "Install packages from contactless repo"
 chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
+	cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
 	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
 	openssl ca-certificates
 	avahi-daemon pps-tools
 )
 chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
-chr_apt --force-yes "${pkgs[@]}"
+if [[ ${RELEASE} == "wheezy" ]]; then
+	chr_apt --force-yes wb-configs "${pkgs[@]}"
+elif [[ ${RELEASE} == "stretch" ]]; then
+	chr_apt --allow-unauthenticated "${pkgs[@]}"
+fi
 chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
@@ -220,16 +257,26 @@ chr_apt --force-yes wb-mqtt-confed
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
 set_fdt() {
-    echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
+	echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
 }
 
 install_wb5_packages() {
-    chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-    wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-    wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
+	if [[ ${RELEASE} == "wheezy" ]]; then
+		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		chr_apt libwbmqtt0 wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
+	fi
 }
 
-[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+if [[ ${RELEASE} == "wheezy" ]]; then
+	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+elif [[ ${RELEASE} == "stretch" ]]; then
+	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
+fi
 
 board_install
 
