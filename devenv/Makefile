@@ -1,4 +1,4 @@
-WBDEV_IMAGE ?= contactless/devenv
+WBDEV_IMAGE ?= contactless/devenv_stretch #TODO: remove _stretch
 
 all:
 	tar -czh . | docker build -t $(WBDEV_IMAGE) -

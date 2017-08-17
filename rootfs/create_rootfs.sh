@@ -54,7 +54,7 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
+ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
 
 ROOTFS=$OUTPUT
 
@@ -235,7 +235,7 @@ echo "Install packages from contactless repo"
 chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
+	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
 	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
 	openssl ca-certificates
@@ -243,7 +243,7 @@ pkgs=(
 )
 chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
-	chr_apt --force-yes wb-configs "${pkgs[@]}"
+	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
 	chr_apt --allow-unauthenticated "${pkgs[@]}"
 fi
@@ -266,7 +266,7 @@ install_wb5_packages() {
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
 		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr_apt libwbmqtt0 wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
 		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
 	fi
@@ -278,7 +278,10 @@ elif [[ ${RELEASE} == "stretch" ]]; then
 	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
 fi
 
-board_install
+# TODO: remove condition
+if [[ ${RELEASE} == "wheezy" ]]; then
+	board_install
+fi
 
 chr /etc/init.d/mosquitto stop
 
