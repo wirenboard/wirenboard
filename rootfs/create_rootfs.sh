@@ -61,16 +61,17 @@ ROOTFS=$OUTPUT
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
-    # setup additional repos
-
-    mkdir -p `dirname $ADD_REPO_FILE`
-    touch $ADD_REPO_FILE
-    for repo in "${@}"; do
-        echo "=> Setup additional repository $repo..."
-        echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
-        (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
-            echo "Warning: can't import repo.gpg.key for repo $repo"
-    done
+#    setup additional repos
+#
+#    mkdir -p `dirname $ADD_REPO_FILE`
+#    touch $ADD_REPO_FILE
+#    for repo in "${@}"; do
+#        echo "=> Setup additional repository $repo..."
+#        echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
+#        (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
+#            echo "Warning: can't import repo.gpg.key for repo $repo"
+#    done
+exit 0
 }
 
 echo "Install dependencies"
@@ -156,7 +157,7 @@ EOM
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
-	echo "deb http://releases.contactless.ru/ ${C_RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	#echo "deb http://releases.contactless.ru/ ${C_RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 
 	if [[ ${RELEASE} == "stretch" ]]; then
@@ -235,7 +236,7 @@ echo "Install packages from contactless repo"
 chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
+	cmux hubpower modbus-utils serial-tool busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
 	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
 	openssl ca-certificates
@@ -245,7 +246,7 @@ chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.li
 if [[ ${RELEASE} == "wheezy" ]]; then
 	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
-	chr_apt --allow-unauthenticated "${pkgs[@]}"
+	chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
 chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
@@ -261,15 +262,15 @@ set_fdt() {
 }
 
 install_wb5_packages() {
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
-	fi
+#	if [[ ${RELEASE} == "wheezy" ]]; then
+#		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+#		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+#		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
+#	elif [[ ${RELEASE} == "stretch" ]]; then
+#		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+#		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+#		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
+#	fi
 }
 
 if [[ ${RELEASE} == "wheezy" ]]; then
