@@ -201,7 +201,7 @@ EOM
 			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils
+			python-smbus ssmtp moreutils, libjsoncpp-dev
 	elif [[ ${RELEASE} == "stretch" ]]; then
 		DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
 			iproute openssh-server \
@@ -210,7 +210,7 @@ EOM
 			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils
+			python-smbus ssmtp moreutils, libjsoncpp-dev
 
 		chr_install_deb_url ${LIBJSONCPP0_DEB}
 		chr_install_deb_url ${LIBLOG4CPP5_DEB}
