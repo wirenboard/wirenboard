@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y gnupg1 apt-utils && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
-    echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
+    #echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y curl ca-certificates && \
@@ -18,7 +18,7 @@ RUN apt-get update && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y contactless-keyring --allow-unauthenticated && \
+    #apt-get install -y contactless-keyring --allow-unauthenticated && \
     apt-get install -y git mercurial curl wget debootstrap \
       build-essential libssl-dev pkg-config debhelper \
       bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
