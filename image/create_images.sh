@@ -39,8 +39,10 @@ WEBUPD_NAME="${OUT_DIR}/${VERSION}_webupd_wb${BOARD}.fit"
 
 rm -f ${IMG_NAME}
 $TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
-zip ${IMG_NAME}.zip ${IMG_NAME}
-$TOP_DIR/image/create_update.sh ${ROOTFS} ${WEBUPD_NAME}
+zip -j ${IMG_NAME}.zip ${IMG_NAME}
+
+ZIMAGE="${ROOTFS}/`readlink -f ${ROOTFS}/boot/zImage`"
+$TOP_DIR/image/create_update.sh ${ROOTFS} ${ZIMAGE} ${WEBUPD_NAME}
 
 echo "Done"
 echo  ${OUT_DIR}
