@@ -26,7 +26,7 @@ chr_install_deb_url ${LIBLOG4CPP5DEV_DEB}
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
     libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    libgtest-dev google-mock
+    libgtest-dev google-mock libjsoncpp-dev
 chr apt-get install -y cmake liblircclient-dev python-setuptools \
     cdbs libpng-dev libqt4-dev autoconf automake libtool libusb-1.0-0-dev 
 fi

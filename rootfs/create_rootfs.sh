@@ -88,8 +88,8 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	services_disable
 
     # setup additional repositories
-    echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    #echo "Install additional repos"
+    #setup_additional_repos "${@:2}"
 
 	echo "Updating"
 	chr apt-get update
@@ -172,16 +172,16 @@ EOM
 	#board_override_repos
     
     # setup additional repositories
-    echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    #echo "Install additional repos"
+    #setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
 	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get install -y contactless-keyring
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get install -y contactless-keyring --allow-unauthenticated
-	fi
+#	if [[ ${RELEASE} == "wheezy" ]]; then
+#		chr apt-get install -y contactless-keyring
+#	elif [[ ${RELEASE} == "stretch" ]]; then
+#		chr apt-get install -y contactless-keyring --allow-unauthenticated
+#	fi
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
@@ -232,28 +232,28 @@ chr_nofail dpkg -r geoip-database
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Install packages from contactless repo"
-chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
+#echo "Install packages from contactless repo"
+#chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	cmux hubpower modbus-utils serial-tool busybox-syslogd
+	busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
 	openssl ca-certificates
 	avahi-daemon pps-tools
 )
-chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
+#chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
 	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
 	chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
-chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
+#chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes wb-mqtt-confed
+#chr_apt --force-yes wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -271,18 +271,19 @@ install_wb5_packages() {
 #		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
 #		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
 #	fi
+exit 0
 }
 
-if [[ ${RELEASE} == "wheezy" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
-fi
+#if [[ ${RELEASE} == "wheezy" ]]; then
+#	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+#elif [[ ${RELEASE} == "stretch" ]]; then
+#	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
+#fi
 
 # TODO: remove condition
-if [[ ${RELEASE} == "wheezy" ]]; then
-	board_install
-fi
+#if [[ ${RELEASE} == "wheezy" ]]; then
+#	board_install
+#fi
 
 chr /etc/init.d/mosquitto stop
 
