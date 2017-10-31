@@ -17,14 +17,12 @@ if [[ ${RELEASE} == "wheezy" ]]; then
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.7 g++-4.7 libmodbus-dev \
     libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    valgrind libgtest-dev google-mock cmake liblircclient-dev liblog4cpp5-dev python-setuptools \
+    valgrind libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
     cdbs libpng12-dev libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
     libusb-1.0-0-dev knxd-dev knxd-tools \
     cdbs libpng12-dev libqt4-dev linux-headers-4.1.15-imxv5-x0.1
 elif [[ ${RELEASE} == "stretch" ]]; then
-#chr_install_deb_url ${LIBLOG4CPP5DEV_DEB}
-chr apt-get install liblog4cpp5-dev
-
+chr_install_deb_url ${LIBLOG4CPP5DEV_DEB}
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
     libcurl4-gnutls-dev libsqlite3-dev bash-completion \

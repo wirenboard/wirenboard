@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-#set -x
+set -x
 
 
 #REPO="http://ftp.debian.org/debian"
@@ -167,9 +167,9 @@ EOM
 	fi
 	
 	
-	echo "Install public key for contactless repo"
-	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
-	board_override_repos
+	#echo "Install public key for contactless repo"
+	#chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+	#board_override_repos
     
     # setup additional repositories
     echo "Install additional repos"
@@ -201,7 +201,7 @@ EOM
 			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils, libjsoncpp-dev
+			python-smbus ssmtp moreutils
 	elif [[ ${RELEASE} == "stretch" ]]; then
 		DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
 			iproute openssh-server \
@@ -210,7 +210,7 @@ EOM
 			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils, libjsoncpp-dev
+			python-smbus ssmtp moreutils
 
 		chr_install_deb_url ${LIBJSONCPP0_DEB}
 		chr_install_deb_url ${LIBLOG4CPP5_DEB}
