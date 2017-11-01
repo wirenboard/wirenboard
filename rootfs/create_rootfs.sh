@@ -210,8 +210,9 @@ EOM
 			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils
-
+			python-smbus ssmtp moreutils python-termcolor inotify-tools\
+			nginx-extras watchdog libasound2 bc liblircclient0
+			
 		chr_install_deb_url ${LIBJSONCPP0_DEB}
 		chr_install_deb_url ${LIBLOG4CPP5_DEB}
 	fi
