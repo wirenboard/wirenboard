@@ -17,23 +17,21 @@ if [[ ${RELEASE} == "wheezy" ]]; then
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.7 g++-4.7 libmodbus-dev \
     libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    valgrind libgtest-dev google-mock cmake liblircclient-dev liblog4cpp5-dev python-setuptools \
+    valgrind libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
     cdbs libpng12-dev libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
     libusb-1.0-0-dev knxd-dev knxd-tools \
     cdbs libpng12-dev libqt4-dev linux-headers-4.1.15-imxv5-x0.1
 elif [[ ${RELEASE} == "stretch" ]]; then
-chr_install_deb_url ${LIBLOG4CPP5DEV_DEB}
-
+#chr_install_deb_url ${LIBLOG4CPP5DEV_DEB}
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
-    libwbmqtt-dev libwbmqtt0 libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
-    cdbs libpng-dev libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
-    libusb-1.0-0-dev knxd-dev knxd-tools \
-    linux-headers-4.1.15-imxv5-x0.1
+    libcurl4-gnutls-dev libsqlite3-dev bash-completion \
+    libgtest-dev google-mock libjsoncpp-dev
+chr apt-get install -y cmake liblircclient-dev python-setuptools \
+    cdbs libpng-dev libqt4-dev autoconf automake libtool libusb-1.0-0-dev 
 fi
 # install git from backports to support desktop latest Git configs
-chr apt-get install -y -t wheezy-backports git git-man
+chr apt-get install -y -t stretch-backports git git-man
 
 (rm -rf $ROOTFS/dh-virtualenv && cd $ROOTFS && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"

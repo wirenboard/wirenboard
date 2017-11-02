@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-#set -x
+set -x
 
 
 #REPO="http://ftp.debian.org/debian"
@@ -61,16 +61,17 @@ ROOTFS=$OUTPUT
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
-    # setup additional repos
-
-    mkdir -p `dirname $ADD_REPO_FILE`
-    touch $ADD_REPO_FILE
-    for repo in "${@}"; do
-        echo "=> Setup additional repository $repo..."
-        echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
-        (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
-            echo "Warning: can't import repo.gpg.key for repo $repo"
-    done
+#    setup additional repos
+#
+#    mkdir -p `dirname $ADD_REPO_FILE`
+#    touch $ADD_REPO_FILE
+#    for repo in "${@}"; do
+#        echo "=> Setup additional repository $repo..."
+#        echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
+#        (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
+#            echo "Warning: can't import repo.gpg.key for repo $repo"
+#    done
+exit 0
 }
 
 echo "Install dependencies"
@@ -87,8 +88,8 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	services_disable
 
     # setup additional repositories
-    echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    #echo "Install additional repos"
+    #setup_additional_repos "${@:2}"
 
 	echo "Updating"
 	chr apt-get update
@@ -156,7 +157,7 @@ EOM
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
-	echo "deb http://releases.contactless.ru/ ${C_RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	#echo "deb http://releases.contactless.ru/ ${C_RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 
 	if [[ ${RELEASE} == "stretch" ]]; then
@@ -166,21 +167,21 @@ EOM
 	fi
 	
 	
-	echo "Install public key for contactless repo"
-	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
-	board_override_repos
+	#echo "Install public key for contactless repo"
+	#chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
+	#board_override_repos
     
     # setup additional repositories
-    echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    #echo "Install additional repos"
+    #setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
 	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get install -y contactless-keyring
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get install -y contactless-keyring --allow-unauthenticated
-	fi
+#	if [[ ${RELEASE} == "wheezy" ]]; then
+#		chr apt-get install -y contactless-keyring
+#	elif [[ ${RELEASE} == "stretch" ]]; then
+#		chr apt-get install -y contactless-keyring --allow-unauthenticated
+#	fi
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
@@ -209,11 +210,11 @@ EOM
 			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils
-
-		chr_install_deb_url ${LIBJSONCPP0_DEB}
-		chr_install_deb_url ${LIBLOG4CPP5_DEB}
-	fi
+			python-smbus ssmtp moreutils python-termcolor inotify-tools\
+			nginx-extras watchdog libasound2 bc liblircclient0 liblog4cpp5v5 \
+			liblog4cpp5-dev python-pyparsing python-netaddr pv sharutils gawk\
+			libavahi-compat-libdnssd1 libv8-3.14.5 golang-glide			
+	fi 
 
 	echo "Install realtek firmware"
 	chr_install_deb_url ${RTL_FIRMWARE_DEB}
@@ -231,28 +232,28 @@ chr_nofail dpkg -r geoip-database
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Install packages from contactless repo"
-chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
+#echo "Install packages from contactless repo"
+#chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
+	busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
 	openssl ca-certificates
 	avahi-daemon pps-tools
 )
-chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
+#chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
 	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
-	chr_apt --allow-unauthenticated "${pkgs[@]}"
+	chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
-chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
+#chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes wb-mqtt-confed
+#chr_apt --force-yes wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -261,27 +262,28 @@ set_fdt() {
 }
 
 install_wb5_packages() {
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
-	fi
+#	if [[ ${RELEASE} == "wheezy" ]]; then
+#		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+#		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+#		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
+#	elif [[ ${RELEASE} == "stretch" ]]; then
+#		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+#		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+#		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
+#	fi
+exit 0
 }
 
-if [[ ${RELEASE} == "wheezy" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
-fi
+#if [[ ${RELEASE} == "wheezy" ]]; then
+#	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+#elif [[ ${RELEASE} == "stretch" ]]; then
+#	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
+#fi
 
 # TODO: remove condition
-if [[ ${RELEASE} == "wheezy" ]]; then
-	board_install
-fi
+#if [[ ${RELEASE} == "wheezy" ]]; then
+#	board_install
+#fi
 
 chr /etc/init.d/mosquitto stop
 
