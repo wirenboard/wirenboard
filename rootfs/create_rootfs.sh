@@ -211,11 +211,10 @@ EOM
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
 			python-smbus ssmtp moreutils python-termcolor inotify-tools\
-			nginx-extras watchdog libasound2 bc liblircclient0
-			
-		chr_install_deb_url ${LIBJSONCPP0_DEB}
-		chr_install_deb_url ${LIBLOG4CPP5_DEB}
-	fi
+			nginx-extras watchdog libasound2 bc liblircclient0 liblog4cpp5v5 \
+			liblog4cpp5-dev python-pyparsing python-netaddr pv sharutils gawk\
+			libavahi-compat-libdnssd1 libv8-3.14.5 golang-glide			
+	fi 
 
 	echo "Install realtek firmware"
 	chr_install_deb_url ${RTL_FIRMWARE_DEB}
