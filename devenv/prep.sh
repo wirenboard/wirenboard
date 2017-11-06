@@ -26,9 +26,10 @@ elif [[ ${RELEASE} == "stretch" ]]; then
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
     libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    libgtest-dev google-mock libjsoncpp-dev
+    libwbmqtt-dev libgtest-dev libpthsem20 linux-headers-4.1.15-imxv5-x0.1\
+    libgtest-dev google-mock libjsoncpp-dev knxd-dev knxd-tools --allow-unauthenticated
 chr apt-get install -y cmake liblircclient-dev python-setuptools \
-    cdbs libpng-dev libqt4-dev autoconf automake libtool libusb-1.0-0-dev 
+    cdbs libpng-dev libqt4-dev autoconf automake libtool libusb-1.0-0-dev  --allow-unauthenticated
 fi
 # install git from backports to support desktop latest Git configs
 chr apt-get install -y -t stretch-backports git git-man

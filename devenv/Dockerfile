@@ -7,8 +7,9 @@ RUN apt-get update && \
     apt-get install -y gnupg1 apt-utils && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
-    #echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
-    sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
+RUN if [[ ${RELEASE} == "stretch" ]]; then echo "deb [arch=amd64] http://releases.contactless.ru/experimental/ stretch main" > /etc/apt/sources.list.d/contactless.list; fi
+RUN if [[ ${RELEASE} == "wheezy" ]]; then echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list; fi
+RUN sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y curl ca-certificates && \
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
