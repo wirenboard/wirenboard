@@ -5,16 +5,12 @@ set -x
 
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-RELEASE=${RELEASE:-wheezy}
-C_RELEASE="wheezy"
+RELEASE=${RELEASE:-stretch}
+C_RELEASE="stretch"
 
 
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
-# libjsoncpp0
-LIBJSONCPP0_DEB="http://ftp.ru.debian.org/debian/pool/main/libj/libjsoncpp/libjsoncpp0_0.6.0~rc2-3.1_${ARCH}.deb"
-# liblog4cpp5
-LIBLOG4CPP5_DEB="http://ftp.ru.debian.org/debian/pool/main/l/log4cpp/liblog4cpp5_1.0-4_${ARCH}.deb"
 
 if [[ ( "$#" < 1)  ]]
 then
@@ -71,7 +67,6 @@ setup_additional_repos() {
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
     done
-exit 0
 }
 
 echo "Install dependencies"
@@ -180,12 +175,12 @@ EOM
     setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
-	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get install -y contactless-keyring
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get install -y contactless-keyring --allow-unauthenticated
-	fi
+#	chr apt-get update
+#	if [[ ${RELEASE} == "wheezy" ]]; then
+#		chr apt-get install -y contactless-keyring
+#	elif [[ ${RELEASE} == "stretch" ]]; then
+#		chr apt-get install -y contactless-keyring --allow-unauthenticated
+#	fi
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
@@ -215,12 +210,9 @@ EOM
 			python-serial memtester apt-utils dialog locales \
 			python3-minimal unzip minicom iw ppp libmodbus5 \
 			python-smbus ssmtp moreutils python-termcolor inotify-tools\
-			nginx-extras watchdog libasound2 bc liblircclient0 liblog4cpp5v5 \
-			liblog4cpp5-dev python-pyparsing python-netaddr pv sharutils gawk\
+			nginx-extras watchdog libasound2 bc liblircclient0 \
+			python-pyparsing python-netaddr pv sharutils gawk\
 			libavahi-compat-libdnssd1 libv8-3.14.5
-		
-		hr_install_deb_url ${LIBJSONCPP0_DEB} 
-	
 	fi 
 
 	echo "Install realtek firmware"
@@ -278,13 +270,12 @@ install_wb5_packages() {
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
 		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
 	fi
-exit 0
 }
 
 if [[ ${RELEASE} == "wheezy" ]]; then
 	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
+	#[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
 fi
 # TODO: remove condition
 if [[ ${RELEASE} == "wheezy" ]]; then
