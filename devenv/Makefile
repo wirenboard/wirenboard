@@ -1,7 +1,7 @@
 WBDEV_IMAGE ?= contactless/devenv
 
 all:
-	tar -czh . | docker build -t $(WBDEV_IMAGE) -
+	tar -czh . | docker build --no-cache -t $(WBDEV_IMAGE) -
 	docker rm -f wbdevenv_tmp 2>/dev/null >/dev/null || true
 	docker run -t --privileged --name wbdevenv_tmp $(WBDEV_IMAGE) bash -x /root/build.sh
 	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' wbdevenv_tmp $(WBDEV_IMAGE)
