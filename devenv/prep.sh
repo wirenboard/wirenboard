@@ -33,6 +33,10 @@ chr apt-get install -y cmake liblircclient-dev python-setuptools \
 fi
 # install git from backports to support desktop latest Git configs
 chr apt-get install -y -t stretch-backports git git-man
+##fix me
+echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
+echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
+echo "/usr/arm-linux-gnueabi/lib" >>  /etc/ld.so.conf.d/multiarch.conf
 
 (rm -rf $ROOTFS/dh-virtualenv && cd $ROOTFS && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
