@@ -175,7 +175,7 @@ EOM
     setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
-#	chr apt-get update
+	chr apt-get update
 #	if [[ ${RELEASE} == "wheezy" ]]; then
 #		chr apt-get install -y contactless-keyring
 #	elif [[ ${RELEASE} == "stretch" ]]; then
@@ -192,28 +192,19 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
-			iproute openssh-server \
-			iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-			tzdata console-tools module-init-tools mc wireless-tools usbutils \
-			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
-			python-serial memtester apt-utils dialog locales \
-			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
-			iproute openssh-server \
-			iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-			tzdata console-utilities kmod mc wireless-tools usbutils \
-			i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
-			python-serial memtester apt-utils dialog locales \
-			python3-minimal unzip minicom iw ppp libmodbus5 \
-			python-smbus ssmtp moreutils python-termcolor inotify-tools\
-			nginx-extras watchdog libasound2 bc liblircclient0 \
-			python-pyparsing python-netaddr pv sharutils gawk\
-			libavahi-compat-libdnssd1 libv8-3.14.5 liblog4cpp5v5 liblog4cpp5-dev
-	fi 
+    chr_apt --force-yes netbase ifupdown \
+        iproute openssh-server \
+        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
+        tzdata mc wireless-tools usbutils \
+        i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
+        python-serial memtester apt-utils dialog locales \
+        python3-minimal unzip minicom iw ppp libmodbus5 \
+        python-smbus ssmtp moreutils liblog4cpp5* 
+
+    if [[ ${RELEASE} == "wheezy" ]]; then
+        # not present at stretch
+        chr_apt --force-yes console-tools module-init-tools
+    fi
 
 	echo "Install realtek firmware"
 	chr_install_deb_url ${RTL_FIRMWARE_DEB}
@@ -235,11 +226,13 @@ echo "Install packages from contactless repo"
 chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	busybox-syslogd
+	cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
+    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
 	openssl ca-certificates
 	avahi-daemon pps-tools
+
+#wb-configs
 )
 #chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
@@ -252,7 +245,7 @@ fi
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-#chr_apt --force-yes wb-mqtt-confed
+chr_apt --force-yes wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -274,9 +267,10 @@ install_wb5_packages() {
 
 if [[ ${RELEASE} == "wheezy" ]]; then
 	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-	#[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
 fi
+#elif [[ ${RELEASE} == "stretch" ]]; then
+#	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
+#fi
 # TODO: remove condition
 if [[ ${RELEASE} == "wheezy" ]]; then
 	board_install
