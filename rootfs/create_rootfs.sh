@@ -212,7 +212,7 @@ EOM
 			python-smbus ssmtp moreutils python-termcolor inotify-tools\
 			nginx-extras watchdog libasound2 bc liblircclient0 \
 			python-pyparsing python-netaddr pv sharutils gawk\
-			libavahi-compat-libdnssd1 libv8-3.14.5
+			libavahi-compat-libdnssd1 libv8-3.14.5 liblog4cpp5v5 liblog4cpp5-dev
 	fi 
 
 	echo "Install realtek firmware"
