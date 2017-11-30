@@ -11,7 +11,7 @@ prepare_chroot
 services_disable
 
 /bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >$ROOTFS/etc/apt/apt.conf.d/90forceyes
-chr apt-get update
+chr apt-get update --allow-unauthenticated
 
 if [[ ${RELEASE} == "wheezy" ]]; then
 chr apt-get install -y devscripts python-virtualenv equivs build-essential \
@@ -31,8 +31,9 @@ chr apt-get install -y devscripts python-virtualenv equivs build-essential \
 chr apt-get install -y cmake liblircclient-dev python-setuptools \
     cdbs libpng-dev libqt4-dev autoconf automake libtool libusb-1.0-0-dev  --allow-unauthenticated
 fi
-# install git from backports to support desktop latest Git configs
-chr apt-get install -y -t stretch-backports git git-man
+# install git
+chr apt-get install -y git git-man
+
 ##fix me
 echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
