@@ -155,9 +155,8 @@ EOM
 	if [[ ${RELEASE} == "wheezy" ]]; then
 		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/experimental/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	fi
-	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 
 	if [[ ${RELEASE} == "stretch" ]]; then
 		echo "Install gnupg"
@@ -229,15 +228,18 @@ pkgs=(
 	cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
-	openssl ca-certificates
-	avahi-daemon pps-tools
-
-#wb-configs
+	openssl ca-certificates avahi-daemon pps-tools wb-configs
 )
+
+SSL_100="security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u7_armel.deb"
+
 #chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
+	chr apt-get update
 	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
+	chr apt-get update --allow-unauthenticated
+    chr_install_deb_url ${SSL_100}
 	chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
@@ -265,16 +267,16 @@ install_wb5_packages() {
 	fi
 }
 
+
+SSL_100="security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u7_armel.deb"
 if [[ ${RELEASE} == "wheezy" ]]; then
 	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+elif [[ ${RELEASE} == "stretch" ]]; then
+    chr_install_deb_url ${SSL_100}
+	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
 fi
-#elif [[ ${RELEASE} == "stretch" ]]; then
-#	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
-#fi
-# TODO: remove condition
-if [[ ${RELEASE} == "wheezy" ]]; then
-	board_install
-fi
+
+board_install
 
 chr /etc/init.d/mosquitto stop
 
