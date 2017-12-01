@@ -6,33 +6,32 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR"/rootfs/rootfs_env.sh
 
-LIBLOG4CPP5DEV_DEB="http://ftp.ru.debian.org/debian/pool/main/l/log4cpp/liblog4cpp5-dev_1.0-4_${ARCH}.deb"
 prepare_chroot
 services_disable
 
 /bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >$ROOTFS/etc/apt/apt.conf.d/90forceyes
 chr apt-get update --allow-unauthenticated
 
-if [[ ${RELEASE} == "wheezy" ]]; then
-chr apt-get install -y devscripts python-virtualenv equivs build-essential \
-    libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.7 g++-4.7 libmodbus-dev \
+pkgs=(devscripts python-virtualenv equivs build-essential \
+    libmosquittopp-dev libmosquitto-dev pkg-config libmodbus-dev \
     libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    valgrind libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
-    cdbs libpng12-dev libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
+    libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
+    cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
     libusb-1.0-0-dev knxd-dev knxd-tools \
-    cdbs libpng12-dev libqt4-dev linux-headers-4.1.15-imxv5-x0.1
+    cdbs libqt4-dev linux-headers-4.1.15-imxv5-x0.1 git git-man
+)
+
+if [[ ${RELEASE} == "wheezy" ]]; then
+	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
-#chr_install_deb_url ${LIBLOG4CPP5DEV_DEB}
-chr apt-get install -y devscripts python-virtualenv equivs build-essential \
-    libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
-    libcurl4-gnutls-dev libsqlite3-dev bash-completion \
-    libwbmqtt-dev libgtest-dev libpthsem20 linux-headers-4.1.15-imxv5-x0.1\
-    libgtest-dev google-mock libjsoncpp-dev knxd-dev knxd-tools --allow-unauthenticated
-chr apt-get install -y cmake liblircclient-dev python-setuptools \
-    cdbs libpng-dev libqt4-dev autoconf automake libtool libusb-1.0-0-dev  --allow-unauthenticated
+	chr apt-get install  --force-yes --allow-unauthenticated "${pkgs[@]}"
 fi
-# install git
-chr apt-get install -y git git-man
+
+if [[ ${RELEASE} == "wheezy" ]]; then
+chr apt-get install -y gcc-4.7 g++-4.7 libpng12-dev valgrind
+elif [[ ${RELEASE} == "stretch" ]]; then
+    chr apt-get install -y --allow-unauthenticated gcc g++ libpng-dev
+fi
 
 ##fix me
 echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
