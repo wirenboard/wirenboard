@@ -198,11 +198,14 @@ EOM
         i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
         python-serial memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5* 
+        python-smbus ssmtp moreutils liblog4cpp5-dev 
 
-    if [[ ${RELEASE} == "wheezy" ]]; then
+	if [[ ${RELEASE} == "wheezy" ]]; then
         # not present at stretch
         chr_apt --force-yes console-tools module-init-tools
+        chr_apt --force-yes liblog4cpp5
+	elif [[ ${RELEASE} == "stretch" ]]; then
+        chr_apt --force-yes liblog4cpp5v5
     fi
 
 	echo "Install realtek firmware"
@@ -231,15 +234,12 @@ pkgs=(
 	openssl ca-certificates avahi-daemon pps-tools wb-configs
 )
 
-SSL_100="security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u7_armel.deb"
-
 #chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
 	chr apt-get update
 	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
 	chr apt-get update --allow-unauthenticated
-    chr_install_deb_url ${SSL_100}
 	chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
@@ -261,18 +261,17 @@ install_wb5_packages() {
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
 		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+		chr_apt u-boot-tools=2015.07+wb-3 wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-test-suite wb-mqtt-lirc wb-hwconf-manager wb-mqtt-dac --allow-unauthenticated
+		wb-mqtt-lirc wb-mqtt-dac --allow-unauthenticated --allow-downgrades
+        #wb-mqtt-homeui wb-hwconf-manager wb-test-suite
 	fi
 }
 
 
-SSL_100="security.debian.org/debian-security/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u7_armel.deb"
 if [[ ${RELEASE} == "wheezy" ]]; then
 	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
-    chr_install_deb_url ${SSL_100}
 	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
 fi
 
