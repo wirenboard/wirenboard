@@ -256,16 +256,19 @@ set_fdt() {
 }
 
 install_wb5_packages() {
+    pkgs=(
+		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+		wb-mqtt-lirc wb-mqtt-dac
+    ) #wb-mqtt-homeui wb-hwconf-manager wb-test-suite
+
 	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
+	    chr_apt --force-yes "${pkgs[@]}"
+        chr_apt --force-yes lirc-scripts
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr_apt u-boot-tools=2015.07+wb-3 wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-mqtt-lirc wb-mqtt-dac --allow-unauthenticated --allow-downgrades
-        #wb-mqtt-homeui wb-hwconf-manager wb-test-suite
-	fi
+		chr_apt u-boot-tools=2015.07+wb-3 --allow-unauthenticated --allow-downgrades
+	    chr_apt --force-yes "${pkgs[@]}" --allow-unauthenticated
+    fi
 }
 
 
