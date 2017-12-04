@@ -225,7 +225,7 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install packages from contactless repo"
-chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
+chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333
 
 pkgs=(
 	cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
