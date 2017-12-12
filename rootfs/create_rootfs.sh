@@ -225,7 +225,6 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install packages from contactless repo"
-chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333
 
 pkgs=(
 	cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
@@ -237,9 +236,11 @@ pkgs=(
 #chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
 	chr apt-get update
+    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 	chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
 	chr apt-get update --allow-unauthenticated
+    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev
 	chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
@@ -259,14 +260,16 @@ install_wb5_packages() {
     pkgs=(
 		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-mqtt-lirc wb-mqtt-dac
-    ) #wb-mqtt-homeui wb-hwconf-manager wb-test-suite
+		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite
+    )
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
-	    chr_apt --force-yes "${pkgs[@]}"
+        chr_apt --force-yes "${pkgs[@]}"
         chr_apt --force-yes lirc-scripts
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr_apt u-boot-tools=2015.07+wb-3 --allow-unauthenticated --allow-downgrades
+        export FORCE_WB_VERSION=$BOARD
+        chr_apt u-boot-tools=2015.07+wb-3 --allow-unauthenticated --allow-downgrades mosquitto=1.4.7-1+wbwslo1 --allow-unauthenticated --allow-downgrades
+        chr /etc/init.d/mosquitto start || /bin/true         
 	    chr_apt --force-yes "${pkgs[@]}" --allow-unauthenticated
     fi
 }
