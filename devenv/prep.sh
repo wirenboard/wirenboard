@@ -17,7 +17,7 @@ pkgs=(devscripts python-virtualenv equivs build-essential \
     libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
     libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
     cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
-    libusb-1.0-0-dev knxd-dev knxd-tools \
+    libusb-1.0-0-dev knxd-dev knxd-tools knxd \
     cdbs libqt4-dev linux-headers-4.1.15-imxv5-x0.1 git git-man
 )
 
@@ -37,6 +37,8 @@ fi
 echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/arm-linux-gnueabi/lib" >>  /etc/ld.so.conf.d/multiarch.conf
+# for wb-mqtt-knx
+ln -s /usr/lib/x86_64-linux-gnu/libeibclient.so.0 /usr/lib/x86_64-linux-gnu/libeibclient.so
 
 (rm -rf $ROOTFS/dh-virtualenv && cd $ROOTFS && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
