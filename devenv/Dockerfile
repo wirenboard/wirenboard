@@ -1,71 +1,64 @@
-FROM debian:stretch
+FROM debian:jessie
 MAINTAINER ivan4th <ivan4th@gmail.com>
-
+ 
 ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && \
-    apt-get install -y gnupg1 apt-utils && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
-    apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
-RUN if [[ ${RELEASE} == "stretch" ]]; then echo "deb [arch=amd64] http://releases.contactless.ru/experimental/ stretch main" > /etc/apt/sources.list.d/contactless.list; fi
-RUN if [[ ${RELEASE} == "wheezy" ]]; then echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list; fi
-RUN sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
+ 
+RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
+    sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y --allow-unauthenticated curl ca-certificates && \
-    curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add -;
-RUN if [[ ${RELEASE} == "stretch" ]]; then echo 'deb [arch=amd64] http://repo.mosquitto.org/debian stretch main' >/etc/apt/sources.list.d/mosquitto-stretch.list; fi
-RUN if [[ ${RELEASE} == "wheezy" ]]; then \ 
-        echo 'deb [arch=amd64] http://repo.mosquitto.org/debian jessie main' >/etc/apt/sources.list.d/mosquitto-jessie.list && \
-        apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
-        apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869; fi
-RUN echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
+    apt-get install -y curl ca-certificates apt-transport-https && \
+    echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x jessie main" > /etc/apt/sources.list.d/nodesource.list && \
+    curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - && \
+    echo 'deb http://emdebian.org/tools/debian/ jessie main' >/etc/apt/sources.list.d/crosstools.list && \
+    curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
+    echo 'deb [arch=amd64] http://repo.mosquitto.org/debian jessie main' >/etc/apt/sources.list.d/mosquitto-jessie.list && \
+    apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
+    echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     dpkg --add-architecture armel && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture i386 && \
     apt-get update && \
-RUN if [[ ${RELEASE} == "wheezy" ]]; then apt-get install -y contactless-keyring --allow-unauthenticated; fi \
+    apt-get install -y contactless-keyring && \
     apt-get install -y git mercurial curl wget debootstrap \
-    build-essential libssl-dev pkg-config debhelper \
-    bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
-    devscripts python-virtualenv git equivs \
-    libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
-    libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
-    valgrind libgtest-dev google-mock cmake config-package-dev \
-    python-netaddr python-pyparsing liblircclient-dev \
-    libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
-    aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod && \
+      build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper \
+      nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
+      devscripts python-virtualenv git equivs \
+      libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.9 g++-4.9 libmodbus-dev \
+      libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
+      valgrind libgtest-dev google-mock cmake config-package-dev \
+      python-netaddr python-pyparsing liblircclient-dev \
+      libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
+      aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng12-dev libqt4-dev bc lzop bison flex kmod && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
-
-# npm
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
-RUN apt-get install -y nodejs
-
+ 
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
 ENV GOLANG_VERSION 1.6.2
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_SHA1 b8318b09de06076d5397e6ec18ebef3b45cd315d
-
+ 
 ENV GLIDE_VERSION 0.10.2
 ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
 ENV GLIDE_DOWNLOAD_SHA1 41d7e11ca11e225ab2c773da8996e53e7125a6e3
-
+ 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
-	&& echo "$GOLANG_DOWNLOAD_SHA1  golang.tar.gz" | sha1sum -c - \
-	&& tar -C /usr/local -xzf golang.tar.gz \
-	&& rm golang.tar.gz
-
+  && echo "$GOLANG_DOWNLOAD_SHA1  golang.tar.gz" | sha1sum -c - \
+  && tar -C /usr/local -xzf golang.tar.gz \
+  && rm golang.tar.gz
+ 
 RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
-	&& echo "$GLIDE_DOWNLOAD_SHA1  glide.tar.gz" | sha1sum -c - \
-	&& tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
-	&& rm glide.tar.gz
-
+  && echo "$GLIDE_DOWNLOAD_SHA1  glide.tar.gz" | sha1sum -c - \
+  && tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
+  && rm glide.tar.gz
+ 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
-
+ 
 COPY build.sh /root/
 COPY rootfs /root/rootfs
 COPY boards /root/boards
