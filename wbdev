@@ -45,7 +45,7 @@ PREFIX="$VM_HOME/wbdev/go/src/github.com/contactless"
 
 INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
 
-docker run $DOCKER_TTY_OPTS --privileged \
+docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \
        -e DEV_DIR="$PREFIX/${PWD##*/}" \
