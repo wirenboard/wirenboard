@@ -2,12 +2,11 @@
 set -e
 set -x
 
+RELEASE="wheezy"
 
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-RELEASE=${RELEASE:-stretch}
-C_RELEASE="stretch"
-
+#RELEASE=${RELEASE:-stretch}
 
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
