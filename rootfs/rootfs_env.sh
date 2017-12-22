@@ -63,6 +63,14 @@ chr_install_deb() {
     rm ${OUTPUT}/`basename ${DEB_FILE}`
 }
 
+chr_install_deb_url() {
+	DEB_URL="$1"
+	DEB_NAME=`basename ${DEB_URL}`
+	wget ${DEB_URL} -O ${ROOTFS_DIR}/${DEB_NAME}
+	chr dpkg -i ${DEB_NAME}
+	rm ${ROOTFS_DIR}/${DEB_NAME}
+}
+
 dbg() {
     chr ls -l /dev/pts
     chr ls -l /proc
