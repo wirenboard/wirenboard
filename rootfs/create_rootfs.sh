@@ -5,7 +5,7 @@ set -e
 
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-RELEASE=${RELEASE:-wheezy}
+RELEASE=${RELEASE:-stretch}
 
 
 # directly download firmware-realtek from jessie non-free repo
