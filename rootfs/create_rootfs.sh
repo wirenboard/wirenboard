@@ -30,7 +30,8 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
-OUTPUT=${ROOTFS_DIR}
+OUTPUT=${ROOTFS}  # FIXME: use ROOTFS var consistently in all scripts 
+
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
