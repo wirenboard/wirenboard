@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
-set -x
+#set -x
 
+ROOTFS_DIR=$ROOTFS
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-RELEASE=${RELEASE:-stretch}
+RELEASE=${RELEASE:-wheezy}
+
 
 # directly download firmware-realtek from jessie non-free repo
 RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
@@ -28,7 +30,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
-OUTPUT=${ROOTFS}
+OUTPUT=${ROOTFS}	# FIXME: use ROOTFS var consistently in all scripts
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
@@ -47,14 +49,14 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
+ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
 
-ROOTFS=$OUTPUT
+ROOTFS_DIR=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
-    #setup additional repos
+    # setup additional repos
 
     mkdir -p `dirname $ADD_REPO_FILE`
     touch $ADD_REPO_FILE
@@ -67,7 +69,6 @@ setup_additional_repos() {
 }
 
 echo "Install dependencies"
-apt-get update
 apt-get install -y qemu-user-static binfmt-support || true
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
@@ -85,11 +86,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 
 	echo "Updating"
 	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get -y upgrade
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get -y upgrade --allow-unauthenticated
-	fi
+	chr apt-get -y upgrade
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
@@ -103,7 +100,7 @@ else
 	echo "Copy qemu to rootfs"
 	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-	modprobe binfmt_misc || true	
+	modprobe binfmt_misc || true
 
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
 	echo "127.0.0.1       wirenboard localhost" > ${OUTPUT}/etc/hosts
@@ -149,35 +146,20 @@ EOM
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 	echo "Install initial repos"
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-        echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-	fi
+	echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 
-	if [[ ${RELEASE} == "stretch" ]]; then
-		echo "Install gnupg"
-		chr apt-get update
-		chr apt-get install -y gnupg1
-	fi
-	
-	
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
     
-    #setup additional repositories
+    # setup additional repositories
     echo "Install additional repos"
     setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
 	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get install -y contactless-keyring
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get install -y contactless-keyring --allow-unauthenticated
-	fi
+	chr apt-get install -y contactless-keyring
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
@@ -189,25 +171,19 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt --force-yes netbase ifupdown \
+    DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
         iproute openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-        tzdata mc wireless-tools usbutils \
+        tzdata console-tools module-init-tools mc wireless-tools usbutils \
         i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
         python-serial memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5-dev 
-
-	if [[ ${RELEASE} == "wheezy" ]]; then
-        # not present at stretch
-        chr_apt --force-yes console-tools module-init-tools
-        chr_apt --force-yes liblog4cpp5
-	elif [[ ${RELEASE} == "stretch" ]]; then
-        chr_apt --force-yes liblog4cpp5v5
-    fi
+        python-smbus ssmtp moreutils
 
 	echo "Install realtek firmware"
-	chr_install_deb_url ${RTL_FIRMWARE_DEB}
+	wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
+	chr dpkg -i rtl_firmware.deb
+	rm ${OUTPUT}/rtl_firmware.deb
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -223,25 +199,18 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install packages from contactless repo"
+chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-    cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
-    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
-    openssl ca-certificates avahi-daemon pps-tools
+	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
+	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
+	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+	openssl ca-certificates
+	avahi-daemon pps-tools
 )
-
-#chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
-if [[ ${RELEASE} == "wheezy" ]]; then
-    chr apt-get update
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
-    chr_apt --force-yes "${pkgs[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-    chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev
-    chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
-fi
-#chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
+chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
+chr_apt --force-yes "${pkgs[@]}"
+chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
@@ -251,36 +220,16 @@ chr_apt --force-yes wb-mqtt-confed
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
 set_fdt() {
-	echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
+    echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
 }
 
 install_wb5_packages() {
-    pkgs=(
-		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite
-    )
-
-	if [[ ${RELEASE} == "wheezy" ]]; then
-        export FORCE_WB_VERSION=$BOARD
-        chr_apt --force-yes u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
-        chr /etc/init.d/mosquitto start || /bin/true 
-        chr_apt --force-yes "${pkgs[@]}"
-        chr_apt --force-yes lirc-scripts
-	elif [[ ${RELEASE} == "stretch" ]]; then
-        export FORCE_WB_VERSION=$BOARD
-        chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
-        chr /etc/init.d/mosquitto start || /bin/true 
-	    chr_apt --force-yes "${pkgs[@]}" --allow-unauthenticated
-    fi
+    chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+    wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+    wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
 }
 
-
-if [[ ${RELEASE} == "wheezy" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
-fi
+[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
 
 board_install
 
