@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+set -x
+
 this=`readlink -f "$0"`
 
 INSTALL_SCRIPT="`dirname $this`/install_update.sh"
