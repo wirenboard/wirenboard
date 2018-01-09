@@ -240,7 +240,7 @@ if [[ ${RELEASE} == "wheezy" ]]; then
     chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv cgroup-bin
+    chr_apt --force-yes linux-image-4.9.22-wb2 device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv cgroup-bin
     chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
