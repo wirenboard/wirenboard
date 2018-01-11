@@ -240,7 +240,7 @@ if [[ ${RELEASE} == "wheezy" ]]; then
     chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes linux-image-4.9.22-wb2 device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv cgroup-bin
+    chr_apt --force-yes linux-image-wb2 device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv
     chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
@@ -271,7 +271,7 @@ install_wb5_packages() {
         chr_apt --force-yes lirc-scripts
 	elif [[ ${RELEASE} == "stretch" ]]; then
         export FORCE_WB_VERSION=$BOARD
-        chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools mosquitto=1.4.7-1+wbwslo1 
+        chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
         chr /etc/init.d/mosquitto start || /bin/true 
 	    chr_apt --force-yes "${pkgs[@]}" --allow-unauthenticated
     fi
