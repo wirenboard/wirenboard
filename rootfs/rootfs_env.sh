@@ -53,7 +53,7 @@ chr_nofail() {
 }
 
 chr_apt() {
-    chr apt-get install -y "$@"
+    chr apt-get -o Dpkg::Options::=--force-confnew install -y "$@"
 }
 
 chr_install_deb() {

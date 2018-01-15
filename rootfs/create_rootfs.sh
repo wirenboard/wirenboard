@@ -273,7 +273,7 @@ install_wb5_packages() {
         export FORCE_WB_VERSION=$BOARD
         chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
         chr /etc/init.d/mosquitto start || /bin/true 
-	    chr_apt --force-yes -o Dpkg::Options::=--force-confnew  --allow-unauthenticated "${pkgs[@]}"
+	    chr_apt --force-yes --allow-unauthenticated "${pkgs[@]}"
 	    #####delete me
 	    chr rm /etc/apt/sources.list.d/contactless*
     fi
