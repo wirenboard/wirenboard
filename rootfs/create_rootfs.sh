@@ -155,7 +155,7 @@ EOM
 		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
         echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/experimental_contactless.list
 	fi
 
 	if [[ ${RELEASE} == "stretch" ]]; then
@@ -274,6 +274,8 @@ install_wb5_packages() {
         chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
         chr /etc/init.d/mosquitto start || /bin/true 
 	    chr_apt --force-yes "${pkgs[@]}" --allow-unauthenticated
+	    #####delete me
+	    chr rm /etc/apt/sources.list.d/contactless*
     fi
 }
 
