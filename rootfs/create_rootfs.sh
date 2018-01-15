@@ -241,7 +241,7 @@ if [[ ${RELEASE} == "wheezy" ]]; then
 elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
     chr_apt --force-yes linux-image-wb2 device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv
-    chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
+    chr_apt --allow-unauthenticated --force-yes --force-confnew "${pkgs[@]}"
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
