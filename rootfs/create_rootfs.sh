@@ -69,6 +69,25 @@ setup_additional_repos() {
     done
 }
 
+install_contactless_repo() {
+    rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
+
+	echo "Install initial repos"
+	if [[ ${RELEASE} == "wheezy" ]]; then
+		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+        echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	fi
+
+	if [[ ${RELEASE} == "stretch" ]]; then
+		echo "Install gnupg"
+		chr apt-get update
+		chr apt-get install -y gnupg1
+	fi
+	
+}
+
 echo "Install dependencies"
 apt-get install -y qemu-user-static binfmt-support || true
 
@@ -151,25 +170,7 @@ EOM
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
 
-install_contactless_repo() {
-    rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
-
-	echo "Install initial repos"
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-        echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-	fi
-
-	if [[ ${RELEASE} == "stretch" ]]; then
-		echo "Install gnupg"
-		chr apt-get update
-		chr apt-get install -y gnupg1
-	fi
-	
-}
-	install_contactless_repo
+    install_contactless_repo
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
