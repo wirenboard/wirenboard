@@ -150,12 +150,16 @@ EOM
         echo "deb ${REPO} ${RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
+
+install_contactless_repo() {
+    rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
+
 	echo "Install initial repos"
 	if [[ ${RELEASE} == "wheezy" ]]; then
 		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
         echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/experimental_contactless.list
+		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	fi
 
 	if [[ ${RELEASE} == "stretch" ]]; then
@@ -164,7 +168,8 @@ EOM
 		chr apt-get install -y gnupg1
 	fi
 	
-	
+}
+	install_contactless_repo
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
@@ -242,8 +247,7 @@ elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
     chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv
     chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
-    #delete me later
-    #rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
+    install_contactless_repo
     chr apt-get update --allow-unauthenticated
 fi
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
@@ -277,8 +281,6 @@ install_wb5_packages() {
         chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
         chr /etc/init.d/mosquitto start || /bin/true 
 	    chr_apt --force-yes --allow-unauthenticated "${pkgs[@]}"
-	    #####delete me
-	    chr rm /etc/apt/sources.list.d/contactless*
     fi
 }
 
