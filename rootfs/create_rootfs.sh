@@ -246,7 +246,7 @@ if [[ ${RELEASE} == "wheezy" ]]; then
     chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv
+    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv nginx-common=1.6.2-5+deb8u2~bpo70+3 nginx-extras=1.6.2-5+deb8u2~bpo70+3
     chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
     install_contactless_repo
     chr apt-get update --allow-unauthenticated
