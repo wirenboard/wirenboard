@@ -171,6 +171,12 @@ EOM
 
 
     install_contactless_repo
+    # apt pin
+        echo "Set APT PIN" 
+        echo "Package: *" > ${OUTPUT}/etc/apt/preferences
+        echo "Pin: release a=stretch" >> ${OUTPUT}/etc/apt/preferences
+        echo "Pin-Priority: 700" >> ${OUTPUT}/etc/apt/preferences
+        
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
@@ -246,7 +252,7 @@ if [[ ${RELEASE} == "wheezy" ]]; then
     chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler=1.4.1+wb20170426233333 libssl1.0-dev systemd-sysv nginx-common=1.6.2-5+deb8u2~bpo70+3 nginx-extras=1.6.2-5+deb8u2~bpo70+3
+    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler libssl1.0-dev systemd-sysv
     chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
     install_contactless_repo
     chr apt-get update --allow-unauthenticated
@@ -279,7 +285,7 @@ install_wb5_packages() {
         chr_apt --force-yes lirc-scripts
 	elif [[ ${RELEASE} == "stretch" ]]; then
         export FORCE_WB_VERSION=$BOARD
-        chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
+        chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools mosquitto
         chr /etc/init.d/mosquitto start || /bin/true 
 	    chr_apt --force-yes --allow-unauthenticated "${pkgs[@]}"
     fi
