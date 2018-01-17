@@ -242,17 +242,16 @@ pkgs=(
     cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
     libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
-    openssl ca-certificates avahi-daemon pps-tools
+    openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
 
 #chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 if [[ ${RELEASE} == "wheezy" ]]; then
     chr apt-get update
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
     chr_apt --force-yes "${pkgs[@]}"
 elif [[ ${RELEASE} == "stretch" ]]; then
     chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler libssl1.0-dev systemd-sysv
+    chr_apt --force-yes libssl1.0-dev systemd-sysv
     chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
     install_contactless_repo
     chr apt-get update --allow-unauthenticated
@@ -274,19 +273,15 @@ install_wb5_packages() {
     pkgs=(
 		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite
+		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools
     )
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
         export FORCE_WB_VERSION=$BOARD
-        chr_apt --force-yes u-boot-tools=2015.07+wb-3 mosquitto=1.4.7-1+wbwslo1 
-        chr /etc/init.d/mosquitto start || /bin/true 
         chr_apt --force-yes "${pkgs[@]}"
         chr_apt --force-yes lirc-scripts
 	elif [[ ${RELEASE} == "stretch" ]]; then
         export FORCE_WB_VERSION=$BOARD
-        chr_apt --allow-unauthenticated --allow-downgrades u-boot-tools mosquitto
-        chr /etc/init.d/mosquitto start || /bin/true 
 	    chr_apt --force-yes --allow-unauthenticated "${pkgs[@]}"
     fi
 }
