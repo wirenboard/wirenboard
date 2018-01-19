@@ -41,7 +41,7 @@ rm -f ${IMG_NAME}
 $TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
 zip -j ${IMG_NAME}.zip ${IMG_NAME}
 
-ZIMAGE="/`readlink -f ${ROOTFS}/boot/zImage`"
+ZIMAGE="${ROOTFS}/`readlink -f ${ROOTFS}/boot/zImage`"
 $TOP_DIR/image/create_update.sh ${ROOTFS} ${ZIMAGE} ${WEBUPD_NAME}
 
 echo "Done"
