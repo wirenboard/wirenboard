@@ -1,0 +1,61 @@
+#!/bin/busybox sh
+/bin/busybox --install -s
+
+/bin/mknod /dev/null c 1 3
+/bin/mknod /dev/tty c 5 0
+
+/bin/mount -a
+/sbin/mdev -s
+
+mkdir -p /dev/pts
+mount /dev/pts
+
+mkdir -p /dev/shm
+mkdir -p /var/lock
+
+BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
+#BOOTMODE="usbupdate,wb6_update.fit"
+echo "Boot mode: $BOOTMODE"
+
+DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
+
+for compat in $DT_COMPAT_LIST; do
+	case "$compat" in
+		"contactless,imx6ul-wirenboard60" )
+			echo "Board is WB6, loading ci_hdrc_imx module"
+			modprobe ci_hdrc_imx
+			sleep 1
+			break
+	esac
+done
+
+depmod
+
+led() {
+	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
+}
+
+led red trigger none
+led red brightness 0
+
+led green trigger timer
+led green delay_on 250
+led green delay_off 250
+
+# create usb_mass_storage first
+dd if=/dev/zero of=/flag bs=1K count=1
+modprobe g_mass_storage file=/dev/mmcblk0,/flag iManufacturer="Wiren Board" iProduct="Wiren Board"
+
+while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat /flag`; done
+modprobe -r g_mass_storage
+sleep 1
+blockdev --rereadpt /dev/mmcblk0
+sleep 1
+
+usb_net up
+echo "Now you can access device by ssh: ssh root@192.168.41.1"
+dropbear -F -E
+
+# for debugging
+TTY=$(sed -rn 's#.*console=(tty[a-zA-Z0-9]*).*#/dev/\1#p' /proc/cmdline)
+exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
