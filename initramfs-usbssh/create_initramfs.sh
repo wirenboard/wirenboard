@@ -59,6 +59,7 @@ rm -rf "$INITRAMFS"
 install_dir "/dev"
 install_dir "/proc"
 install_dir "/sys"
+install_dir "/tmp"
 
 install_dir "/sbin"
 install_dir "/usr/bin"
@@ -97,6 +98,7 @@ FROM_ROOTFS=(
     /bin/login
     /usr/bin/openvt
     /usr/bin/scp
+    /usr/bin/unshare
 )
 
 for f in "${FROM_ROOTFS[@]}"; do

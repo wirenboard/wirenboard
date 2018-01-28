@@ -42,16 +42,27 @@ led green trigger timer
 led green delay_on 250
 led green delay_off 250
 
-# create usb_mass_storage first
-dd if=/dev/zero of=/flag bs=1K count=1
-modprobe g_mass_storage file=/dev/mmcblk0,/flag iManufacturer="Wiren Board" iProduct="Wiren Board"
+FLAG=/flag
+EMMC=/dev/mmcblk0
 
-while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat /flag`; done
+# create usb_mass_storage first
+dd if=/dev/zero of=$FLAG bs=1K count=1
+
+# wait for mmc stack to load
+echo "Wait for eMMC to become available..."
+while [ ! -b $EMMC ]; do sleep 1; done
+
+echo "Activate Mass Storage device"
+modprobe g_mass_storage file=$EMMC,$FLAG iManufacturer="Wiren Board" iProduct="Wiren Board"
+while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat $FLAG`; done
+
+echo "Deactivate Mass Storage device and reread partition table"
 modprobe -r g_mass_storage
 sleep 1
-blockdev --rereadpt /dev/mmcblk0
+blockdev --rereadpt $EMMC
 sleep 1
 
+echo "Activate USB Ethernet device..."
 usb_net up
 echo "Now you can access device by ssh: ssh root@192.168.41.1"
 dropbear -F -E
