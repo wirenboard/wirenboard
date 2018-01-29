@@ -2,10 +2,23 @@
 set -e
 #set -x
 
-[[ "$#" == "2" ]] || {
-	echo "Usage: $0 <rootfs> <initramfs_dir>"
+[[ "$#" == "3" ]] || {
+	echo "Usage: $0 <rootfs> <initramfs_dir> wb2|wb6"
 	exit 1
 }
+
+case $3 in
+wb2)
+    LIBDIR=/lib/arm-linux-gnueabi
+    ;;
+wb6)
+    LIBDIR=/lib/arm-linux-gnueabihf
+    ;;
+*)
+    echo "Wrong board type, use wb2 or wb6"
+    exit 1
+    ;;
+esac
 
 [[ $EUID == 0 ]] || {
 	exec sudo -E "$0" "$@"
@@ -88,10 +101,10 @@ FROM_ROOTFS=(
     /usr/sbin/dropbear
     /usr/bin/dropbearkey
 
-    /lib/arm-linux-gnueabi/libnss_files.so.2
-    /lib/arm-linux-gnueabi/libnss_files-2.13.so
-    /lib/arm-linux-gnueabi/ld-2.13.so
-    /lib/arm-linux-gnueabi/ld-linux.so.3
+    $LIBDIR/libnss_files.so.2
+    $LIBDIR/libnss_files-2.13.so
+    $LIBDIR/ld-2.13.so
+    $LIBDIR/ld-linux.so.3
 
     /etc/shadow
     /etc/group
