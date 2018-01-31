@@ -29,7 +29,7 @@ jessie-armel|jessie-armhf)
     ;;
 esac
 
-IMAGE=${WBDEV_IMAGE:-contactless/devenv}
+IMAGE=${WBDEV_IMAGE:-contactless/devenv:stable}
 
 if [[ $OSTYPE == darwin* ]]
 then
