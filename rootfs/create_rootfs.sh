@@ -234,7 +234,7 @@ mkdir ${OUTPUT}/mnt/data
 echo "Install packages from contactless repo"
 
 pkgs=(
-    cmux hubpower python-wb-io modbus-utils serial-tool busybox-syslogd
+    cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
     libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
