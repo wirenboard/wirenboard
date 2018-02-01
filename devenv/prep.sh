@@ -21,16 +21,13 @@ pkgs=(devscripts python-virtualenv equivs build-essential \
     cdbs libqt4-dev linux-headers-4.1.15-imxv5-x0.1 git git-man
 )
 
-if [[ ${RELEASE} == "wheezy" ]]; then
-	chr_apt --force-yes "${pkgs[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-	chr apt-get install  --force-yes --allow-unauthenticated "${pkgs[@]}"
-fi
+
+chr_apt_install "${pkgs[@]}"
 
 if [[ ${RELEASE} == "wheezy" ]]; then
-chr apt-get install -y gcc-4.7 g++-4.7 libpng12-dev valgrind
+    chr_apt_install gcc-4.7 g++-4.7 libpng12-dev valgrind
 elif [[ ${RELEASE} == "stretch" ]]; then
-    chr apt-get install -y --allow-unauthenticated gcc g++ libpng-dev
+    chr_apt_install gcc g++ libpng-dev
 fi
 
 ##fix me
@@ -38,8 +35,10 @@ echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/arm-linux-gnueabi/lib" >>  /etc/ld.so.conf.d/multiarch.conf
 # for wb-mqtt-knx
-ln -s /usr/lib/x86_64-linux-gnu/libeibclient.so.0 /usr/lib/x86_64-linux-gnu/libeibclient.so
-
+if [ ! -e /usr/lib/x86_64-linux-gnu/libeibclient.so ]; then
+#FIX ME
+	ln -s /usr/lib/x86_64-linux-gnu/libeibclient.so.0 /usr/lib/x86_64-linux-gnu/libeibclient.so | true 
+fi
 (rm -rf $ROOTFS/dh-virtualenv && cd $ROOTFS && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
 chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
 chr bash -c "dpkg -i /dh-virtualenv_*.deb"

@@ -74,11 +74,10 @@ install_contactless_repo() {
 
 	echo "Install initial repos"
 	if [[ ${RELEASE} == "wheezy" ]]; then
-		echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-        echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/experimental ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	fi
+	echo "deb http://releases.contactless.ru/experimental/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+
 
 	if [[ ${RELEASE} == "stretch" ]]; then
 		echo "Install gnupg"
@@ -106,11 +105,9 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 
 	echo "Updating"
 	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get -y upgrade
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get -y upgrade --allow-unauthenticated
-	fi
+
+	chr apt-get -y upgrade --allow-unauthenticated
+	
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
@@ -153,10 +150,8 @@ path-exclude /usr/share/lintian/*
 path-exclude /usr/share/linda/*
 EOM
 
-
 	echo "Second debootstrap stage"
 	chr /debootstrap/debootstrap --second-stage
-
 
 	prepare_chroot
 	services_disable
@@ -169,12 +164,15 @@ EOM
         echo "deb ${REPO} ${RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
-
     install_contactless_repo
     # apt pin
         echo "Set APT PIN" 
         echo "Package: *" > ${OUTPUT}/etc/apt/preferences
-        echo "Pin: release a=stretch" >> ${OUTPUT}/etc/apt/preferences
+       	if [[ ${RELEASE} == "wheezy" ]]; then
+       	    echo "Pin: release a=wheezy" >> ${OUTPUT}/etc/apt/preferences
+       	elif [[ ${RELEASE} == "stretch" ]]; then
+  	        echo "Pin: release a=stretch" >> ${OUTPUT}/etc/apt/preferences
+       	fi
         echo "Pin-Priority: 700" >> ${OUTPUT}/etc/apt/preferences
         
 	echo "Install public key for contactless repo"
@@ -186,16 +184,13 @@ EOM
     setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
-	chr apt-get update
-	if [[ ${RELEASE} == "wheezy" ]]; then
-		chr apt-get install -y contactless-keyring
-	elif [[ ${RELEASE} == "stretch" ]]; then
-		chr apt-get install -y contactless-keyring --allow-unauthenticated
-	fi
+	chr_apt_update
+    chr_apt_install contactless-keyring
+
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
-    chr_apt locales
+    chr_apt_install locales
 	echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
 	echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
 	echo "ru_RU.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
@@ -203,7 +198,7 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt --force-yes netbase ifupdown \
+    chr_apt_install netbase ifupdown \
         iproute openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
         tzdata mc wireless-tools usbutils \
@@ -214,10 +209,10 @@ EOM
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
         # not present at stretch
-        chr_apt --force-yes console-tools module-init-tools
-        chr_apt --force-yes liblog4cpp5
+        chr_apt_install --force-yes console-tools module-init-tools
+        chr_apt_install --force-yes liblog4cpp5
 	elif [[ ${RELEASE} == "stretch" ]]; then
-        chr_apt --force-yes liblog4cpp5v5
+        chr_apt_install --force-yes liblog4cpp5v5
     fi
 
 	echo "Install realtek firmware"
@@ -239,29 +234,30 @@ mkdir ${OUTPUT}/mnt/data
 echo "Install packages from contactless repo"
 
 pkgs=(
-    cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
+    cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
     libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
 
 #chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
-if [[ ${RELEASE} == "wheezy" ]]; then
-    chr apt-get update
-    chr_apt --force-yes "${pkgs[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-    chr apt-get update --allow-unauthenticated
-    chr_apt --force-yes libssl1.0-dev systemd-sysv
-    chr_apt --allow-unauthenticated --force-yes "${pkgs[@]}"
-    install_contactless_repo
-    chr apt-get update --allow-unauthenticated
+chr_apt_update
+chr_apt_install wb-configs
+install_contactless_repo
+chr_apt_update
+    
+if [[ ${RELEASE} == "stretch" ]]; then
+    chr_apt_install libssl1.0-dev systemd-sysv
 fi
+
+chr_apt_install "${pkgs[@]}"
+chr_apt_update
 #chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes wb-mqtt-confed
+chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -277,21 +273,13 @@ install_wb5_packages() {
     )
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
-        export FORCE_WB_VERSION=$BOARD
-        chr_apt --force-yes "${pkgs[@]}"
-        chr_apt --force-yes lirc-scripts
-	elif [[ ${RELEASE} == "stretch" ]]; then
-        export FORCE_WB_VERSION=$BOARD
-	    chr_apt --force-yes --allow-unauthenticated "${pkgs[@]}"
+        chr_apt_install --force-yes lirc-scripts
     fi
+    export FORCE_WB_VERSION=$BOARD
+    chr_apt_install "${pkgs[@]}"
 }
 
-
-if [[ ${RELEASE} == "wheezy" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
-elif [[ ${RELEASE} == "stretch" ]]; then
-	[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}" --allow-unauthenticated
-fi
+[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"
 
 board_install
 
