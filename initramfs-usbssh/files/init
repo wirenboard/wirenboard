@@ -42,30 +42,75 @@ led green trigger timer
 led green delay_on 250
 led green delay_off 250
 
-FLAG=/flag
-EMMC=/dev/mmcblk0
+check_fit_end_signature() {
+	local UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
 
-# create usb_mass_storage first
-dd if=/dev/zero of=$FLAG bs=1K count=1
+	local sig_len=`echo -n "$UPDATE_FIT_END_SIGNATURE" | wc -c`
+	local sig=`tail -c $sig_len "$1"`
+	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
+}
 
-# wait for mmc stack to load
-echo "Wait for eMMC to become available..."
-while [ ! -b $EMMC ]; do sleep 1; done
+case "$BOOTMODE" in
+	usbupdate*)
+		echo "Starting USB update"
+		USBDIR="/usb"
+		USB_SETTLE_TIME=10
+		COUNT=0
+		while [[ ! -e /dev/sda && $COUNT -lt $USB_SETTLE_TIME ]]; do
+			echo "Waiting for USB to settle ($COUNT/$USB_SETTLE_TIME)"
+			sleep 1
+			let COUNT++
+		done
+	
+		mkdir -p "$USBDIR"
+		umount "$USBDIR"
 
-echo "Activate Mass Storage device"
-modprobe g_mass_storage file=$EMMC,$FLAG iManufacturer="Wiren Board" iProduct="Wiren Board"
-while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat $FLAG`; done
+		FIT_NAME="${BOOTMODE#*,}"
+		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="update.fit"
 
-echo "Deactivate Mass Storage device and reread partition table"
-modprobe -r g_mass_storage
-sleep 1
-blockdev --rereadpt $EMMC
-sleep 1
+		for USBDEV in /dev/sd*; do
+			echo "Looking for $FIT_NAME on $USBDEV"
 
-echo "Activate USB Ethernet device..."
-usb_net up
-echo "Now you can access device by ssh: ssh root@192.168.41.1"
-dropbear -F -E
+			umount "$USBDIR" 2>&1 >/dev/null || true
+			mount -t vfat "$USBDEV" "$USBDIR" || continue
+			cleanup() {
+				umount "$USBDIR"
+			}
+			trap cleanup EXIT
+
+			FIT="$USBDIR/$FIT_NAME"
+			[[ -e "$FIT" ]] &&
+				check_fit_end_signature "$FIT" &&
+				wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" &
+		done
+		;;
+	usbgadget|*)
+		FLAG=/flag
+		EMMC=/dev/mmcblk0
+
+		# create usb_mass_storage first
+		dd if=/dev/zero of=$FLAG bs=1K count=1
+
+		# wait for mmc stack to load
+		echo "Wait for eMMC to become available..."
+		while [ ! -b $EMMC ]; do sleep 1; done
+
+		echo "Activate Mass Storage device"
+		modprobe g_mass_storage file=$EMMC,$FLAG iManufacturer="Wiren Board" iProduct="Wiren Board"
+		while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat $FLAG`; done
+
+		echo "Deactivate Mass Storage device and reread partition table"
+		modprobe -r g_mass_storage
+		sleep 1
+		blockdev --rereadpt $EMMC
+		sleep 1
+
+		echo "Activate USB Ethernet device..."
+		usb_net up
+		echo "Now you can access device by ssh: ssh root@192.168.41.1"
+		dropbear -F -E
+		;;
+esac
 
 # for debugging
 TTY=$(sed -rn 's#.*console=(tty[a-zA-Z0-9]*).*#/dev/\1#p' /proc/cmdline)
