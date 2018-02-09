@@ -10,9 +10,11 @@ set -e
 case $3 in
 wb2)
     LIBDIR=/lib/arm-linux-gnueabi
+    MEMDUMP=memdump.wb2
     ;;
 wb6)
     LIBDIR=/lib/arm-linux-gnueabihf
+    MEMDUMP=memdump.wb6
     ;;
 *)
     echo "Wrong board type, use wb2 or wb6"
@@ -87,6 +89,7 @@ install_file "$FILES_DIR/dropbear_rsa_host_key" "/etc/dropbear/dropbear_rsa_host
 install_file "$FILES_DIR/dropbear_dss_host_key" "/etc/dropbear/dropbear_dss_host_key"
 install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
 install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
+install_file "$FILES_DIR/$MEMDUMP" "/bin/memdump"
 
 FROM_ROOTFS=(
 	/bin/busybox
