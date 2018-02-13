@@ -52,6 +52,11 @@ check_fit_end_signature() {
 
 case "$BOOTMODE" in
 	usbupdate*)
+		echo "Load modules for USB to work"
+		modprobe ci-hdrc-imx
+		modprobe usb-storage
+		modprobe sd_mod
+
 		echo "Starting USB update"
 		USBDIR="/usb"
 		USB_SETTLE_TIME=10
