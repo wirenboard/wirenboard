@@ -1,0 +1,122 @@
+#!/bin/busybox sh
+/bin/busybox --install -s
+
+/bin/mknod /dev/null c 1 3
+/bin/mknod /dev/tty c 5 0
+
+/bin/mount -a
+/sbin/mdev -s
+
+mkdir -p /dev/pts
+mount /dev/pts
+
+mkdir -p /dev/shm
+mkdir -p /var/lock
+
+BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
+#BOOTMODE="usbupdate,wb6_update.fit"
+echo "Boot mode: $BOOTMODE"
+
+DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
+
+for compat in $DT_COMPAT_LIST; do
+	case "$compat" in
+		"contactless,imx6ul-wirenboard60" )
+			echo "Board is WB6, loading ci_hdrc_imx module"
+			modprobe ci_hdrc_imx
+			sleep 1
+			break
+	esac
+done
+
+depmod
+
+led() {
+	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
+}
+
+led red trigger none
+led red brightness 0
+
+led green trigger timer
+led green delay_on 250
+led green delay_off 250
+
+check_fit_end_signature() {
+	local UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
+
+	local sig_len=`echo -n "$UPDATE_FIT_END_SIGNATURE" | wc -c`
+	local sig=`tail -c $sig_len "$1"`
+	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
+}
+
+case "$BOOTMODE" in
+	usbupdate*)
+		echo "Load modules for USB to work"
+		modprobe ci-hdrc-imx
+		modprobe usb-storage
+		modprobe sd_mod
+
+		echo "Starting USB update"
+		USBDIR="/usb"
+		USB_SETTLE_TIME=10
+		COUNT=0
+		while [[ ! -e /dev/sda && $COUNT -lt $USB_SETTLE_TIME ]]; do
+			echo "Waiting for USB to settle ($COUNT/$USB_SETTLE_TIME)"
+			sleep 1
+			let COUNT++
+		done
+	
+		mkdir -p "$USBDIR"
+		umount "$USBDIR"
+
+		FIT_NAME="${BOOTMODE#*,}"
+		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="update.fit"
+
+		for USBDEV in /dev/sd*; do
+			echo "Looking for $FIT_NAME on $USBDEV"
+
+			umount "$USBDIR" 2>&1 >/dev/null || true
+			mount -t vfat "$USBDEV" "$USBDIR" || continue
+			cleanup() {
+				umount "$USBDIR"
+			}
+			trap cleanup EXIT
+
+			FIT="$USBDIR/$FIT_NAME"
+			[[ -e "$FIT" ]] &&
+				check_fit_end_signature "$FIT" &&
+				wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" &
+		done
+		;;
+	usbgadget|*)
+		FLAG=/flag
+		EMMC=/dev/mmcblk0
+
+		# create usb_mass_storage first
+		dd if=/dev/zero of=$FLAG bs=1K count=1
+
+		# wait for mmc stack to load
+		echo "Wait for eMMC to become available..."
+		while [ ! -b $EMMC ]; do sleep 1; done
+
+		echo "Activate Mass Storage device"
+		modprobe g_mass_storage file=$EMMC,$FLAG iManufacturer="Wiren Board" iProduct="Wiren Board"
+		while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat $FLAG`; done
+
+		echo "Deactivate Mass Storage device and reread partition table"
+		modprobe -r g_mass_storage
+		sleep 1
+		blockdev --rereadpt $EMMC
+		sleep 1
+
+		echo "Activate USB Ethernet device..."
+		usb_net up
+		echo "Now you can access device by ssh: ssh root@192.168.41.1"
+		dropbear -F -E
+		;;
+esac
+
+# for debugging
+TTY=$(sed -rn 's#.*console=(tty[a-zA-Z0-9]*).*#/dev/\1#p' /proc/cmdline)
+exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
