@@ -60,6 +60,10 @@ chr_apt_update() {
     chr apt-get update --allow-unauthenticated
 }
 
+chr_apt(){
+    chr_apt_install "$@"
+}
+
 chr_install_deb() {
     DEB_FILE="$1"
     cp ${DEB_FILE} ${OUTPUT}/
