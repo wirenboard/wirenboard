@@ -59,8 +59,10 @@ flag_set "from-initramfs" && {
     [[ -e $ROOT_PART ]] || {
         info "rootfs partition doesn't exist, looks like partition table is broken. Try to repair it..."
 
-        source /etc/wb_partitions.sh || die "Can't find /etc/wb_partitions.sh!"
-        wb_prepare_partitions || {
+        . /usr/lib/wb-prepare/vars.sh || die "Unable to load wb-prepare libs (vars.sh)"
+        . /usr/lib/wb-prepare/partitions.sh || die "Unable to load wb-prepare libs (partitions.sh)"
+
+        wb_make_partitions /dev/${ROOT_DEV} ${ROOTFS_SIZE_MB} || {
             die "Unable to restore partition table on ${ROOT_DEV}"
         }
     }

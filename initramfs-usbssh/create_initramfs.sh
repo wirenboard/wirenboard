@@ -117,7 +117,8 @@ FROM_ROOTFS=(
     /usr/bin/unshare
 
     /sbin/sfdisk
-    /etc/wb_partitions.sh
+    /usr/lib/wb-prepare/vars.sh
+    /usr/lib/wb-prepare/partitions.sh
 )
 
 for f in "${FROM_ROOTFS[@]}"; do
