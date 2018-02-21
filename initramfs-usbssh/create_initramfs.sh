@@ -115,6 +115,9 @@ FROM_ROOTFS=(
     /usr/bin/openvt
     /usr/bin/scp
     /usr/bin/unshare
+
+    /sbin/sfdisk
+    /etc/wb_partitions.sh
 )
 
 for f in "${FROM_ROOTFS[@]}"; do

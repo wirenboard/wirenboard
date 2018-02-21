@@ -54,6 +54,18 @@ esac
 ROOT_PART=/dev/${ROOT_DEV}p${PART}
 info "Will install to $ROOT_PART"
 
+flag_set "from-initramfs" && {
+    info "Check if partition table is correct"
+    [[ -e $ROOT_PART ]] || {
+        info "rootfs partition doesn't exist, looks like partition table is broken. Try to repair it..."
+
+        source /etc/wb_partitions.sh || die "Can't find /etc/wb_partitions.sh!"
+        wb_prepare_partitions || {
+            die "Unable to restore partition table on ${ROOT_DEV}"
+        }
+    }
+}
+
 umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
 info "Formatting $ROOT_PART"
 yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
@@ -82,7 +94,7 @@ fw_setenv upgrade_available 1
 
 info "Done, removing firmware image and rebooting"
 rm_fit
-echo 255 > /sys/class/leds/green/brightness || true
+led_success
 mqtt_status REBOOT
 trap EXIT
 flag_set "from-initramfs" && {
