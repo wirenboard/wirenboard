@@ -65,6 +65,18 @@ flag_set "from-initramfs" && {
         wb_make_partitions /dev/${ROOT_DEV} ${ROOTFS_SIZE_MB} || {
             die "Unable to restore partition table on ${ROOT_DEV}"
         }
+
+        info "Reloading partition table in kernel"
+        blockdev --rereadpt /dev/${ROOT_DEV}
+
+        ROOTPT_WAIT_TIMEOUT=10
+        while [[ ! -b ${ROOT_PART} ]] && [[ ${ROOTPT_WAIT_TIMEOUT} -gt 0 ]]; do
+            sleep 0.5;
+            ROOTPT_WAIT_TIMEOUT=$((ROOTPT_WAIT_TIMEOUT - 1))
+            info "${ROOTPT_WAIT_TIMEOUT}..."
+        done
+
+        [[ ${ROOTPT_WAIT_TIMEOUT} -eq 0 ]] && die "Partition table is not restored properly!"
     }
 }
 
