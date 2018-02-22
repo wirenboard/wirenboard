@@ -43,7 +43,11 @@ zip -j ${IMG_NAME}.zip ${IMG_NAME}
 
 # try to load zImage from contribs
 ZIMAGE=`readlink -f ${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR`
-[[ -f $ZIMAGE ]] || ZIMAGE=`readlink -f ${ROOTFS}/boot/zImage`
+[[ -f $ZIMAGE ]] || {
+    [[ -L ${ROOTFS}/boot/zImage ]] && \
+        ZIMAGE=${ROOTFS}`readlink -f ${ROOTFS}/boot/zImage` || \
+        ZIMAGE=`readlink -f ${ROOTFS}/boot/zImage`
+}
 echo "Using zImage from $ZIMAGE"
 $TOP_DIR/image/create_update.sh ${ROOTFS} ${ZIMAGE} ${WEBUPD_NAME}
 
