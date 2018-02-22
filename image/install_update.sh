@@ -62,7 +62,7 @@ flag_set "from-initramfs" && {
         . /usr/lib/wb-prepare/vars.sh || die "Unable to load wb-prepare libs (vars.sh)"
         . /usr/lib/wb-prepare/partitions.sh || die "Unable to load wb-prepare libs (partitions.sh)"
 
-        wb_make_partitions /dev/${ROOT_DEV} ${ROOTFS_SIZE_MB} || {
+        wb_make_partitions /dev/${ROOT_DEV} ${WB_ROOTFS_SIZE_MB} || {
             die "Unable to restore partition table on ${ROOT_DEV}"
         }
 
