@@ -23,28 +23,32 @@ info "Installing firmware update"
 
 MNT="$TMPDIR/rootfs"
 
-declare -a partitions=( 
-	''
-	'uboot'
-	'rootfs0'
-	'rootfs1'
-	''
-	'swap'
-	'data'
-)
-
 ROOT_DEV='mmcblk0'
-PART=`readlink /dev/root`
-PART=${PART##*${ROOT_DEV}p}
+if [[ -e "/dev/root" ]]; then
+	PART=`readlink /dev/root`
+	PART=${PART##*${ROOT_DEV}p}
+else
+	info "Getting mmcpart from U-Boot environment"
+	PART=$(fw_printenv mmcpart | sed 's/.*=//')
+fi
+
 case "$PART" in
 	2)
 		PART=3
+		PARTLABEL=rootfs1
 		;;
 	3)
 		PART=2
+		PARTLABEL=rootfs0
 		;;
 	*)
-		die "Unable to determine second rootfs partition (current is $PART)"
+		flag_set from-initramfs && {
+			info "Update is started from initramfs and unable to determine active rootfs partition, will overwrite rootfs0"
+			PART=2
+			PARTLABEL=rootfs0
+		} || {
+			die "Unable to determine second rootfs partition (current is $PART)"
+		}
 		;;
 esac
 ROOT_PART=/dev/${ROOT_DEV}p${PART}
@@ -52,7 +56,7 @@ info "Will install to $ROOT_PART"
 
 umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
 info "Formatting $ROOT_PART"
-yes | mkfs.ext4 -L "${partitions[$PART]}" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
+yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
 
 
 info "Mounting $ROOT_PART at $MNT"
@@ -81,5 +85,8 @@ rm_fit
 echo 255 > /sys/class/leds/green/brightness || true
 mqtt_status REBOOT
 trap EXIT
-reboot
+flag_set "from-initramfs" && {
+	sync
+	reboot -f
+} || reboot
 exit 0

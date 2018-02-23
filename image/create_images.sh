@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-
+set -x
 if [ $# -lt 1 ] || [ $# -gt 2 ] ; then
 	echo "USAGE: $0 <board type> [fw version]"
 	echo "Override default rootfs path with ROOTFS env var"
@@ -39,8 +39,13 @@ WEBUPD_NAME="${OUT_DIR}/${VERSION}_webupd_wb${BOARD}.fit"
 
 rm -f ${IMG_NAME}
 $TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
-zip ${IMG_NAME}.zip ${IMG_NAME}
-$TOP_DIR/image/create_update.sh ${ROOTFS} ${WEBUPD_NAME}
+zip -j ${IMG_NAME}.zip ${IMG_NAME}
+
+# try to load zImage from contribs
+ZIMAGE=`readlink -f ${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR`
+[[ -f $ZIMAGE ]] || ZIMAGE=`readlink -f ${ROOTFS}/boot/zImage`
+echo "Using zImage from $ZIMAGE"
+$TOP_DIR/image/create_update.sh ${ROOTFS} ${ZIMAGE} ${WEBUPD_NAME}
 
 echo "Done"
 echo  ${OUT_DIR}

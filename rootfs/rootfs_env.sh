@@ -52,8 +52,16 @@ chr_nofail() {
     chroot ${ROOTFS} "$@" || true
 }
 
-chr_apt() {
-    chr apt-get install -y "$@"
+chr_apt_install() {
+    chr apt-get -o Dpkg::Options::=--force-confnew --force-yes --allow-unauthenticated install -y "$@"
+}
+
+chr_apt_update() {
+    chr apt-get update --allow-unauthenticated
+}
+
+chr_apt(){
+    chr_apt_install "$@"
 }
 
 chr_install_deb() {
