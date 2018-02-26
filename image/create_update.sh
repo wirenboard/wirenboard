@@ -113,13 +113,25 @@ cat <<EOF
 EOF
 } > "$ITS"
 
+UNALIGNED_OUTPUT=$TMPDIR/unaligned.fit
+
 mkimage -v \
 	-D "-I dts -O dtb -p 2000" \
 	-f "$ITS" \
 	-r -k ./ -c "wtf" \
-	"$OUTPUT" || {
+	"$UNALIGNED_OUTPUT" || {
 	echo "Failed ITS:"
 	cat "$ITS"
 }
 
-echo -en "\n__WB_UPDATE_FIT_END__" >> "$OUTPUT"
+echo -en "\n__WB_UPDATE_FIT_END__" >> "$UNALIGNED_OUTPUT"
+
+# align output image it fit-aligner is present
+if which fit-aligner; then
+    info "fit-aligner is found, aligning output image"
+    fit-aligner -i $UNALIGNED_OUTPUT -o $OUTPUT -a 512 /images/kernel /images/dtb
+    rm -f $UNALIGNED_OUTPUT
+else
+    info "Warning: fit-aligner is not present, image is unaligned!"
+    mv $UNALIGNED_OUTPUT $OUTPUT
+fi
