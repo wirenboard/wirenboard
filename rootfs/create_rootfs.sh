@@ -24,7 +24,11 @@ then
 fi
 
 BOARD=$1
-
+if [[ $BOARD = 6* ]]; then
+    ARCH="armhf"
+else
+    ARCH="armel"
+fi
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 . "${SCRIPT_DIR}"/rootfs_env.sh
 
