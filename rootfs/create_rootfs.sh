@@ -177,7 +177,7 @@ EOM
        	elif [[ ${RELEASE} == "stretch" ]]; then
   	        echo "Pin: release a=stretch" >> ${OUTPUT}/etc/apt/preferences
        	fi
-        echo "Pin-Priority: 700" >> ${OUTPUT}/etc/apt/preferences
+        echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
         
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
