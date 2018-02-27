@@ -172,11 +172,7 @@ EOM
     # apt pin
         echo "Set APT PIN" 
         echo "Package: *" > ${OUTPUT}/etc/apt/preferences
-       	if [[ ${RELEASE} == "wheezy" ]]; then
-       	    echo "Pin: release a=wheezy" >> ${OUTPUT}/etc/apt/preferences
-       	elif [[ ${RELEASE} == "stretch" ]]; then
-  	        echo "Pin: release a=stretch" >> ${OUTPUT}/etc/apt/preferences
-       	fi
+        echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
         echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
         
 	echo "Install public key for contactless repo"
