@@ -101,6 +101,7 @@ case "$BOOTMODE" in
 		while [ ! -b $EMMC ]; do sleep 1; done
 
 		echo "Activate Mass Storage device"
+		led red trigger mmc0
 		modprobe g_mass_storage file=$EMMC,$FLAG iManufacturer="Wiren Board" iProduct="Wiren Board"
 		while [ "x" == "x$_FLAG" ]; do sleep 2; _FLAG=`cat $FLAG`; done
 

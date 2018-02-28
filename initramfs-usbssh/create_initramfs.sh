@@ -7,7 +7,9 @@ set -e
 	exit 1
 }
 
-case $3 in
+FLAVOUR=$3
+
+case $FLAVOUR in
 wb2)
     LIBDIR=/lib/arm-linux-gnueabi
     MEMDUMP=memdump.wb2
@@ -89,7 +91,7 @@ install_file "$FILES_DIR/dropbear_rsa_host_key" "/etc/dropbear/dropbear_rsa_host
 install_file "$FILES_DIR/dropbear_dss_host_key" "/etc/dropbear/dropbear_dss_host_key"
 install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
 install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
-install_file "$FILES_DIR/$MEMDUMP" "/bin/memdump"
+[[ $FLAVOUR == "wb2" ]] && install_file "$FILES_DIR/$MEMDUMP" "/bin/memdump"
 
 FROM_ROOTFS=(
 	/bin/busybox
@@ -115,6 +117,10 @@ FROM_ROOTFS=(
     /usr/bin/openvt
     /usr/bin/scp
     /usr/bin/unshare
+
+    /sbin/sfdisk
+    /usr/lib/wb-prepare/vars.sh
+    /usr/lib/wb-prepare/partitions.sh
 )
 
 for f in "${FROM_ROOTFS[@]}"; do

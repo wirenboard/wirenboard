@@ -54,6 +54,32 @@ esac
 ROOT_PART=/dev/${ROOT_DEV}p${PART}
 info "Will install to $ROOT_PART"
 
+flag_set "from-initramfs" && {
+    info "Check if partition table is correct"
+    [[ -e $ROOT_PART ]] || {
+        info "rootfs partition doesn't exist, looks like partition table is broken. Try to repair it..."
+
+        . /usr/lib/wb-prepare/vars.sh || die "Unable to load wb-prepare libs (vars.sh)"
+        . /usr/lib/wb-prepare/partitions.sh || die "Unable to load wb-prepare libs (partitions.sh)"
+
+        wb_make_partitions /dev/${ROOT_DEV} ${WB_ROOTFS_SIZE_MB} || {
+            die "Unable to restore partition table on ${ROOT_DEV}"
+        }
+
+        info "Reloading partition table in kernel"
+        blockdev --rereadpt /dev/${ROOT_DEV}
+
+        ROOTPT_WAIT_TIMEOUT=10
+        while [[ ! -b ${ROOT_PART} ]] && [[ ${ROOTPT_WAIT_TIMEOUT} -gt 0 ]]; do
+            sleep 0.5;
+            ROOTPT_WAIT_TIMEOUT=$((ROOTPT_WAIT_TIMEOUT - 1))
+            info "${ROOTPT_WAIT_TIMEOUT}..."
+        done
+
+        [[ ${ROOTPT_WAIT_TIMEOUT} -eq 0 ]] && die "Partition table is not restored properly!"
+    }
+}
+
 umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
 info "Formatting $ROOT_PART"
 yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
@@ -82,7 +108,7 @@ fw_setenv upgrade_available 1
 
 info "Done, removing firmware image and rebooting"
 rm_fit
-echo 255 > /sys/class/leds/green/brightness || true
+led_success
 mqtt_status REBOOT
 trap EXIT
 flag_set "from-initramfs" && {
