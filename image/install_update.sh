@@ -108,7 +108,7 @@ fw_setenv upgrade_available 1
 
 info "Done, removing firmware image and rebooting"
 rm_fit
-led_success
+led_success || true
 mqtt_status REBOOT
 trap EXIT
 flag_set "from-initramfs" && {
