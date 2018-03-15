@@ -21,7 +21,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/a
     dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y contactless-keyring && \
-    apt-get install -y git mercurial curl wget debootstrap \
+    apt-get install -y --force-yes git mercurial curl wget debootstrap \
       build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper \
       nodejs bash-completion nano sudo locales \
       devscripts python-virtualenv git equivs \
