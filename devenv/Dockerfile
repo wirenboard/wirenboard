@@ -23,9 +23,9 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/a
     apt-get install -y contactless-keyring && \
     apt-get install -y git mercurial curl wget debootstrap \
       build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper \
-      nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
+      nodejs bash-completion nano sudo locales \
       devscripts python-virtualenv git equivs \
-      libmosquittopp-dev libmosquitto-dev pkg-config gcc-4.9 g++-4.9 libmodbus-dev \
+      libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
       valgrind libgtest-dev google-mock cmake config-package-dev \
       python-netaddr python-pyparsing liblircclient-dev \
