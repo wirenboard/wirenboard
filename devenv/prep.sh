@@ -18,7 +18,7 @@ pkgs=(devscripts python-virtualenv equivs build-essential \
     libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
     cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
     libusb-1.0-0-dev knxd-dev knxd-tools knxd \
-    cdbs libqt4-dev linux-headers-4.1.15-imxv5-x0.1 git git-man
+    cdbs libqt4-dev linux-headers-4.9.22 git git-man
 )
 
 
