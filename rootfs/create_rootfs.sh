@@ -240,10 +240,8 @@ pkgs=(
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
 
-#chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
 chr_apt_update
 chr_apt_install wb-configs
-install_contactless_repo
 chr_apt_update
     
 if [[ ${RELEASE} == "stretch" ]]; then
@@ -252,7 +250,7 @@ fi
 
 chr_apt_install "${pkgs[@]}"
 chr_apt_update
-#chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
+
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
