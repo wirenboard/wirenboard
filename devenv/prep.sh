@@ -10,7 +10,7 @@ prepare_chroot
 services_disable
 
 /bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >$ROOTFS/etc/apt/apt.conf.d/90forceyes
-chr apt-get update --allow-unauthenticated
+chr apt-get update
 
 pkgs=(devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config libmodbus-dev \

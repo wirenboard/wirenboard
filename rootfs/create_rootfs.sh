@@ -110,7 +110,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	echo "Updating"
 	chr apt-get update
 
-	chr apt-get -y upgrade --allow-unauthenticated
+	chr apt-get -y upgrade
 	
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
@@ -235,15 +235,11 @@ echo "Install packages from contactless repo"
 
 pkgs=(
     cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
-    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs
+    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
 
-#chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
-chr_apt_update
-chr_apt_install wb-configs
-install_contactless_repo
 chr_apt_update
     
 if [[ ${RELEASE} == "stretch" ]]; then
@@ -252,7 +248,6 @@ fi
 
 chr_apt_install "${pkgs[@]}"
 chr_apt_update
-#chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
