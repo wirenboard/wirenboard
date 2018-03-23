@@ -16,7 +16,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/a
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
-    wget -qO - https://www.aptly.info/pubkey.txt | sudo apt-key add -    
+    wget -qO - https://www.aptly.info/pubkey.txt | sudo apt-key add - && \ 
     dpkg --add-architecture armel && \
     dpkg --add-architecture armhf && \
     dpkg --add-architecture i386 && \
