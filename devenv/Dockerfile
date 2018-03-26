@@ -1,18 +1,18 @@
-FROM debian:jessie
+FROM debian:stretch
 MAINTAINER ivan4th <ivan4th@gmail.com>
  
 ENV DEBIAN_FRONTEND noninteractive
  
-RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/apt/sources.list.d/contactless.list && \
+RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch stretch main" > /etc/apt/sources.list.d/contactless.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y curl ca-certificates apt-transport-https && \
-    echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x jessie main" > /etc/apt/sources.list.d/nodesource.list && \
+    echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
     curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - && \
-    echo 'deb http://emdebian.org/tools/debian/ jessie main' >/etc/apt/sources.list.d/crosstools.list && \
+    echo 'deb http://emdebian.org/tools/debian/ stretch main' >/etc/apt/sources.list.d/crosstools.list && \
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
-    echo 'deb [arch=amd64] http://repo.mosquitto.org/debian jessie main' >/etc/apt/sources.list.d/mosquitto-jessie.list && \
+    echo 'deb [arch=amd64] http://repo.mosquitto.org/debian stretch main' >/etc/apt/sources.list.d/mosquitto-stretch.list && \
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
@@ -22,8 +22,8 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/ wheezy main" > /etc/a
     dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --force-yes contactless-keyring git mercurial curl wget debootstrap \
-      build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper \
-      nodejs bash-completion nano sudo locales \
+      build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper    \
+      nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
       devscripts python-virtualenv git equivs \
       libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
