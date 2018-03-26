@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch stretch main" > /etc/apt/sources.list.d/contactless.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y curl ca-certificates apt-transport-https && \
+    apt-get install -y gnupg curl ca-certificates apt-transport-https && \
     echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
     curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - && \
