@@ -10,7 +10,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch s
     echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
     curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add - && \
-    echo 'deb http://emdebian.org/tools/debian/ stretch main' >/etc/apt/sources.list.d/crosstools.list && \
+    echo 'deb http://emdebian.org/tools/debian/ jessie main' >/etc/apt/sources.list.d/crosstools.list && \
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
     echo 'deb [arch=amd64] http://repo.mosquitto.org/debian stretch main' >/etc/apt/sources.list.d/mosquitto-stretch.list && \
     apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460 && \
