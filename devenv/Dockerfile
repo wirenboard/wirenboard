@@ -19,7 +19,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch s
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
     apt-get update && \
     apt-get install -y --force-yes contactless-keyring git mercurial curl wget debootstrap \
-      build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper    \
+      build-essential pkg-config debhelper    \
       nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
       devscripts python-virtualenv git equivs \
       libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
