@@ -17,9 +17,6 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch s
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
-    dpkg --add-architecture armel && \
-    dpkg --add-architecture armhf && \
-    dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --force-yes contactless-keyring git mercurial curl wget debootstrap \
       build-essential pkg-config pkg-config:armel pkg-config:armhf debhelper    \
