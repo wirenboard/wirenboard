@@ -34,8 +34,8 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch s
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
 ENV GOLANG_VERSION 1.10
-ENV GOLANG_DOWNLOAD_URL  https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA  ed1bd37c356338a5a04923c183931a96687f202e
+ENV GOLANG_DOWNLOAD_URL   https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz
+ENV GOLANG_DOWNLOAD_SHA1  ed1bd37c356338a5a04923c183931a96687f202e
  
 ENV GLIDE_VERSION 0.13.1
 ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
