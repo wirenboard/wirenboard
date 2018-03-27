@@ -33,14 +33,13 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/experimental/stretch s
  
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
-ENV GOLANG_VERSION 1.6.2
-ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA1 b8318b09de06076d5397e6ec18ebef3b45cd315d
+ENV GOLANG_VERSION 1.10
+ENV GOLANG_DOWNLOAD_URL  https://dl.google.com/go/go$GOLAG_VERSION.linux-amd64.tar.gz
+ENV GOLANG_DOWNLOAD_SHA  ed1bd37c356338a5a04923c183931a96687f202e
  
-ENV GLIDE_VERSION 0.10.2
+ENV GLIDE_VERSION 0.13.1
 ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
-ENV GLIDE_DOWNLOAD_SHA1 41d7e11ca11e225ab2c773da8996e53e7125a6e3
- 
+ENV GLIDE_DOWNLOAD_SHA1 6de1d6931108ed94bf0f722dbd158487d8f75b20 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
   && echo "$GOLANG_DOWNLOAD_SHA1  golang.tar.gz" | sha1sum -c - \
   && tar -C /usr/local -xzf golang.tar.gz \
