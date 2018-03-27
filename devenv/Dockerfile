@@ -41,12 +41,10 @@ ENV GLIDE_VERSION 0.13.1
 ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
 ENV GLIDE_DOWNLOAD_SHA1 6de1d6931108ed94bf0f722dbd158487d8f75b20 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
-  && echo "$GOLANG_DOWNLOAD_SHA1  golang.tar.gz" | sha1sum -c - \
   && tar -C /usr/local -xzf golang.tar.gz \
   && rm golang.tar.gz
  
 RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
-  && echo "$GLIDE_DOWNLOAD_SHA1  glide.tar.gz" | sha1sum -c - \
   && tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
   && rm glide.tar.gz
  
