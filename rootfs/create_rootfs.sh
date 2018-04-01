@@ -205,7 +205,7 @@ pkgs=(
 	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
 	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
 	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
-	openssl ca-certificates
+	openssl ca-certificates libateccssl
 	avahi-daemon pps-tools
 )
 chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
