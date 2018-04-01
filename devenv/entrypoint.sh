@@ -26,18 +26,18 @@ DEV_USER="${DEV_USER:-user}"
 DEV_GID="${DEV_GID:-$DEV_UID}"
 DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
 DEV_DIR="${DEV_DIR:-}"
-ROOTFS_DIR=${ROOTFS_DIR:-"/rootfs/wheezy-armel"}
+ROOTFS=${ROOTFS:-"/rootfs/wheezy-armel"}
 TARGET_ARCH=${TARGET_ARCH:-armel}
 INSTALL_DEPS=${INSTALL_DEPS:-no}
 
 export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
 
-rm -f /.devdir $ROOTFS_DIR/.devdir
+rm -f /.devdir $ROOTFS/.devdir
 if [ -n "$DEV_DIR" ]; then
     if [ -n "$shell_cmd" ]; then
         echo "$DEV_DIR" >/.devdir
-        echo "$DEV_DIR" >$ROOTFS_DIR/.devdir
+        echo "$DEV_DIR" >$ROOTFS/.devdir
     elif ! cd "$DEV_DIR"; then
         echo "WARNING: can't chdir to $DEV_DIR"
     fi
@@ -69,11 +69,11 @@ devsudo () {
 }
 
 chu () {
-    devsudo proot -R $ROOTFS_DIR -q qemu-arm-static $shell_cmd "$@"
+    devsudo proot -R $ROOTFS -q qemu-arm-static $shell_cmd "$@"
 }
 
 chr () {
-    proot -R $ROOTFS_DIR -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+    proot -R $ROOTFS -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
 }
 
 loadprojects() {
