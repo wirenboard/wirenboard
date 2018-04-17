@@ -238,6 +238,7 @@ pkgs=(
     libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
+    libateccssl1.1
 )
 
 chr_apt_update
