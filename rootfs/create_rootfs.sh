@@ -238,7 +238,6 @@ pkgs=(
     libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
-    libateccssl1.1
 )
 
 chr_apt_update
@@ -268,8 +267,12 @@ install_wb5_packages() {
 		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools
     )
 
-	if [[ ${RELEASE} == "wheezy" ]]; then
-        chr_apt_install --force-yes lirc-scripts
+    if [[ ${RELEASE} == "wheezy" ]]; then
+	chr_apt_install --force-yes lirc-scripts
+    fi
+
+    if [[ ${RELEASE} == "stretch" ]]; then
+	chr_apt_install --force-yes libateccssl1.1
     fi
     export FORCE_WB_VERSION=$BOARD
     chr_apt_install "${pkgs[@]}"
