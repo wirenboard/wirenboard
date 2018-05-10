@@ -262,7 +262,7 @@ set_fdt() {
 
 install_wb5_packages() {
     pkgs=(
-		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
+		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-mqtt-db \
 		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
 		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools
     )
