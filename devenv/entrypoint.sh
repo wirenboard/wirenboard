@@ -73,7 +73,7 @@ chu () {
 }
 
 chr () {
-    proot -R $ROOTFS -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+    proot -S $ROOTFS -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
 }
 
 loadprojects() {
