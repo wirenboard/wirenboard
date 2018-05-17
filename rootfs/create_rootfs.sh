@@ -198,14 +198,7 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt_install netbase ifupdown \
-        iproute openssh-server \
-        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-        tzdata mc wireless-tools usbutils \
-        i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
-        python-serial memtester apt-utils dialog locales \
-        python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5-dev 
+    chr_apt_install wb-task-basesystem
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
         # not present at stretch
@@ -234,18 +227,11 @@ mkdir ${OUTPUT}/mnt/data
 echo "Install packages from contactless repo"
 
 pkgs=(
-    cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
-    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
-    openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
+   wb-task-wirenboard-base linux-image-${KERNEL_FLAVOUR}
 )
 
 chr_apt_update
     
-if [[ ${RELEASE} == "stretch" ]]; then
-    chr_apt_install libssl1.0-dev systemd-sysv
-fi
-
 chr_apt_install "${pkgs[@]}"
 chr_apt_update
 # stop mosquitto on host
@@ -262,9 +248,7 @@ set_fdt() {
 
 install_wb5_packages() {
     pkgs=(
-		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-mqtt-db \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools
+        wb-task-wirenboard
     )
 
     if [[ ${RELEASE} == "wheezy" ]]; then

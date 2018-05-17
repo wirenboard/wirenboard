@@ -1,0 +1,36 @@
+digraph G {
+    base [label="Base system"]
+    contr [label="Controllers base"]
+    daemons [label="WB daemons (mqtt-serial etc.)"]
+    devenv [label="Devenv"]
+    wb5_base [label="WB5 base"]
+    wb6_base [label="WB6 base"]
+    armel [label="armel"]
+    armhf [label="armhf"]
+
+    wb61 [label="WB6.1"]
+    wb61_zero [label="WB6.1 Zero"]
+
+    wb59 [label="WB5.9"]
+    wb59_zero [label="WB5.9 Zero"]
+
+    devenv -> base
+    armel -> devenv
+    armhf -> devenv
+
+    contr -> base
+    wb5_base -> contr
+    wb6_base -> contr
+
+    wb61 -> wb6_base
+    wb61 -> daemons
+
+    wb61_zero -> wb6_base
+
+    wb59 -> wb5_base
+    wb59 -> daemons
+
+    wb59_zero -> wb5_base
+
+    { rank=same; devenv daemons contr }
+}

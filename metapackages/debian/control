@@ -1,0 +1,73 @@
+Source: wb-metapackages-stretch
+Section: metapackages
+Priority: standard
+Maintainer: Nikita Maslov <n.maslov@contactless.ru>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 4.0.0
+Homepage: https://wirenboard.com/
+
+Package: wb-task-basesystem
+Architecture: all
+Depends: netbase, ifupdown, iproute, openssh-server, \
+    iputils-ping, wget, udev, net-tools, ntpdate, ntp, vim, nano, less, \
+    tzdata, mc, wireless-tools, usbutils, \
+    i2c-tools, udhcpc, wpasupplicant, psmisc, curl, dnsmasq, gammu, \
+    python-serial, memtester, apt-utils, dialog, locales, \
+    python3-minimal, unzip, minicom, iw, ppp, libmodbus5, \
+    python-smbus, ssmtp, moreutils, liblog4cpp5v5
+Description: Wiren Board base system packages
+ This metapackage includes a collection of system software required for
+ all Wiren Board boards.
+
+
+Package: wb-task-wirenboard-base
+Architecture: all
+Depends: cmux, hubpower, python-wb-io, modbus-utils, serial-tool, busybox, busybox-syslogd, \
+    libnfc5, libnfc-bin, libnfc-examples, libnfc-pn53x-examples, wb-configs, \
+    libmosquittopp1, libmosquitto1, mosquitto, mosquitto-clients, python-mosquitto, \
+    openssl, ca-certificates, avahi-daemon, pps-tools, device-tree-compiler, u-boot-tools
+Description: Wiren Board base system packages for controllers
+ This metapackage includes a collection of system software required for
+ all Wiren Board boards.
+
+
+Package: wb-task-wirenboard
+Architecture: all
+Depends: wb-homa-ism-radio, wb-mqtt-serial, wb-homa-w1, wb-homa-gpio, wb-mqtt-db, \
+    wb-homa-adc, python-nrf24, wb-rules, wb-rules-system, netplug, hostapd, bluez, can-utils, \
+	wb-mqtt-lirc, wb-mqtt-dac, wb-mqtt-homeui, wb-hwconf-manager, wb-test-suite
+Description: Wiren Board main system packages
+ This metapackage includes a collection of user software used on
+ Wiren Board boards.
+
+
+Package: wb-task-devenv-base
+Architecture: all
+Depends: wb-task-basesystem, libssl1.0-dev, liblog4cpp5-dev
+Description: Wiren Board devenv packages (all arches)
+ This metapackage includes a collection of software and developer
+ packages used in wbdev Docker image.
+
+
+Package: wb-task-devenv-armel
+Architecture: any
+Depends: wb-task-devenv-base
+Description: Wiren Board devenv packages (armel-specific)
+ This metapackage includes a collection of packages used in wbdev
+ Docker image in armel rootfs.
+
+
+Package: wb-task-wb5-base
+Architecture: all
+Depends: wb-task-basesystem, linux-kernel-wb2
+Description: Wiren Board 5 base required packages
+ This metapackage includes a collection of packages required for
+ all Wiren Board 5 boards.
+
+
+Package: wb-task-wb6-base
+Architecture: all
+Depends: wb-task-basesystem, linux-kernel-wb6, systemd-sysv, e2fsprogs (== 1.43.4-2+wb1)
+Description: Wiren Board 6 base required packages
+ This metapackage includes a collection of packages required for
+ all Wiren Board 6 boards.
