@@ -107,14 +107,14 @@ FROM_ROOTFS=(
     /usr/bin/dropbearkey
 
     $LIBDIR/libnss_files.so.2
-    $LIBDIR/libnss_files-2.13.so
-    $LIBDIR/ld-2.13.so
+    $LIBDIR/libnss_files-2.24.so
+    $LIBDIR/ld-2.24.so
     $LIBDIR/ld-linux.so.3
 
     /etc/shadow
     /etc/group
     /bin/login
-    /usr/bin/openvt
+    /bin/openvt
     /usr/bin/scp
     /usr/bin/unshare
 
