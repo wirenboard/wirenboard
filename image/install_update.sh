@@ -71,7 +71,7 @@ info "Cleaning up $ROOT_PART"
 rm -rf /tmp/empty && mkdir /tmp/empty
 if which rsync >/dev/null; then
     info "Cleaning up using rsync"
-    rsync -a --delete /tmp/empty $MNT || die "Failed to cleanup rootfs"
+    rsync -a --delete /tmp/empty/ $MNT || die "Failed to cleanup rootfs"
 else
     info "Can't find rsync, cleaning up using rm -rf (may be slower)"
     rm -rf $MNT/..?* $MNT/.[!.]* $MNT/* || die "Failed to cleanup rootfs"
@@ -82,7 +82,7 @@ pushd "$MNT"
 blob_size=`fit_blob_size rootfs`
 (
 	echo 0
-	fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp
+	fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp || die "Failed to extract rootfs"
 ) 2>&1 | mqtt_progress "$x"
 popd
 
