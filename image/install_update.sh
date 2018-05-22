@@ -71,10 +71,10 @@ info "Cleaning up $ROOT_PART"
 rm -rf /tmp/empty && mkdir /tmp/empty
 if which rsync >/dev/null; then
     info "Cleaning up using rsync"
-    rsync -a --delete /tmp/empty $MNT
+    rsync -a --delete /tmp/empty $MNT || die "Failed to cleanup rootfs"
 else
     info "Can't find rsync, cleaning up using rm -rf (may be slower)"
-    rm -rf $MNT/* $MNT/.*
+    rm -rf $MNT/..?* $MNT/.[!.]* $MNT/* || die "Failed to cleanup rootfs"
 fi
 
 info "Extracting files to new rootfs"
