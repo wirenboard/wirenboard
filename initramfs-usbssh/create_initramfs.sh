@@ -121,6 +121,7 @@ FROM_ROOTFS=(
     /sbin/sfdisk
     /usr/lib/wb-prepare/vars.sh
     /usr/lib/wb-prepare/partitions.sh
+    /usr/bin/rsync
 )
 
 for f in "${FROM_ROOTFS[@]}"; do
