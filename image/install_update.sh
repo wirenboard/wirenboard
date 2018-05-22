@@ -57,37 +57,25 @@ info "Will install to $ROOT_PART"
 flag_set "from-initramfs" && {
     info "Check if partition table is correct"
     [[ -e $ROOT_PART ]] || {
-        info "rootfs partition doesn't exist, looks like partition table is broken. Try to repair it..."
-
-        . /usr/lib/wb-prepare/vars.sh || die "Unable to load wb-prepare libs (vars.sh)"
-        . /usr/lib/wb-prepare/partitions.sh || die "Unable to load wb-prepare libs (partitions.sh)"
-
-        wb_make_partitions /dev/${ROOT_DEV} ${WB_ROOTFS_SIZE_MB} || {
-            die "Unable to restore partition table on ${ROOT_DEV}"
-        }
-
-        info "Reloading partition table in kernel"
-        blockdev --rereadpt /dev/${ROOT_DEV}
-
-        ROOTPT_WAIT_TIMEOUT=10
-        while [[ ! -b ${ROOT_PART} ]] && [[ ${ROOTPT_WAIT_TIMEOUT} -gt 0 ]]; do
-            sleep 0.5;
-            ROOTPT_WAIT_TIMEOUT=$((ROOTPT_WAIT_TIMEOUT - 1))
-            info "${ROOTPT_WAIT_TIMEOUT}..."
-        done
-
-        [[ ${ROOTPT_WAIT_TIMEOUT} -eq 0 ]] && die "Partition table is not restored properly!"
+        die "rootfs partition doesn't exist, looks like partitions table is broken. Give up."
     }
 }
 
 umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
-info "Formatting $ROOT_PART"
-yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
-
 
 info "Mounting $ROOT_PART at $MNT"
 rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
-mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount just created filesystem"
+mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount root filesystem"
+
+info "Cleaning up $ROOT_PART"
+rm -rf /tmp/empty && mkdir /tmp/empty
+if which rsync >/dev/null; then
+    info "Cleaning up using rsync"
+    rsync -a --delete /tmp/empty $MNT
+else
+    info "Can't find rsync, cleaning up using rm -rf (may be slower)"
+    rm -rf $MNT/* $MNT/.*
+fi
 
 info "Extracting files to new rootfs"
 pushd "$MNT"
