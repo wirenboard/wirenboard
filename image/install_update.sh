@@ -61,6 +61,12 @@ flag_set "from-initramfs" && {
     }
 }
 
+# determine if new partition is unformatted
+[[ "x`blkid $ROOT_PART | sed 's/^.*TYPE="\(.*\)".*$/\1/'`" != "xext4" ]] && {
+    info "Formatting $ROOT_PART"
+    yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
+}
+
 umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
 
 info "Mounting $ROOT_PART at $MNT"
