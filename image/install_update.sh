@@ -79,17 +79,18 @@ flag_set "from-initramfs" && {
     }
 }
 
+rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
+
 # determine if new partition is unformatted
-[[ "x`blkid $ROOT_PART | sed 's/^.*TYPE="\(.*\)".*$/\1/'`" != "xext4" ]] && {
+mount -t ext4 $ROOT_PART $MNT 2>&1 >/dev/null || {
     info "Formatting $ROOT_PART"
     mkfs_ext4 $ROOT_PART $PARTLABEL || die "mkfs.ext4 failed"
 }
 
-umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
+umount -f $ROOT_PART 2>&1 >/dev/null || true # just for sure
 
 info "Mounting $ROOT_PART at $MNT"
-rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
-mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount root filesystem"
+mount -t ext4 "$ROOT_PART" "$MNT" 2>&1 >/dev/null|| die "Unable to mount root filesystem"
 
 info "Cleaning up $ROOT_PART"
 rm -rf /tmp/empty && mkdir /tmp/empty
@@ -114,11 +115,16 @@ info "Recovering device certificates"
 HIDDENFS_MNT=$TMPDIR/hiddenfs
 mkdir -p $HIDDENFS_MNT
 
-if mount -o loop,offset=$HIDDENFS_OFFSET $HIDDENFS_PART $HIDDENFS_MNT; then
+# make loop device
+LO_DEVICE=`losetup -f`
+losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART || 
+    die "Failed to add loopback device"
 
+if mount $LO_DEVICE $HIDDENFS_MNT 2>&1 >/dev/null; then
     cat $HIDDENFS_MNT/$INTERM_NAME $HIDDENFS_MNT/$DEVCERT_NAME > $MNT/$ROOTFS_CERT_PATH ||
         die "Failed to write device certificate bundle into new rootfs"
-    umount -f $HIDDENFS_MNT
+    umount $HIDDENFS_MNT
+    sync
 else
     info "WARNING: Failed to find certificates of device. Please report it to info@contactless.ru"
 fi
