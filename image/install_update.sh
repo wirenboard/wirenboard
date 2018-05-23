@@ -110,6 +110,19 @@ blob_size=`fit_blob_size rootfs`
 ) 2>&1 | mqtt_progress "$x"
 popd
 
+info "Recovering device certificates"
+HIDDENFS_MNT=$TMPDIR/hiddenfs
+mkdir -p $HIDDENFS_MNT
+
+if mount -o loop,offset=$HIDDENFS_OFFSET $HIDDENFS_PART $HIDDENFS_MNT; then
+
+    cat $HIDDENFS_MNT/$INTERM_NAME $HIDDENFS_MNT/$DEVCERT_NAME > $MNT/$ROOTFS_CERT_PATH ||
+        die "Failed to write device certificate bundle into new rootfs"
+    umount -f $HIDDENFS_MNT
+else
+    info "WARNING: Failed to find certificates of device. Please report it to info@contactless.ru"
+fi
+
 info "Unmounting new rootfs"
 umount $MNT
 sync; sync
