@@ -80,7 +80,7 @@ install_contactless_repo() {
 	if [[ ${RELEASE} == "wheezy" ]]; then
         	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
 	fi
-	echo "deb http://releases.contactless.ru/experimental/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 
 
 	if [[ ${RELEASE} == "stretch" ]]; then
