@@ -79,9 +79,10 @@ install_contactless_repo() {
 	echo "Install initial repos"
 	if [[ ${RELEASE} == "wheezy" ]]; then
         	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
+	        echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
 	fi
-	echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-
 
 	if [[ ${RELEASE} == "stretch" ]]; then
 		echo "Install gnupg"
