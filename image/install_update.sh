@@ -54,21 +54,41 @@ esac
 ROOT_PART=/dev/${ROOT_DEV}p${PART}
 info "Will install to $ROOT_PART"
 
-umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
-info "Formatting $ROOT_PART"
-yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
+flag_set "from-initramfs" && {
+    info "Check if partition table is correct"
+    [[ -e $ROOT_PART ]] || {
+        die "rootfs partition doesn't exist, looks like partitions table is broken. Give up."
+    }
+}
 
+# determine if new partition is unformatted
+[[ "x`blkid $ROOT_PART | sed 's/^.*TYPE="\(.*\)".*$/\1/'`" != "xext4" ]] && {
+    info "Formatting $ROOT_PART"
+    yes | mkfs.ext4 -L "$PARTLABEL" -E stride=2,stripe-width=1024 -b 4096 "$ROOT_PART" || die "mkfs.ext4 failed"
+}
+
+umount -f $ROOT_PART 2&>1 >/dev/null || true # just for sure
 
 info "Mounting $ROOT_PART at $MNT"
 rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
-mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount just created filesystem"
+mount -t ext4 "$ROOT_PART" "$MNT" || die "Unable to mount root filesystem"
+
+info "Cleaning up $ROOT_PART"
+rm -rf /tmp/empty && mkdir /tmp/empty
+if which rsync >/dev/null; then
+    info "Cleaning up using rsync"
+    rsync -a --delete /tmp/empty/ $MNT || die "Failed to cleanup rootfs"
+else
+    info "Can't find rsync, cleaning up using rm -rf (may be slower)"
+    rm -rf $MNT/..?* $MNT/.[!.]* $MNT/* || die "Failed to cleanup rootfs"
+fi
 
 info "Extracting files to new rootfs"
 pushd "$MNT"
 blob_size=`fit_blob_size rootfs`
 (
 	echo 0
-	fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp
+	fit_blob_data rootfs | pv -n -s "$blob_size" | tar xzp || die "Failed to extract rootfs"
 ) 2>&1 | mqtt_progress "$x"
 popd
 
@@ -82,7 +102,7 @@ fw_setenv upgrade_available 1
 
 info "Done, removing firmware image and rebooting"
 rm_fit
-echo 255 > /sys/class/leds/green/brightness || true
+led_success || true
 mqtt_status REBOOT
 trap EXIT
 flag_set "from-initramfs" && {

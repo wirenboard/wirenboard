@@ -2,10 +2,10 @@
 set -e
 #set -x
 
-
+ROOTFS_DIR=$ROOTFS
 #REPO="http://ftp.debian.org/debian"
 REPO="http://mirror.yandex.ru/debian/"
-RELEASE=${RELEASE:-wheezy}
+RELEASE=${RELEASE:-stretch}
 
 
 # directly download firmware-realtek from jessie non-free repo
@@ -24,13 +24,18 @@ then
 fi
 
 BOARD=$1
-
+if [[ $BOARD = 6* ]]; then
+    ARCH="armhf"
+else
+    ARCH="armel"
+fi
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 . "${SCRIPT_DIR}"/rootfs_env.sh
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
-OUTPUT=${ROOTFS}	# FIXME: use ROOTFS var consistently in all scripts
+OUTPUT=${ROOTFS}  # FIXME: use ROOTFS var consistently in all scripts 
+
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
@@ -49,7 +54,7 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ARCH}.tar.gz"
+ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
 
 ROOTFS_DIR=$OUTPUT
 
@@ -66,6 +71,25 @@ setup_additional_repos() {
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
     done
+}
+
+install_contactless_repo() {
+    rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
+
+	echo "Install initial repos"
+	if [[ ${RELEASE} == "wheezy" ]]; then
+        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
+	        echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	elif [[ ${RELEASE} == "stretch" ]]; then
+		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+	fi
+
+	if [[ ${RELEASE} == "stretch" ]]; then
+		echo "Install gnupg"
+		chr apt-get update
+		chr apt-get install -y gnupg1
+	fi
+	
 }
 
 echo "Install dependencies"
@@ -86,7 +110,9 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 
 	echo "Updating"
 	chr apt-get update
+
 	chr apt-get -y upgrade
+	
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
@@ -129,10 +155,8 @@ path-exclude /usr/share/lintian/*
 path-exclude /usr/share/linda/*
 EOM
 
-
 	echo "Second debootstrap stage"
 	chr /debootstrap/debootstrap --second-stage
-
 
 	prepare_chroot
 	services_disable
@@ -145,10 +169,13 @@ EOM
         echo "deb ${REPO} ${RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
         echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
-	echo "Install initial repos"
-	echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
-	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
-
+    install_contactless_repo
+    # apt pin
+        echo "Set APT PIN" 
+        echo "Package: *" > ${OUTPUT}/etc/apt/preferences
+        echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
+        echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
+        
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
@@ -158,12 +185,13 @@ EOM
     setup_additional_repos "${@:2}"
 
 	echo "Update&upgrade apt"
-	chr apt-get update
-	chr apt-get install -y contactless-keyring
+	chr_apt_update
+    chr_apt_install contactless-keyring
+
 	chr apt-get -y --force-yes upgrade
 
 	echo "Setup locales"
-    chr_apt locales
+    chr_apt_install locales
 	echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
 	echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
 	echo "ru_RU.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
@@ -171,19 +199,25 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    DEBIAN_FRONTEND=noninteractive chr_apt --force-yes netbase ifupdown \
+    chr_apt_install netbase ifupdown \
         iproute openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-        tzdata console-tools module-init-tools mc wireless-tools usbutils \
+        tzdata mc wireless-tools usbutils \
         i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
         python-serial memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils
+        python-smbus ssmtp moreutils liblog4cpp5-dev 
+
+	if [[ ${RELEASE} == "wheezy" ]]; then
+        # not present at stretch
+        chr_apt_install --force-yes console-tools module-init-tools
+        chr_apt_install --force-yes liblog4cpp5
+	elif [[ ${RELEASE} == "stretch" ]]; then
+        chr_apt_install --force-yes liblog4cpp5v5
+    fi
 
 	echo "Install realtek firmware"
-	wget ${RTL_FIRMWARE_DEB} -O ${OUTPUT}/rtl_firmware.deb
-	chr dpkg -i rtl_firmware.deb
-	rm ${OUTPUT}/rtl_firmware.deb
+	chr_install_deb_url ${RTL_FIRMWARE_DEB}
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -199,23 +233,27 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install packages from contactless repo"
-chr_apt --force-yes linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 
 pkgs=(
-	cmux hubpower python-wb-io modbus-utils wb-configs serial-tool busybox-syslogd
-	libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-	libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
-	openssl ca-certificates
-	avahi-daemon pps-tools
+    cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
+    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs
+    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
+    openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
-chr mv /etc/apt/sources.list.d/contactless.list /etc/apt/sources.list.d/local.list
-chr_apt --force-yes "${pkgs[@]}"
-chr mv /etc/apt/sources.list.d/local.list /etc/apt/sources.list.d/contactless.list
+
+chr_apt_update
+    
+if [[ ${RELEASE} == "stretch" ]]; then
+    chr_apt_install libssl1.0-dev systemd-sysv
+fi
+
+chr_apt_install "${pkgs[@]}"
+chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /etc/init.d/mosquitto start
-chr_apt --force-yes wb-mqtt-confed
+chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -224,12 +262,24 @@ set_fdt() {
 }
 
 install_wb5_packages() {
-    chr_apt wb-mqtt-homeui wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio \
-    wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-    wb-test-suite wb-mqtt-lirc lirc-scripts wb-hwconf-manager wb-mqtt-dac
+    pkgs=(
+		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-mqtt-db \
+		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
+		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools
+    )
+
+    if [[ ${RELEASE} == "wheezy" ]]; then
+	chr_apt_install --force-yes lirc-scripts
+    fi
+
+    if [[ ${RELEASE} == "stretch" ]]; then
+	chr_apt_install --force-yes libateccssl1.1
+    fi
+    export FORCE_WB_VERSION=$BOARD
+    chr_apt_install "${pkgs[@]}"
 }
 
-[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt "${BOARD_PACKAGES[@]}"
+[[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"
 
 board_install
 
