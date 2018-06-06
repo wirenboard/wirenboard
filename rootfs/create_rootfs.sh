@@ -23,6 +23,13 @@ then
   exit 1
 fi
 
+# flag showing usage of additional repo
+USE_EXPERIMENTAL=false
+if [[ $# -gt 1 ]]; then
+    USE_EXPERIMENTAL=true
+    ADD_REPOS="${@:2}"
+fi
+
 BOARD=$1
 if [[ $BOARD = 6* ]]; then
     ARCH="armhf"
@@ -54,7 +61,13 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
+
+# use alternative rootfs tarball for experimental builds (with additional repos)
+if $USE_EXPERIMENTAL; then
+    ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}_dev.tar.gz"
+else
+    ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
+fi
 
 ROOTFS_DIR=$OUTPUT
 
@@ -70,6 +83,15 @@ setup_additional_repos() {
         echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
+    done
+}
+
+setup_additional_pins() {
+    for repo in "${@}"; do
+        local reponame="`echo $repo | sed 's#http://\(.*\)/#\1#'`"
+        echo -n "\nPackage: *" >> ${OUTPUT}/etc/apt/preferences
+        echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences
+        echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences
     done
 }
 
@@ -105,8 +127,10 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	services_disable
 
     # setup additional repositories
-    echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    if $USE_EXPERIMENTAL; then
+        echo "Install additional repos"
+        setup_additional_repos "$ADD_REPOS"
+    fi
 
 	echo "Updating"
 	chr apt-get update
@@ -175,6 +199,11 @@ EOM
         echo "Package: *" > ${OUTPUT}/etc/apt/preferences
         echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
         echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
+
+    # apt pin for experimental repos
+    if $USE_EXPERIMENTAL; then
+        setup_additional_pins "$ADD_REPOS"
+    fi
         
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
