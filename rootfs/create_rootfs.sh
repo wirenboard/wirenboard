@@ -202,6 +202,7 @@ EOM
 
     # apt pin for experimental repos
     if $USE_EXPERIMENTAL; then
+        echo "Set APT pins for additional repos"
         setup_additional_pins "$ADD_REPOS"
     fi
         
@@ -257,15 +258,24 @@ fi
 echo "Cleanup rootfs"
 chr_nofail dpkg -r geoip-database
 
-
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Install packages from contactless repo"
+echo "Install wb-configs and restore pins for experimental repos"
+chr_apt_update
+chr_apt_install wb-configs-${RELEASE}
 
+# restore apt pin for experimental repos
+if $USE_EXPERIMENTAL; then
+    echo "Set APT pins for additional repos"
+    setup_additional_pins "$ADD_REPOS"
+fi
+
+
+echo "Install packages from contactless repo"
 pkgs=(
     cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
-    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs-${RELEASE}
+    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
