@@ -87,11 +87,12 @@ setup_additional_repos() {
 }
 
 setup_additional_pins() {
+    mkdir -p ${OUTPUT}/etc/apt/preferences.d/
     for repo in "${@}"; do
         local reponame="`echo $repo | sed 's#http://\([^:]*\)\(\:[0-9]\+\)\?/#\1#'`" # remove http:// and port number, leave only hostname
-        echo -e "\nPackage: *" >> ${OUTPUT}/etc/apt/preferences
-        echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences
-        echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences
+        echo "Package: *" > ${OUTPUT}/etc/apt/preferences.d/dev-$reponame
+        echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences.d/dev-$reponame
+        echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences.d/dev-$reponame
     done
 }
 
@@ -325,8 +326,8 @@ board_install
 chr /etc/init.d/mosquitto stop
 
 # remove additional repo files
-# TODO: cleanup pins
 rm -rf $ADD_REPO_FILE
+rm -rf ${OUTPUT}/etc/apt/preferences.d/dev-*
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
