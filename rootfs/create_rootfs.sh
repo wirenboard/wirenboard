@@ -95,6 +95,13 @@ setup_additional_pins() {
     done
 }
 
+maybe_setup_additional_pins() {
+    if $USE_EXPERIMENTAL; then
+        echo "Set APT pins for additional repos"
+        setup_additional_pins "$ADD_REPOS"
+    fi
+}
+
 install_contactless_repo() {
     rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
 
@@ -200,11 +207,7 @@ EOM
         echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
         echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
 
-    # apt pin for experimental repos
-    if $USE_EXPERIMENTAL; then
-        echo "Set APT pins for additional repos"
-        setup_additional_pins "$ADD_REPOS"
-    fi
+    maybe_setup_additional_pins
         
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
@@ -262,15 +265,12 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install wb-configs and restore pins for experimental repos"
+maybe_setup_additional_pins
 chr_apt_update
 chr_apt_install wb-configs-${RELEASE}
 
 # restore apt pin for experimental repos
-if $USE_EXPERIMENTAL; then
-    echo "Set APT pins for additional repos"
-    setup_additional_pins "$ADD_REPOS"
-fi
-
+maybe_setup_additional_pins
 
 echo "Install packages from contactless repo"
 pkgs=(
@@ -325,6 +325,7 @@ board_install
 chr /etc/init.d/mosquitto stop
 
 # remove additional repo files
+# TODO: cleanup pins
 rm -rf $ADD_REPO_FILE
 
 chr apt-get clean
