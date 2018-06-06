@@ -89,7 +89,7 @@ setup_additional_repos() {
 setup_additional_pins() {
     for repo in "${@}"; do
         local reponame="`echo $repo | sed 's#http://\(.*\)/#\1#'`"
-        echo -n "\nPackage: *" >> ${OUTPUT}/etc/apt/preferences
+        echo -e "\nPackage: *" >> ${OUTPUT}/etc/apt/preferences
         echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences
         echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences
     done
