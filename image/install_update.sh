@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
 
+type fit_prop_string | grep -q 'shell function' || {
+    fit_prop_string() {
+        fit_prop "$@" | tr -d '\0'
+    }
+}
 
 check_compatible() {
-	local fit_compat=`fit_prop / compatible`
+	local fit_compat=`fit_prop_string / compatible`
 	[[ -z "$fit_compat" || "$fit_compat" == "unknown" ]] && return 0
 	for compat in `tr < /proc/device-tree/compatible  '\000' '\n'`; do
 		[[ "$fit_compat" == "$compat" ]] && return 0
