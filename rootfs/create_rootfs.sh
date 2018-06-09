@@ -293,7 +293,7 @@ chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
-chr service mosquitto start
+chr /usr/sbin/mosquitto -d -c /etc/mosquitto/mosquitto.conf
 chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
@@ -324,7 +324,7 @@ install_wb5_packages() {
 
 board_install
 
-chr service mosquitto stop
+chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
