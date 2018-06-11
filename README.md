@@ -22,7 +22,7 @@ In order to use the script, you must
 first.
 
 The development environment consists "host" environment which is
-Debian "jessie" Linux image used to build Python noarch packages,
+Debian "stretch" Linux image used to build Python noarch packages,
 Go-based packages such as `wb-rules` and `wb-mqtt-confed` and
 `wb-mqtt-homeui` frontend. It also contains qemu chroot environment
 used to build C++-based armel and armhf packages such as those from
@@ -42,7 +42,7 @@ development image you should start the container by hand without
 `--rm` flag and then use `docker commit` to commit your changes to the
 image, or, preferably, alter Dockerfile and/or scripts used to build
 the image in `devenv/` subdirectory of this project and then invoke
-`make` there to rebuild the image (note though that it may take 40
+`make` there to rebuild the image (note though that it may take 90
 minutes or more to rebuild it).
 
 *NOTE:* the script works only when the OS on the user's machine
@@ -94,10 +94,10 @@ Usage:
 To change target architecture you should use environment variable
 WBDEV_TARGET. Possible values:
 
-* `wheezy-armel` build armel package for wheezy wirenboard image (default).
-* `wheezy-armhf` build armhf package for wheezy wirenboard image.
-* `jessie-armel` not yet implemented.
-* `jessie-armhf` not yet implemented.
+* `wheezy-armel` build package for armel target with linux wheezy (old WB5.x)
+* `wheezy-armhf` build package for armhf target with linux wheezy 
+* `stretch-armel` build package for armel target with linux stretch (latest WB5.x)
+* `stretch-armhf` build package for armhf target with linux stretch (WB6.x) 
 
 If required, another Docker image could be set via
 environment variable WBDEV_IMAGE.
