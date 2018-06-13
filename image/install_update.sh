@@ -143,19 +143,21 @@ fw_setenv mmcpart $PART
 fw_setenv upgrade_available 1
 
 # ask user if he wants to wipe data partition
-flag_set "from-initramfs" && {
+if flag_set "from-initramfs"; then
     info "If you want to wipe data partition of this controller, press the button within $DATA_WIPE_BUTTON_TIMEOUT seconds"
     info "DANGER: THIS CAN NOT BE UNDONE"
-    button_wait $DATA_WIPE_BUTTON_TIMEOUT && {
+    if button_wait $DATA_WIPE_BUTTON_TIMEOUT; then
         info "Again, after next button press your data will be removed!"
         info "Press the button again if you're ABSOLUTELY sure"
-        button_wait $DATA_WIPE_BUTTON_TIMEOUT {
+        if button_wait $DATA_WIPE_BUTTON_TIMEOUT; then
             info "Formatting /mnt/data..."
             umount -f $DATA_PART # just to be sure
             mkfs_ext4 $DATA_PART $DATA_LABEL || die "Failed to format data partition"
-        }
-    } || info "Data wiping aborted"
-}
+        fi
+    else
+        info "Data wiping aborted"
+    fi
+fi
 
 info "Done, removing firmware image and rebooting"
 rm_fit
