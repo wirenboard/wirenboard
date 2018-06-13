@@ -88,7 +88,7 @@ rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
 
 # determine if new partition is unformatted
 mount -t ext4 $ROOT_PART $MNT 2>&1 >/dev/null || {
-    info "Formatting $ROOT_PART"
+    info "Unable to mount root partition, formatting $ROOT_PART"
     mkfs_ext4 $ROOT_PART $PARTLABEL || die "mkfs.ext4 failed"
 }
 
