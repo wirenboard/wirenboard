@@ -127,7 +127,7 @@ losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART ||
 
 if mount $LO_DEVICE $HIDDENFS_MNT 2>&1 >/dev/null; then
     cat $HIDDENFS_MNT/$INTERM_NAME $HIDDENFS_MNT/$DEVCERT_NAME > $MNT/$ROOTFS_CERT_PATH ||
-        die "Failed to write device certificate bundle into new rootfs"
+        info "WARNING: Failed to copy device certificate bundle into new rootfs. Please report it to info@contactless.ru"
     umount $HIDDENFS_MNT
     sync
 else
