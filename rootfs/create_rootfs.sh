@@ -206,15 +206,15 @@ EOM
         i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
         python-serial memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5-dev logrotate 
+        python-smbus ssmtp moreutils liblog4cpp5-dev 
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
         # not present at stretch
         chr_apt_install --force-yes console-tools module-init-tools
         chr_apt_install --force-yes liblog4cpp5
 	elif [[ ${RELEASE} == "stretch" ]]; then
-        chr_apt_install --force-yes liblog4cpp5v5
-    fi
+        chr_apt_install --force-yes liblog4cpp5v5 logrotate
+        fi
 
 	echo "Install realtek firmware"
 	chr_install_deb_url ${RTL_FIRMWARE_DEB}
