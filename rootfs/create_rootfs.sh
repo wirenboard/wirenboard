@@ -206,7 +206,7 @@ EOM
         i2c-tools udhcpc wpasupplicant psmisc curl dnsmasq gammu \
         python-serial memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5-dev 
+        python-smbus ssmtp moreutils liblog4cpp5-dev logrotate 
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
         # not present at stretch
