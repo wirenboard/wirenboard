@@ -213,8 +213,8 @@ EOM
         chr_apt_install --force-yes console-tools module-init-tools
         chr_apt_install --force-yes liblog4cpp5
 	elif [[ ${RELEASE} == "stretch" ]]; then
-        chr_apt_install --force-yes liblog4cpp5v5
-    fi
+        chr_apt_install --force-yes liblog4cpp5v5 logrotate
+        fi
 
 	echo "Install realtek firmware"
 	chr_install_deb_url ${RTL_FIRMWARE_DEB}
