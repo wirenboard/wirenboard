@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-type fit_prop_string | grep -q 'shell function' || {
+type fit_prop_string 2>/dev/null | grep -q 'shell function' || {
     fit_prop_string() {
         fit_prop "$@" | tr -d '\0'
     }
