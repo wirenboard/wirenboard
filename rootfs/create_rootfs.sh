@@ -266,10 +266,15 @@ chr_nofail dpkg -r geoip-database
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Install wb-configs and restore pins for experimental repos"
+echo "Restore pins for experimental repos if necessary"
 maybe_setup_additional_pins
 chr_apt_update
-chr_apt_install wb-configs-${RELEASE}
+
+echo "Install some packages before wb-configs (to preserve conffiles diversions)"
+chr_apt_install libnss-mdns kmod
+
+echo "Install wb-configs"
+chr_apt_install wb-configs
 
 # restore apt pin for experimental repos
 maybe_setup_additional_pins
@@ -339,7 +344,9 @@ rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
 
 # reverting ssmtp kludge
-sed "/$(hostname)/d" -i ${OUTPUT}/etc/hosts
+# NOTE: always use readlink -f or realpath for inline Perl stuff,
+# because it will not preserve symlinks
+sed "/$(hostname)/d" -i "`readlink -f ${OUTPUT}/etc/hosts`"
 
 # (re-)start mosquitto on host
 service mosquitto start || /bin/true
