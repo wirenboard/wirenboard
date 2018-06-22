@@ -2,10 +2,27 @@
 set -e
 #set -x
 
-[[ "$#" == "2" ]] || {
-	echo "Usage: $0 <rootfs> <initramfs_dir>"
+[[ "$#" == "3" ]] || {
+	echo "Usage: $0 <rootfs> <initramfs_dir> wb2|wb6"
 	exit 1
 }
+
+FLAVOUR=$3
+
+case $FLAVOUR in
+wb2)
+    LIBDIR=/lib/arm-linux-gnueabi
+    MEMDUMP=memdump.wb2
+    ;;
+wb6)
+    LIBDIR=/lib/arm-linux-gnueabihf
+    MEMDUMP=memdump.wb6
+    ;;
+*)
+    echo "Wrong board type, use wb2 or wb6"
+    exit 1
+    ;;
+esac
 
 [[ $EUID == 0 ]] || {
 	exec sudo -E "$0" "$@"
@@ -59,6 +76,7 @@ rm -rf "$INITRAMFS"
 install_dir "/dev"
 install_dir "/proc"
 install_dir "/sys"
+install_dir "/tmp"
 
 install_dir "/sbin"
 install_dir "/usr/bin"
@@ -67,7 +85,13 @@ install_dir "/usr/sbin"
 mknod "$INITRAMFS/dev/console" c 5 1
 
 install_file "$FILES_DIR/init" "/init"
+install_file "$FILES_DIR/shadow" "/etc/shadow"
 install_file "$FILES_DIR/fstab" "/etc/fstab"
+install_file "$FILES_DIR/dropbear_rsa_host_key" "/etc/dropbear/dropbear_rsa_host_key"
+install_file "$FILES_DIR/dropbear_dss_host_key" "/etc/dropbear/dropbear_dss_host_key"
+install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
+install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
+[[ $FLAVOUR == "wb2" ]] && install_file "$FILES_DIR/$MEMDUMP" "/bin/memdump"
 
 FROM_ROOTFS=(
 	/bin/busybox
@@ -77,10 +101,31 @@ FROM_ROOTFS=(
 	/etc/fw_env.config
 	/usr/bin/fit_info
 	/usr/bin/pv
-	/sbin/mkfs.ext4
+    /sbin/mkfs.ext4
 	/usr/bin/wb-run-update
+    /usr/sbin/dropbear
+    /usr/bin/dropbearkey
+
+    $LIBDIR/libnss_files.so.2
+    $LIBDIR/libnss_files-2.24.so
+    $LIBDIR/ld-2.24.so
+    $LIBDIR/ld-linux.so.3
+
+    /etc/shadow
+    /etc/group
+    /bin/login
+    /bin/openvt
+    /usr/bin/scp
+    /usr/bin/unshare
+
+    /sbin/sfdisk
+    /usr/lib/wb-prepare/vars.sh
+    /usr/lib/wb-prepare/partitions.sh
+    /usr/bin/rsync
 )
 
 for f in "${FROM_ROOTFS[@]}"; do
 	install_from_rootfs "$f"
 done
+
+echo 'root:x:0:0:root:/:/bin/sh' > $INITRAMFS/etc/passwd
