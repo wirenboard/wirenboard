@@ -8,7 +8,7 @@ PERIOD=333333
 
 buzzer_init() {
     echo $PWM_BUZZER > /sys/class/pwm/pwmchip0/export 2>/dev/null || true
-    while [[ ! -f /sys/class/pwm/pwmchip0/pwm${PWM_BUZZER}/duty_cycle ]]; do sleep 0.1; done
+    sleep 1 # make PWM settle, presence of these files is not enough
 
     echo $DUTY_CYCLE > /sys/class/pwm/pwmchip0/pwm${PWM_BUZZER}/duty_cycle
     echo $PERIOD > /sys/class/pwm/pwmchip0/pwm${PWM_BUZZER}/period
