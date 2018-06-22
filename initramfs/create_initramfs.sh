@@ -12,11 +12,9 @@ FLAVOUR=$3
 case $FLAVOUR in
 wb2)
     LIBDIR=/lib/arm-linux-gnueabi
-    MEMDUMP=memdump.wb2
     ;;
 wb6)
     LIBDIR=/lib/arm-linux-gnueabihf
-    MEMDUMP=memdump.wb6
     ;;
 *)
     echo "Wrong board type, use wb2 or wb6"
@@ -91,7 +89,14 @@ install_file "$FILES_DIR/dropbear_rsa_host_key" "/etc/dropbear/dropbear_rsa_host
 install_file "$FILES_DIR/dropbear_dss_host_key" "/etc/dropbear/dropbear_dss_host_key"
 install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
 install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
-[[ $FLAVOUR == "wb2" ]] && install_file "$FILES_DIR/$MEMDUMP" "/bin/memdump"
+install_file "$FILES_DIR/libupdate.wb5.sh" "/lib/libupdate.wb5.sh"
+install_file "$FILES_DIR/libupdate.wb6.sh" "/lib/libupdate.wb6.sh"
+install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
+
+[[ $FLAVOUR == "wb2" ]] && {
+    arm-linux-gnueabi-gcc -o $FILES_DIR/memdump $FILES_DIR/memdump.c -Wall -Wextra -pedantic -std=c99
+    install_file "$FILES_DIR/memdump" "/bin/memdump"
+}
 
 FROM_ROOTFS=(
 	/bin/busybox
