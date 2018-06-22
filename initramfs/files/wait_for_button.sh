@@ -120,7 +120,7 @@ while [ $WAIT_TIME_TICKS -gt 0 ]; do
         WAIT_TIME_TICKS=$((WAIT_TIME_TICKS-1))
     done
 
-    if button_up; then
+    if [ $WAIT_TIME_TICKS -eq 0 ]; then
         RET=1
         break
     fi
@@ -134,7 +134,7 @@ while [ $WAIT_TIME_TICKS -gt 0 ]; do
     done
 
     # check current button state
-    if button_down; then
+    if [ $HOLD_TIME_CURRENT -eq 0 ]; then
         # button press is correctly completed
         RET=0
         break
