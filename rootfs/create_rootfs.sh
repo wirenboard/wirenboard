@@ -23,6 +23,13 @@ then
   exit 1
 fi
 
+# flag showing usage of additional repo
+USE_EXPERIMENTAL=false
+if [[ $# -gt 1 ]]; then
+    USE_EXPERIMENTAL=true
+    ADD_REPOS="${@:2}"
+fi
+
 BOARD=$1
 if [[ $BOARD = 6* ]]; then
     ARCH="armhf"
@@ -54,7 +61,13 @@ mkdir -p $OUTPUT
 
 export LC_ALL=C
 
-ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
+
+# use alternative rootfs tarball for experimental builds (with additional repos)
+if $USE_EXPERIMENTAL; then
+    ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}_dev.tar.gz"
+else
+    ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${RELEASE}_${ARCH}.tar.gz"
+fi
 
 ROOTFS_DIR=$OUTPUT
 
@@ -71,6 +84,24 @@ setup_additional_repos() {
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
     done
+}
+
+setup_additional_pins() {
+    mkdir -p ${OUTPUT}/etc/apt/preferences.d/
+    for repo in "${@}"; do
+        local reponame="`echo $repo | sed 's#http://\([^:]*\)\(\:[0-9]\+\)\?/#\1#'`" # remove http:// and port number, leave only hostname
+        local repofilename="`echo $reponame | sed 's/\./_/g'`"
+        echo "Package: *" > ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
+        echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
+        echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
+    done
+}
+
+maybe_setup_additional_pins() {
+    if $USE_EXPERIMENTAL; then
+        echo "Set APT pins for additional repos"
+        setup_additional_pins "$ADD_REPOS"
+    fi
 }
 
 install_contactless_repo() {
@@ -105,8 +136,10 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	services_disable
 
     # setup additional repositories
-    echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    if $USE_EXPERIMENTAL; then
+        echo "Install additional repos"
+        setup_additional_repos "$ADD_REPOS"
+    fi
 
 	echo "Updating"
 	chr apt-get update
@@ -175,6 +208,8 @@ EOM
         echo "Package: *" > ${OUTPUT}/etc/apt/preferences
         echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
         echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
+
+    maybe_setup_additional_pins
         
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
@@ -228,15 +263,26 @@ fi
 echo "Cleanup rootfs"
 chr_nofail dpkg -r geoip-database
 
-
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Install packages from contactless repo"
+echo "Restore pins for experimental repos if necessary"
+maybe_setup_additional_pins
+chr_apt_update
 
+echo "Install some packages before wb-configs (to preserve conffiles diversions)"
+chr_apt_install libnss-mdns kmod
+
+echo "Install wb-configs"
+chr_apt_install wb-configs
+
+# restore apt pin for experimental repos
+maybe_setup_additional_pins
+
+echo "Install packages from contactless repo"
 pkgs=(
     cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
-    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples wb-configs
+    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
@@ -252,7 +298,7 @@ chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
-chr /etc/init.d/mosquitto start
+chr /usr/sbin/mosquitto -d -c /etc/mosquitto/mosquitto.conf
 chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
@@ -283,10 +329,11 @@ install_wb5_packages() {
 
 board_install
 
-chr /etc/init.d/mosquitto stop
+[[ -f ${OUTPUT}/var/run/mosquitto.pid ]] && chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
+rm -rf ${OUTPUT}/etc/apt/preferences.d/dev-*
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
@@ -297,7 +344,9 @@ rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
 
 # reverting ssmtp kludge
-sed "/$(hostname)/d" -i ${OUTPUT}/etc/hosts
+# NOTE: always use readlink -f or realpath for inline Perl stuff,
+# because it will not preserve symlinks
+sed "/$(hostname)/d" -i "`readlink -f ${OUTPUT}/etc/hosts`"
 
 # (re-)start mosquitto on host
 service mosquitto start || /bin/true
