@@ -104,6 +104,7 @@ FROM_ROOTFS=(
 	/usr/bin/fw_printenv
 	/usr/bin/fw_setenv
 	/etc/fw_env.config
+    /etc/profile
 	/usr/bin/fit_info
 	/usr/bin/pv
     /sbin/mkfs.ext4
@@ -127,6 +128,10 @@ FROM_ROOTFS=(
     /usr/lib/wb-prepare/vars.sh
     /usr/lib/wb-prepare/partitions.sh
     /usr/bin/rsync
+    /usr/bin/mmc
+    /bin/dd
+    /sbin/dumpe2fs
+    /sbin/resize2fs
 )
 
 for f in "${FROM_ROOTFS[@]}"; do
