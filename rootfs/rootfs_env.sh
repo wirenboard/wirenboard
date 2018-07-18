@@ -1,21 +1,21 @@
 services_disable() {
     # This disables startin services when installing packages
-    echo exit 101 > ${ROOTFS_DIR}/usr/sbin/policy-rc.d
-    chmod +x ${ROOTFS_DIR}/usr/sbin/policy-rc.d
+    echo exit 101 > ${ROOTFS}/usr/sbin/policy-rc.d
+    chmod +x ${ROOTFS}/usr/sbin/policy-rc.d
 }
 
 services_enable() {
-    rm -f ${ROOTFS_DIR}/usr/sbin/policy-rc.d
+    rm -f ${ROOTFS}/usr/sbin/policy-rc.d
 }
 
 cleanup_chroot() {
     local ret=$?
 
     echo "Umount proc,dev,dev/pts in rootfs"
-    [[ -L ${ROOTFS_DIR}/dev/ptmx ]] || umount ${ROOTFS_DIR}/dev/ptmx
-    umount ${ROOTFS_DIR}/dev/pts
-    umount ${ROOTFS_DIR}/proc
-    umount ${ROOTFS_DIR}/sys
+    [[ -L ${ROOTFS}/dev/ptmx ]] || umount ${ROOTFS}/dev/ptmx
+    umount ${ROOTFS}/dev/pts
+    umount ${ROOTFS}/proc
+    umount ${ROOTFS}/sys
 
     services_enable
 
@@ -26,17 +26,17 @@ prepare_chroot() {
 	# without devpts mount options you will likely end up looking why you can't open
 	# new terminal window :)
 	echo "Mount /proc, /sys, /dev, /dev/pts"
-	mkdir -p ${ROOTFS_DIR}/{proc,sys,dev/pts}
-	mount --bind /proc ${ROOTFS_DIR}/proc
-	mount --bind /sys ${ROOTFS_DIR}/sys
-	mount -t devpts devpts ${ROOTFS_DIR}/dev/pts -o "gid=5,mode=666,ptmxmode=0666,newinstance"
-	rm -f ${ROOTFS_DIR}/dev/ptmx
-	ln -s /dev/pts/ptmx ${ROOTFS_DIR}/dev/ptmx
-	if [[ ! -L ${ROOTFS_DIR}/dev/ptmx ]]; then
-	    if [[ -e ${ROOTFS_DIR}/dev/ptmx ]]; then
-	        mount --bind ${ROOTFS_DIR}/dev/pts/ptmx ${ROOTFS_DIR}/dev/ptmx
+	mkdir -p ${ROOTFS}/{proc,sys,dev/pts}
+	mount --bind /proc ${ROOTFS}/proc
+	mount --bind /sys ${ROOTFS}/sys
+	mount -t devpts devpts ${ROOTFS}/dev/pts -o "gid=5,mode=666,ptmxmode=0666,newinstance"
+	rm -f ${ROOTFS}/dev/ptmx
+	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
+	if [[ ! -L ${ROOTFS}/dev/ptmx ]]; then
+	    if [[ -e ${ROOTFS}/dev/ptmx ]]; then
+	        mount --bind ${ROOTFS}/dev/pts/ptmx ${ROOTFS}/dev/ptmx
 	    else
-	        ln -s /dev/pts/ptmx ${ROOTFS_DIR}/dev/ptmx
+	        ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 	    fi
 	fi
 
@@ -45,15 +45,23 @@ prepare_chroot() {
 
 # a few shortcuts
 chr() {
-    chroot ${ROOTFS_DIR} "$@"
+    chroot ${ROOTFS} "$@"
 }
 
 chr_nofail() {
-    chroot ${ROOTFS_DIR} "$@" || true
+    chroot ${ROOTFS} "$@" || true
 }
 
-chr_apt() {
-    chr apt-get install -y --force-yes "$@"
+chr_apt_install() {
+    chr apt-get -o Dpkg::Options::=--force-confnew --force-yes install -y "$@"
+}
+
+chr_apt_update() {
+    chr apt-get update
+}
+
+chr_apt(){
+    chr_apt_install "$@"
 }
 
 chr_install_deb() {
@@ -61,6 +69,14 @@ chr_install_deb() {
     cp ${DEB_FILE} ${OUTPUT}/
     chr_nofail dpkg -i `basename ${DEB_FILE}`
     rm ${OUTPUT}/`basename ${DEB_FILE}`
+}
+
+chr_install_deb_url() {
+	DEB_URL="$1"
+	DEB_NAME=`basename ${DEB_URL}`
+	wget ${DEB_URL} -O ${ROOTFS}/${DEB_NAME}
+	chr dpkg -i ${DEB_NAME}
+	rm ${ROOTFS}/${DEB_NAME}
 }
 
 dbg() {
