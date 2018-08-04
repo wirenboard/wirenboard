@@ -8,9 +8,6 @@ REPO="http://mirror.yandex.ru/debian/"
 RELEASE=${RELEASE:-stretch}
 
 
-# directly download firmware-realtek from jessie non-free repo
-RTL_FIRMWARE_DEB="http://ftp.de.debian.org/debian/pool/non-free/f/firmware-nonfree/firmware-realtek_0.43_all.deb"
-
 if [[ ( "$#" < 1)  ]]
 then
   echo "USAGE: $0 <BOARD> [list of additional repos]"
@@ -241,7 +238,7 @@ EOM
         i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq gammu \
         python-serial memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5-dev 
+        python-smbus ssmtp moreutils liblog4cpp5-dev firmware-realtek
 
 	if [[ ${RELEASE} == "wheezy" ]]; then
         # not present at stretch
@@ -250,9 +247,6 @@ EOM
 	elif [[ ${RELEASE} == "stretch" ]]; then
         chr_apt_install --force-yes liblog4cpp5v5 logrotate
         fi
-
-	echo "Install realtek firmware"
-	chr_install_deb_url ${RTL_FIRMWARE_DEB}
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
