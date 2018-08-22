@@ -305,7 +305,7 @@ install_wb5_packages() {
 		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-mqtt-db \
 		wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils \
 		wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools \
-		wb-dt-overlays wb-mqtt-mbgate wb-mqtt-db-cli
+		wb-dt-overlays wb-mqtt-mbgate wb-mqtt-db-cli cron
     )
 
     if [[ ${RELEASE} == "wheezy" ]]; then
