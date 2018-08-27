@@ -32,7 +32,7 @@ stretch-armel)
     ;;
 esac
 
-IMAGE=${WBDEV_IMAGE:-contactless/devenv:stable}
+IMAGE=${WBDEV_IMAGE:-contactless/devenv:latest}
 
 if [[ $OSTYPE == darwin* ]]
 then
