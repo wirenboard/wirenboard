@@ -276,8 +276,7 @@ maybe_setup_additional_pins
 echo "Install packages from contactless repo"
 pkgs=(
     cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
-    libnfc5 libnfc-bin libnfc-examples libnfc-pn53x-examples
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto 
+    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
 
@@ -304,9 +303,9 @@ set_fdt() {
 install_wb5_packages() {
     pkgs=(
 		wb-homa-ism-radio wb-mqtt-serial wb-homa-w1 wb-homa-gpio wb-mqtt-db \
-		wb-homa-adc python-nrf24 wb-rules wb-rules-system netplug hostapd bluez can-utils \
-		wb-mqtt-lirc wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools \
-		wb-dt-overlays
+		wb-homa-adc wb-rules wb-rules-system netplug hostapd bluez can-utils \
+		wb-mqtt-dac wb-mqtt-homeui wb-hwconf-manager wb-test-suite u-boot-tools \
+		wb-dt-overlays wb-mqtt-mbgate wb-mqtt-db-cli cron bluez-hcidump wb-daemon-watchdogs
     )
 
     if [[ ${RELEASE} == "wheezy" ]]; then
