@@ -11,24 +11,20 @@ ROOTFS="/rootfs/stretch-armel"
 TARGET_ARCH="armel"
 
 case "$WBDEV_TARGET" in
-wheezy-armhf)
-    ROOTFS="/rootfs/wheezy-armhf"
-    TARGET_ARCH="armhf"
-    ;;
 wheezy-armel)
     ROOTFS="/rootfs/wheezy-armel"
     TARGET_ARCH="armel"
     ;;
-stretch-armhf)
+stretch-armhf|wb6)
     ROOTFS="/rootfs/stretch-armhf"
     TARGET_ARCH="armhf"
     ;;
-stretch-armel)
+stretch-armel|wb5)
     ROOTFS="/rootfs/stretch-armel"
     TARGET_ARCH="armel"
     ;;
 *)
-    echo "Warning: WBDEV_TARGET is not set, defaulting to stretch-armel"
+    echo "Warning: WBDEV_TARGET is not set or not supported, defaulting to stretch-armel (aka wb5)"
     ;;
 esac
 
