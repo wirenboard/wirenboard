@@ -14,7 +14,7 @@ chr apt-get update
 
 pkgs=(devscripts python-virtualenv equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config libmodbus-dev \
-    libwbmqtt-dev libcurl4-gnutls-dev libsqlite3-dev bash-completion \
+    libwbmqtt-dev libsqlite3-dev bash-completion \
     libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
     cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
     libusb-1.0-0-dev knxd-dev knxd-tools knxd \

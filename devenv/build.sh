@@ -10,10 +10,9 @@ do_build() {
 	/root/prep.sh
 }
 
-do_build stretch armel 5
-do_build stretch armhf 6
-do_build wheezy armel 5
-do_build wheezy armhf 6
+do_build stretch armel 58
+do_build stretch armhf 61
+do_build wheezy armel 58
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash

@@ -129,7 +129,7 @@ case "$cmd" in
         ;;
     ndeb)
         if [ "$INSTALL_DEPS" = "yes" ]; then
-            apt-get update
+            apt-get update || apt-get update # workaround for missing apt diff files
             mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         devsudo dpkg-buildpackage -us -uc "$@"
