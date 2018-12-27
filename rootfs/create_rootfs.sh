@@ -297,7 +297,6 @@ chr_apt_install wb-mqtt-confed
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
 set_fdt() {
-    echo "" > 
     cat > ${OUTPUT}/boot/uEnv.txt << EOF
 # The fdt_file parameter is for compatibility with older bootloader
 # versions normally found on Wiren Boards older than WB6.5.
@@ -325,7 +324,6 @@ install_wb5_packages() {
     if [[ ${RELEASE} == "stretch" ]]; then
 	chr_apt_install --force-yes libateccssl1.1
     fi
-    export FORCE_WB_VERSION=$BOARD
     chr_apt_install "${pkgs[@]}"
 }
 
