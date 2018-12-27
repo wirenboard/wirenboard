@@ -325,7 +325,6 @@ install_wb5_packages() {
     if [[ ${RELEASE} == "stretch" ]]; then
 	chr_apt_install --force-yes libateccssl1.1
     fi
-    export FORCE_WB_VERSION=$BOARD
     chr_apt_install "${pkgs[@]}"
 }
 
