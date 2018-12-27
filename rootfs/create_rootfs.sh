@@ -297,7 +297,17 @@ chr_apt_install wb-mqtt-confed
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
 set_fdt() {
-    echo "fdt_file=/boot/dtbs/${1}.dtb" > ${OUTPUT}/boot/uEnv.txt
+    echo "" > 
+    cat > ${OUTPUT}/boot/uEnv.txt << EOF
+# The fdt_file parameter is for compatibility with older bootloader
+# versions normally found on Wiren Boards older than WB6.5.
+
+# In order to override devicetree on boards with newer bootloaders set both 
+# fdt_file and fdt_file_override here.
+
+fdt_file=/boot/dtbs/${1}.dtb
+#fdt_file_override=/path/to/.dtb
+EOF
 }
 
 install_wb5_packages() {
