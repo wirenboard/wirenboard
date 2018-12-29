@@ -297,7 +297,6 @@ chr_apt_install wb-mqtt-confed
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
 set_fdt() {
-    echo "" > 
     cat > ${OUTPUT}/boot/uEnv.txt << EOF
 # The fdt_file parameter is for compatibility with older bootloader
 # versions normally found on Wiren Boards older than WB6.5.
