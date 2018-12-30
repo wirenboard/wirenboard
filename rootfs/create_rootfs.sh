@@ -82,35 +82,19 @@ setup_additional_repos() {
             echo "Warning: can't import repo.gpg.key for repo $repo"
     done
 }
+APT_LIST_TMP_FNAME="${OUTPUT}/etc/apt/sources.list.d/wb-install.list"
+APT_PIN_TMP_FNAME="${OUTPUT}/etc/apt/preferences.d/wb-install"
 
-setup_additional_pins() {
-    mkdir -p ${OUTPUT}/etc/apt/preferences.d/
-    for repo in "${@}"; do
-        local reponame="`echo $repo | sed 's#http://\([^:]*\)\(\:[0-9]\+\)\?/#\1#'`" # remove http:// and port number, leave only hostname
-        local repofilename="`echo $reponame | sed 's/\./_/g'`"
-        mkdir -p ${OUTPUT}/etc/apt/preferences.d/
-        echo "Package: *" > ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
-        echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
-        echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
-    done
-}
-
-maybe_setup_additional_pins() {
-    if $USE_EXPERIMENTAL; then
-        echo "Set APT pins for additional repos"
-        setup_additional_pins "$ADD_REPOS"
-    fi
-}
 
 install_contactless_repo() {
-    rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
+    rm -f ${APT_LIST_TMP_FNAME}
 
 	echo "Install initial repos"
 	if [[ ${RELEASE} == "wheezy" ]]; then
-        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
-	        echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
+	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  > ${APT_LIST_TMP_FNAME}
 	fi
 
 	if [[ ${RELEASE} == "stretch" ]]; then
@@ -202,13 +186,12 @@ EOM
 
     install_contactless_repo
     # apt pin
-        echo "Set APT PIN" 
-        echo "Package: *" > ${OUTPUT}/etc/apt/preferences
-        echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
-        echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
+    echo "Set temporary APT PIN" 
+    echo "Package: *" > ${APT_PIN_TMP_FNAME}
+    echo "Pin: origin releases.contactless.ru" >> ${APT_PIN_TMP_FNAME}
+    echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-    maybe_setup_additional_pins
-        
+       
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
@@ -271,8 +254,9 @@ chr_apt_install libnss-mdns kmod
 echo "Install wb-configs"
 chr_apt_install wb-configs
 
-# restore apt pin for experimental repos
-maybe_setup_additional_pins
+echo "remove installation time apt pinning and lists"
+rm ${APT_LIST_TMP_FNAME}
+rm ${APT_PIN_TMP_FNAME}
 
 echo "Install packages from contactless repo"
 pkgs=(
