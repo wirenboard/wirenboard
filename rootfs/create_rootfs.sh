@@ -244,8 +244,6 @@ chr_nofail dpkg -r geoip-database
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Restore pins for experimental repos if necessary"
-maybe_setup_additional_pins
 chr_apt_update
 
 echo "Install some packages before wb-configs (to preserve conffiles diversions)"
@@ -257,6 +255,7 @@ chr_apt_install wb-configs
 echo "remove installation time apt pinning and lists"
 rm ${APT_LIST_TMP_FNAME}
 rm ${APT_PIN_TMP_FNAME}
+chr_apt_update
 
 echo "Install packages from contactless repo"
 pkgs=(
