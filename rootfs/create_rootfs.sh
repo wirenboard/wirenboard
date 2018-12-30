@@ -69,47 +69,50 @@ fi
 ROOTFS_DIR=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
+ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/000gadditional
+
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
     # setup additional repos
 
     mkdir -p `dirname $ADD_REPO_FILE`
-    touch $ADD_REPO_FILE
+    echo > $ADD_REPO_FILE
+	echo > $ADD_REPO_PIN_FILE
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
         echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
-    done
-}
 
-setup_additional_pins() {
-    mkdir -p ${OUTPUT}/etc/apt/preferences.d/
-    for repo in "${@}"; do
-        local reponame="`echo $repo | sed 's#http://\([^:]*\)\(\:[0-9]\+\)\?/#\1#'`" # remove http:// and port number, leave only hostname
-        local repofilename="`echo $reponame | sed 's/\./_/g'`"
-        echo "Package: *" > ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
-        echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
-        echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
-    done
-}
+		echo "Setup pinning"
 
-maybe_setup_additional_pins() {
-    if $USE_EXPERIMENTAL; then
-        echo "Set APT pins for additional repos"
-        setup_additional_pins "$ADD_REPOS"
-    fi
+		local o=`wget "${repo}/dists/${ADD_REPO_RELEASE}/Release" -O-  | head | grep -P -o "Origin: \K\w+"`
+		local l=`wget "${repo}/dists/${ADD_REPO_RELEASE}/Release" -O-  | head | grep -P -o "Label: \K\w+"`
+
+		echo "Package: *" >> ${ADD_REPO_PIN_FILE}
+		echo "Pin: release o=$o, l=$l" >> ${ADD_REPO_PIN_FILE}
+		echo "Pin-Priority: 990" >> ${ADD_REPO_PIN_FILE}
+    done
+
+	echo "Addtitional repo $ADD_REPO_FILE contents:"
+	cat  $ADD_REPO_FILE
+	echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
+	cat  $ADD_REPO_PIN_FILE
+	
 }
+APT_LIST_TMP_FNAME="${OUTPUT}/etc/apt/sources.list.d/wb-install.list"
+APT_PIN_TMP_FNAME="${OUTPUT}/etc/apt/preferences.d/wb-install"
+
 
 install_contactless_repo() {
-    rm -f ${OUTPUT}/etc/apt/sources.list.d/contactless*
+    rm -f ${APT_LIST_TMP_FNAME}
 
 	echo "Install initial repos"
 	if [[ ${RELEASE} == "wheezy" ]]; then
-        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${OUTPUT}/etc/apt/sources.list.d/${RELEASE}-backports.list
-	        echo "deb http://releases.contactless.ru/ ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
+	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" > ${OUTPUT}/etc/apt/sources.list.d/contactless.list
+		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  ${APT_LIST_TMP_FNAME}
 	fi
 
 	if [[ ${RELEASE} == "stretch" ]]; then
@@ -201,13 +204,12 @@ EOM
 
     install_contactless_repo
     # apt pin
-        echo "Set APT PIN" 
-        echo "Package: *" > ${OUTPUT}/etc/apt/preferences
-        echo "Pin: origin releases.contactless.ru" >> ${OUTPUT}/etc/apt/preferences
-        echo "Pin-Priority: 990" >> ${OUTPUT}/etc/apt/preferences
+    echo "Set temporary APT PIN" 
+    echo "Package: *" > ${APT_PIN_TMP_FNAME}
+    echo "Pin: origin releases.contactless.ru" >> ${APT_PIN_TMP_FNAME}
+    echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-    maybe_setup_additional_pins
-        
+       
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
@@ -260,8 +262,6 @@ chr_nofail dpkg -r geoip-database
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-echo "Restore pins for experimental repos if necessary"
-maybe_setup_additional_pins
 chr_apt_update
 
 echo "Install some packages before wb-configs (to preserve conffiles diversions)"
@@ -270,8 +270,10 @@ chr_apt_install libnss-mdns kmod
 echo "Install wb-configs"
 chr_apt_install wb-configs
 
-# restore apt pin for experimental repos
-maybe_setup_additional_pins
+echo "remove installation time apt pinning and lists"
+rm ${APT_LIST_TMP_FNAME}
+rm ${APT_PIN_TMP_FNAME}
+chr_apt_update
 
 echo "Install packages from contactless repo"
 pkgs=(
@@ -335,7 +337,7 @@ board_install
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
-rm -rf ${OUTPUT}/etc/apt/preferences.d/dev-*
+rm -rf $ADD_REPO_PIN_FILE
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
