@@ -94,7 +94,7 @@ install_contactless_repo() {
         	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
 	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  > ${APT_LIST_TMP_FNAME}
+		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  ${APT_LIST_TMP_FNAME}
 	fi
 
 	if [[ ${RELEASE} == "stretch" ]]; then
