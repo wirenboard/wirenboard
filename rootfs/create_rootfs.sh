@@ -88,6 +88,7 @@ setup_additional_pins() {
     for repo in "${@}"; do
         local reponame="`echo $repo | sed 's#http://\([^:]*\)\(\:[0-9]\+\)\?/#\1#'`" # remove http:// and port number, leave only hostname
         local repofilename="`echo $reponame | sed 's/\./_/g'`"
+        mkdir -p ${OUTPUT}/etc/apt/preferences.d/
         echo "Package: *" > ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
         echo "Pin: origin $reponame" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
         echo "Pin-Priority: 991" >> ${OUTPUT}/etc/apt/preferences.d/dev-$repofilename
