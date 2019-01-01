@@ -91,7 +91,7 @@ setup_additional_repos() {
 
 		echo "Package: *" >> ${ADD_REPO_PIN_FILE}
 		echo "Pin: release o=$o, l=$l" >> ${ADD_REPO_PIN_FILE}
-		echo "Pin-Priority: 991" >> ${ADD_REPO_PIN_FILE}
+		echo "Pin-Priority: 990" >> ${ADD_REPO_PIN_FILE}
     done
 
 	echo "Addtitional repo $ADD_REPO_FILE contents:"
