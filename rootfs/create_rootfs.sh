@@ -92,6 +92,7 @@ setup_additional_repos() {
 		echo "Package: *" >> ${ADD_REPO_PIN_FILE}
 		echo "Pin: release o=$o, l=$l" >> ${ADD_REPO_PIN_FILE}
 		echo "Pin-Priority: 990" >> ${ADD_REPO_PIN_FILE}
+		echo >> ${ADD_REPO_PIN_FILE} # mandatory newline
     done
 
 	echo "Addtitional repo $ADD_REPO_FILE contents:"
@@ -138,7 +139,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
     # setup additional repositories
     if $USE_EXPERIMENTAL; then
         echo "Install additional repos"
-        setup_additional_repos "$ADD_REPOS"
+        setup_additional_repos $ADD_REPOS
     fi
 
 	echo "Updating"
@@ -216,7 +217,7 @@ EOM
     
     # setup additional repositories
     echo "Install additional repos"
-    setup_additional_repos "${@:2}"
+    setup_additional_repos ${@:2}
 
 	echo "Update&upgrade apt"
 	chr_apt_update
