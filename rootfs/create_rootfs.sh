@@ -76,7 +76,8 @@ setup_additional_repos() {
     # setup additional repos
 
     mkdir -p `dirname $ADD_REPO_FILE`
-    touch $ADD_REPO_FILE
+    echo > $ADD_REPO_FILE
+	echo > $ADD_REPO_PIN_FILE
     for repo in "${@}"; do
         echo "=> Setup additional repository $repo..."
         echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
