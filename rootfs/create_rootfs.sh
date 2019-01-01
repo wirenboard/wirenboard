@@ -93,8 +93,11 @@ setup_additional_repos() {
 		echo "Pin-Priority: 991" >> ${ADD_REPO_PIN_FILE}
     done
 
-	chr apt-get update
-
+	echo "Addtitional repo $ADD_REPO_FILE contents:"
+	cat  $ADD_REPO_FILE
+	echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
+	cat  $ADD_REPO_PIN_FILE
+	
 }
 APT_LIST_TMP_FNAME="${OUTPUT}/etc/apt/sources.list.d/wb-install.list"
 APT_PIN_TMP_FNAME="${OUTPUT}/etc/apt/preferences.d/wb-install"
