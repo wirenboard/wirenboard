@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-#set -x
+set -x
 
 ROOTFS_DIR=$ROOTFS
 #REPO="http://ftp.debian.org/debian"
