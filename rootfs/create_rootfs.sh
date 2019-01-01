@@ -69,6 +69,8 @@ fi
 ROOTFS_DIR=$OUTPUT
 
 ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
+ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/000gadditional
+
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 setup_additional_repos() {
     # setup additional repos
@@ -80,7 +82,19 @@ setup_additional_repos() {
         echo "deb $repo $ADD_REPO_RELEASE main" >> $ADD_REPO_FILE
         (wget $repo/repo.gpg.key -O- | chr apt-key add - ) ||
             echo "Warning: can't import repo.gpg.key for repo $repo"
+
+		echo "Setup pinning"
+
+		local o=`wget "${repo}/dists/${ADD_REPO_RELEASE}/Release" -O-  | head | grep -P -o "Origin: \K\w+"`
+		local l=`wget "${repo}/dists/${ADD_REPO_RELEASE}/Release" -O-  | head | grep -P -o "Label: \K\w+"`
+
+		echo "Package: *" >> ${ADD_REPO_PIN_FILE}
+		echo "Pin: release o=$o, l=$l" >> ${ADD_REPO_PIN_FILE}
+		echo "Pin-Priority: 991" >> ${ADD_REPO_PIN_FILE}
     done
+
+	chr apt-get update
+
 }
 APT_LIST_TMP_FNAME="${OUTPUT}/etc/apt/sources.list.d/wb-install.list"
 APT_PIN_TMP_FNAME="${OUTPUT}/etc/apt/preferences.d/wb-install"
@@ -319,7 +333,7 @@ board_install
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
-rm -rf ${OUTPUT}/etc/apt/preferences.d/dev-*
+rm -rf $ADD_REPO_PIN_FILE
 
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
