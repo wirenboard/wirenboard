@@ -334,7 +334,10 @@ install_wb5_packages() {
 
 board_install
 
+ps aux | grep mosquitto
+cat /var/run/mosquitto.pid || true
 [[ -f ${OUTPUT}/var/run/mosquitto.pid ]] && chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
+killall mosquitto
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
