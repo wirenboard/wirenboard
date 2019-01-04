@@ -336,6 +336,9 @@ board_install
 
 if [[ -f ${OUTPUT}/var/run/mosquitto.pid ]]; then
 	# trigger saving persistence db to disk
+	echo "saving persistence"
+	cat ${OUTPUT}/var/run/mosquitto.pid
+	ps aux | grep mosquitto
 	chr /bin/bash -c 'kill -USR1 "`cat /var/run/mosquitto.pid`"'
 	sleep 3
 	chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
