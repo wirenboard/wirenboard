@@ -338,8 +338,10 @@ board_install
 if true; then
 	# trigger saving persistence db to disk
 	echo "saving persistence"
-	cat ${OUTPUT}/var/run/mosquitto.pid || true
+	cat ${ROOTFS}/var/run/mosquitto.pid || true
+	chr cat /var/run/mosquitto.pid || true
 	ps aux | grep mosquitto
+	cat /var/run/mosquitto.pid
 	chr /bin/bash -c 'kill -USR1 "`cat /var/run/mosquitto.pid`"'
 	sleep 3
 	chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
