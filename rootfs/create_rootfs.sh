@@ -334,11 +334,12 @@ install_wb5_packages() {
 
 board_install
 
-chr ps aux | grep mosquitto
-chr cat /etc/mosquitto/mosquitto.conf || true
-chr cat /var/run/mosquitto.pid || true
-[[ -f ${OUTPUT}/var/run/mosquitto.pid ]] && chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
-chr killall mosquitto
+if [[ -f ${OUTPUT}/var/run/mosquitto.pid ]]; then
+	# trigger saving persistence db to disk
+	chr /bin/bash -c 'kill -USR1 "`cat /var/run/mosquitto.pid`"'
+	sleep 3
+	chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
+fi
 
 # remove additional repo files
 rm -rf $ADD_REPO_FILE
