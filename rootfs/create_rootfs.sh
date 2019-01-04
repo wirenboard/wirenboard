@@ -334,10 +334,11 @@ install_wb5_packages() {
 
 board_install
 
-if [[ -f ${OUTPUT}/var/run/mosquitto.pid ]]; then
+# if [[ -f ${OUTPUT}/var/run/mosquitto.pid ]]; then
+if true; then
 	# trigger saving persistence db to disk
 	echo "saving persistence"
-	cat ${OUTPUT}/var/run/mosquitto.pid
+	cat ${OUTPUT}/var/run/mosquitto.pid || true
 	ps aux | grep mosquitto
 	chr /bin/bash -c 'kill -USR1 "`cat /var/run/mosquitto.pid`"'
 	sleep 3
