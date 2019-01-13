@@ -34,3 +34,6 @@ wb-configs_*.*
 *.pyc
 
 .tern-port
+common/build
+common/debian/python-wb-common
+common/wb_common.egg-info
