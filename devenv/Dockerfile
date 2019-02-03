@@ -27,7 +27,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      node-rimraf && \
+      qemu-user-static binfmt-support node-rimraf && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
