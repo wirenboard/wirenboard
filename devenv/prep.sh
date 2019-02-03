@@ -55,3 +55,4 @@ cp /etc/profile.d/wbdev_profile.sh $ROOTFS/etc/profile.d/
 
 chr apt-get clean
 rm -rf $ROOTFS/dh-virtualenv
+chr rm -rf /var/lib/apt/lists/*

@@ -89,3 +89,4 @@ RUN (cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/)
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
 RUN npm install -g bower grunt-cli
+RUN rm -rf /var/lib/apt/lists/*
