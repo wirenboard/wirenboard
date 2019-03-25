@@ -3,8 +3,6 @@ set -e
 #set -x
 
 ROOTFS_DIR=$ROOTFS
-#REPO="http://ftp.debian.org/debian"
-REPO="http://mirror.yandex.ru/debian/"
 RELEASE=${RELEASE:-stretch}
 
 
@@ -72,6 +70,14 @@ ADD_REPO_FILE=$OUTPUT/etc/apt/sources.list.d/additional.list
 ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/000gadditional
 
 ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
+
+if [[ ${RELEASE} == "wheezy" ]]; then
+	REPO="http://archive.debian.org/debian/"
+else
+	#REPO="http://deb.debian.org/debian"
+	REPO="http://mirror.yandex.ru/debian/"
+fi
+
 setup_additional_repos() {
     # setup additional repos
 
@@ -110,7 +116,7 @@ install_contactless_repo() {
 
 	echo "Install initial repos"
 	if [[ ${RELEASE} == "wheezy" ]]; then
-        	echo "deb http://http.debian.net/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
+        	echo "deb http://archive.debian.org/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
 	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
 		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  ${APT_LIST_TMP_FNAME}
