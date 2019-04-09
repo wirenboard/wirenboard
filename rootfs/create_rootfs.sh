@@ -208,10 +208,10 @@ EOM
         echo "deb ${REPO} ${RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
 		if [[ ${RELEASE} == "stretch" ]]; then
-	        echo "deb ${REPO} ${RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+			echo "deb ${REPO} ${RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+			echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 		fi
 
-        echo "deb http://security.debian.org ${RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 
     install_contactless_repo
     # apt pin
