@@ -115,9 +115,9 @@ install_contactless_repo() {
     rm -f ${APT_LIST_TMP_FNAME}
 
 	echo "Install initial repos"
-	if [[ ${RELEASE} == "wheezy" ]]; then
+	if [[ ${RELEASE} == "wheezy" || ${RELEASE} == "jessie"  ]]; then
         	echo "deb http://archive.debian.org/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
-	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
+	        echo "deb http://releases.contactless.ru/ wheezy main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
 		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  ${APT_LIST_TMP_FNAME}
 	fi

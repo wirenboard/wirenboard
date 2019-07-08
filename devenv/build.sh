@@ -13,6 +13,7 @@ do_build() {
 do_build stretch armel 58
 do_build stretch armhf 6x
 do_build wheezy armel 58
+do_build jessie armhf 6x
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash
