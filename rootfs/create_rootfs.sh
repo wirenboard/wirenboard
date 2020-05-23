@@ -360,6 +360,9 @@ chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
+if [[ ${RELEASE} == "stretch" ]]; then
+	rm -f ${OUTPUT}/etc/apt/sources.list
+fi
 
 # removing SSH host keys
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
