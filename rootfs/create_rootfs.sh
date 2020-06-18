@@ -335,7 +335,7 @@ install_wb5_packages() {
     fi
 
     if [[ ${RELEASE} == "stretch" ]]; then
-	chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools wb-knxd-config wb-mqtt-knx
+	chr_apt_install --force-yes libateccssl1.1
     fi
     chr_apt_install "${pkgs[@]}"
 }
