@@ -1,4 +1,4 @@
 #!/bin/bash
 set -u -e
 ROOTFS=${ROOTFS:-/rootfs/wheezy-armel}
-proot -R $ROOTFS -q qemu-arm-static /bin/bash "$@"
+chroot $ROOTFS /bin/bash "$@"
