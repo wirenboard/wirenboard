@@ -1,7 +1,18 @@
-FROM debian:stretch
-MAINTAINER ivan4th <ivan4th@gmail.com>
+ARG TARGET_VERSION=stretch
+FROM debian:$TARGET_VERSION
+
+#An ARG declared before the FROM instruction can’t be used after the FROM..
+#If you want to use it you need to declare it without the value as below.
+ARG TARGET_VERSION
+ENV TARGET_VERSION="$TARGET_VERSION"
+
+MAINTAINER brainroot based on ivan4th <ivan4th@gmail.com>
  
 ENV DEBIAN_FRONTEND noninteractive
+ENV TARGET_ROOTFS=/rootfs-dev/rootfs-armhf
+
+ENV GOPATH=/go
+
  
 RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch main" > /etc/apt/sources.list.d/contactless.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
@@ -27,7 +38,8 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf && \
     apt-get install -y --force-yes proot
-# FIXME: we should not install anything with --force-yes
+# FIXME: we should not install anything with --force-yes Убрать !вообще! proot brainroot
+
  
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
@@ -46,11 +58,11 @@ RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
   && tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
   && rm glide.tar.gz
  
-ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
- 
+
+#Складываем скрипты сразу
 COPY build.sh /root/
 COPY rootfs /root/rootfs
 COPY boards /root/boards
@@ -60,10 +72,12 @@ COPY projects.list /
 COPY chr /usr/local/bin/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 
+#Установим локаль
 RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 RUN echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen
 
+#Генерируем локаль в _ХОСТОВОЙ_ системе
 RUN locale-gen && update-locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -78,10 +92,11 @@ RUN (cd /tmp && \
      dpkg -i libwbmqtt*.deb) && \
   rm -rf /tmp/wb_build_tmp
 
-# build and install google test
-RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
-RUN (ln -s /usr/src/gtest /usr/src/gmock/gtest)
-RUN (cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/)
+#Тут не надо, это в chroot окружении brainroot
+## build and install google test
+#RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
+#RUN (ln -s /usr/src/gtest /usr/src/gmock/gtest)
+#RUN (cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/)
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
