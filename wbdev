@@ -28,7 +28,8 @@ stretch-armel|wb5)
     ;;
 esac
 
-IMAGE=${WBDEV_IMAGE:-contactless/devenv:latest}
+#IMAGE=${WBDEV_IMAGE:-contactless/devenv:latest}
+IMAGE=${WBDEV_IMAGE:-contactless/devenv-6-stretch:latest}
 
 if [[ $OSTYPE == darwin* ]]
 then
@@ -41,6 +42,32 @@ PREFIX="$VM_HOME/wbdev/go/src/github.com/contactless"
 
 INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
 
+echo DEV_UID=$UID
+echo DEV_USER=$USER
+echo DEV_DIR="$PREFIX/${PWD##*/}"
+echo DEV_TERM="$TERM".
+echo ROOTFS="$ROOTFS"
+echo TARGET_ARCH="$TARGET_ARCH".
+echo INSTALL_DEPS="$INSTALL_DEPS"
+echo v $HOME:$VM_HOME
+echo v ${PWD%/*}:$PREFIX
+
+echo run $DOCKER_TTY_OPTS --privileged --rm \
+       -e DEV_UID=$UID \
+       -e DEV_USER=$USER \
+       -e DEV_DIR="$PREFIX/${PWD##*/}" \
+       -e DEV_TERM="$TERM" \
+       -e ROOTFS="$ROOTFS" \
+       -e TARGET_ARCH="$TARGET_ARCH" \
+       -e INSTALL_DEPS="$INSTALL_DEPS" \
+       -v $HOME:$VM_HOME \
+       -v ${PWD%/*}:$PREFIX \
+       $ssh_opts \
+       -h wbdevenv \
+       $IMAGE \
+       "$@"
+
+echo "Docker run."
 docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \

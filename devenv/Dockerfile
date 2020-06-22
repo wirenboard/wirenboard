@@ -8,12 +8,14 @@ ARG TARGET_VERSION
 ENV TARGET_VERSION="$TARGET_VERSION"
 ENV DEBIAN_FRONTEND noninteractive
 
-ENV WIRENBOARD_MIRROR="http://releases.contactless.ru/stable"
+ARG WIRENBOARD_MIRROR
+ENV WIRENBOARD_MIRROR="$WIRENBOARD_MIRROR"
+#ENV WIRENBOARD_MIRROR="http://releases.contactless.ru/stable"
 ENV DEBIAN_MIRROR="mirror.yandex.ru"
 
  
-RUN echo deb [arch=amd64] $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION main > /etc/apt/sources.list.d/contactless.list && \
-    sed -e 's/httpredir.debian.org/$DEBIAN_MIRROR/g' -i /etc/apt/sources.list && \
+RUN echo deb [arch=amd64] $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION main > /etc/apt/sources.list.d/contactless.list
+RUN sed -e 's/httpredir.debian.org/$DEBIAN_MIRROR/g' -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
     echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
@@ -24,7 +26,7 @@ RUN echo deb [arch=amd64] $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION mai
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
     apt-get update && \
-    apt-get install -y --force-yes contactless-keyring git mercurial curl wget debootstrap \
+    apt-get install -y --force-yes contactless-keyring git mercurial wget debootstrap \
       build-essential pkg-config debhelper    \
       nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
       devscripts python-virtualenv git equivs \
@@ -34,7 +36,7 @@ RUN echo deb [arch=amd64] $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION mai
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      qemu-user-static binfmt-support node-rimraf
+      qemu-user-static binfmt-support node-rimraf mc
 #    apt-get install -y --force-yes proot ##Brainroot - remove proot
 # FIXME: we should not install anything with --force-yes
  
@@ -66,9 +68,10 @@ COPY boards /root/boards
 COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
 COPY projects.list /
-##COPY chr /usr/local/bin/ #Brainroot - not use
-##RUN chmod +x /root/*.sh /usr/local/bin/chr
-RUN chmod +x /root/*.sh
+#Brainroot - modify, need control
+COPY chr /usr/local/bin/
+RUN chmod +x /root/*.sh /usr/local/bin/chr
+##RUN chmod +x /root/*.sh
 
 RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen && \
     echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
