@@ -1,10 +1,19 @@
-FROM debian:stretch
-MAINTAINER ivan4th <ivan4th@gmail.com>
- 
+ARG TARGET_VERSION=stretch
+FROM debian:$TARGET_VERSION
+
+#An ARG declared before the FROM instruction can’t be used after the FROM..
+#If you want to use it you need to declare it without the value as below.
+ARG TARGET_VERSION
+
+ENV TARGET_VERSION="$TARGET_VERSION"
 ENV DEBIAN_FRONTEND noninteractive
+
+ENV WIRENBOARD_MIRROR="http://releases.contactless.ru/stable"
+ENV DEBIAN_MIRROR="mirror.yandex.ru"
+
  
-RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch main" > /etc/apt/sources.list.d/contactless.list && \
-    sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
+RUN echo deb [arch=amd64] $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION main > /etc/apt/sources.list.d/contactless.list && \
+    sed -e 's/httpredir.debian.org/$DEBIAN_MIRROR/g' -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
     echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
@@ -25,8 +34,8 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      qemu-user-static binfmt-support node-rimraf && \
-    apt-get install -y --force-yes proot
+      qemu-user-static binfmt-support node-rimraf
+#    apt-get install -y --force-yes proot ##Brainroot - remove proot
 # FIXME: we should not install anything with --force-yes
  
 # Go environment
@@ -57,14 +66,15 @@ COPY boards /root/boards
 COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
 COPY projects.list /
-COPY chr /usr/local/bin/
-RUN chmod +x /root/*.sh /usr/local/bin/chr
+##COPY chr /usr/local/bin/ #Brainroot - not use
+##RUN chmod +x /root/*.sh /usr/local/bin/chr
+RUN chmod +x /root/*.sh
 
-RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
-RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
-RUN echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen
+RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen && update-locale
 
-RUN locale-gen && update-locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8

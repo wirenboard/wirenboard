@@ -157,7 +157,9 @@ case "$cmd" in
     chuser)
         chu "$@"
         ;;
+
     make)
+	echo "make started"
         if [ "$INSTALL_DEPS" = "yes" ]; then
             chr apt-get update
             chr mk-build-deps -ir -t "apt-get --force-yes -y"
@@ -172,6 +174,7 @@ case "$cmd" in
         chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
+	echo "chroot started"
         chr "$@"
         ;;
     update-workspace)
