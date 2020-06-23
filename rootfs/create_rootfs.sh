@@ -74,8 +74,8 @@ ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$RELEASE}
 if [[ ${RELEASE} == "wheezy" ]]; then
 	REPO="http://archive.debian.org/debian/"
 else
-	#REPO="http://deb.debian.org/debian"
-	if [[ -n "$DEBIAN_MIRROR"]] ; then
+	#Brainroot add if for use Makefile variable
+	if [[ -n "$DEBIAN_MIRROR" ]]; then
 		REPO="$DEBIAN_MIRROR"
 	else
 		REPO="http://mirror.yandex.ru/debian/"
@@ -123,6 +123,7 @@ install_contactless_repo() {
         	echo "deb http://archive.debian.org/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
 	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
+	  	#Brainroot add if for use Makefile variable
 		if [[ -n "$WIRENBOARD_MIRROR" && -n "$TARGET_VERSION" ]]; then
 			echo deb $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION main >  ${APT_LIST_TMP_FNAME}
 		else
@@ -164,6 +165,20 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
+
+	echo "Copy qemu to rootfs"
+	mkdir -p ${OUTPUT}/usr/bin
+	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
+	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+	modprobe binfmt_misc || true
+
+echo debootstrap \
+		--foreign \
+		--verbose \
+		--arch $ARCH \
+		--variant=minbase \
+		${RELEASE} ${OUTPUT} ${REPO}
+
 	debootstrap \
 		--foreign \
 		--verbose \
@@ -171,10 +186,7 @@ else
 		--variant=minbase \
 		${RELEASE} ${OUTPUT} ${REPO}
 
-	echo "Copy qemu to rootfs"
-	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
-	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-	modprobe binfmt_misc || true
+
 
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
 	echo "127.0.0.1       wirenboard localhost" > ${OUTPUT}/etc/hosts

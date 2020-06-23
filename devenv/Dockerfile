@@ -11,11 +11,16 @@ ENV DEBIAN_FRONTEND noninteractive
 ARG WIRENBOARD_MIRROR
 ENV WIRENBOARD_MIRROR="$WIRENBOARD_MIRROR"
 #ENV WIRENBOARD_MIRROR="http://releases.contactless.ru/stable"
-ENV DEBIAN_MIRROR="mirror.yandex.ru"
+ARG DEBIAN_MIRROR
+ENV DEBIAN_MIRROR="$DEBIAN_MIRROR"
+#ENV DEBIAN_MIRROR="mirror.yandex.ru"
 
- 
+#debian 9.12 use this deb:
+#deb.debian.org
+#replace "httpredir.debian.org" to 
+
 RUN echo deb [arch=amd64] $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION main > /etc/apt/sources.list.d/contactless.list
-RUN sed -e 's/httpredir.debian.org/$DEBIAN_MIRROR/g' -i /etc/apt/sources.list && \
+RUN sed -e "s#http:\/\/deb.debian.org\/debian#$DEBIAN_MIRROR#g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
     echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
