@@ -75,7 +75,11 @@ if [[ ${RELEASE} == "wheezy" ]]; then
 	REPO="http://archive.debian.org/debian/"
 else
 	#REPO="http://deb.debian.org/debian"
-	REPO="http://mirror.yandex.ru/debian/"
+	if [[ -n "$DEBIAN_MIRROR"]] ; then
+		REPO="$DEBIAN_MIRROR"
+	else
+		REPO="http://mirror.yandex.ru/debian/"
+	fi
 fi
 
 setup_additional_repos() {
@@ -119,7 +123,11 @@ install_contactless_repo() {
         	echo "deb http://archive.debian.org/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
 	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
 	elif [[ ${RELEASE} == "stretch" ]]; then
-		echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  ${APT_LIST_TMP_FNAME}
+		if [[ -n "$WIRENBOARD_MIRROR" && -n "$TARGET_VERSION" ]]; then
+			echo deb $WIRENBOARD_MIRROR/$TARGET_VERSION $TARGET_VERSION main >  ${APT_LIST_TMP_FNAME}
+		else
+			echo "deb http://releases.contactless.ru/stable/${RELEASE} ${RELEASE} main" >  ${APT_LIST_TMP_FNAME}
+		fi
 	fi
 
 	if [[ ${RELEASE} == "stretch" ]]; then
