@@ -41,8 +41,8 @@ RUN sed -e "s#http:\/\/deb.debian.org\/debian#$DEBIAN_MIRROR#g" -i /etc/apt/sour
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      qemu-user-static binfmt-support node-rimraf mc
-#    apt-get install -y --force-yes proot ##Brainroot - remove proot
+      qemu-user-static binfmt-support node-rimraf mc && \
+      apt-get install -y --force-yes proot ##Brainroot - remove proot
 # FIXME: we should not install anything with --force-yes
  
 # Go environment

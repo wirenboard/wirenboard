@@ -4,22 +4,22 @@ WBDEV_IMAGE ?= contactless/devenv-dev
 TARGET_VERSION =stretch
 
 DEBIAN_MIRROR="http://mirror.yandex.ru/debian"
-#DEBIAN_MIRROR="10.0.0.198\/ftp.us.debian.org"
+DEBIAN_MIRROR="http://10.0.0.198/mirror.yandex.ru/debian"
 
 WIRENBOARD_MIRROR="http://releases.contactless.ru/stable"
-#WIRENBOARD_MIRROR="http://10.0.0.198/releases.contactless.ru/stable"
+WIRENBOARD_MIRROR="http://10.0.0.198/releases.contactless.ru/stable"
 
 
 all: stage1 stage2 stage3
 #	tar -czh . | docker build --build-arg TARGET_VERSION=$(TARGET_VERSION) WIRENBOARD_MIRROR=$(WIRENBOARD_MIRROR) --no-cache -t $(WBDEV_IMAGE) -
 ##	docker rm -f $(WBDEV_IMAGE)_tmp 2>/dev/null >/dev/null || true
 ##	docker build --build-arg TARGET_VERSION=$(TARGET_VERSION) --no-cache -t $(WBDEV_IMAGE)_tmp_0 .
-	docker run -t --privileged --name dev_$(TARGET_VERSION)_tmp_0 $(WBDEV_IMAGE)_tmp_0 bash -x /root/build.sh
-	docker commit  dev_$(WBDEV_IMAGE)_tmp_0 $(WBDEV_IMAGE)_tmp_1
+#	docker run -t --privileged --name dev_$(TARGET_VERSION)_tmp_0 $(WBDEV_IMAGE)_tmp_0 bash -x /root/build.sh
+#	docker commit  dev_$(WBDEV_IMAGE)_tmp_0 $(WBDEV_IMAGE)_tmp_1
 #	docker rm -f dev_$(TARGET_VERSION)_tmp_0
 #	docker run -t --privileged --name dev_$(WBDEV_IMAGE)_tmp_1 $(WBDEV_IMAGE)_tmp_1 bash -x /root/build2.sh
 #	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' dev_$(TARGET_VERSION)_tmp_1 $(WBDEV_IMAGE)
-	docker commit dev_$(WBDEV_IMAGE)_tmp_0 $(WBDEV_IMAGE)
+#	docker commit dev_$(WBDEV_IMAGE)_tmp_0 $(WBDEV_IMAGE)
 #	docker rm -f dev_$(TARGET_VERSION)_tmp_1
 
 upentry:
@@ -31,12 +31,12 @@ upentry:
 	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' wbdevenv6_tmp $(WBDEV_IMAGE)
 	docker rm -f wbdevenv_tmp
 clean:
-	docker rm -f dev_$(WBDEV_IMAGE)_tmp_0 2>/dev/null >/dev/null || true
-	docker rm -f dev_$(WBDEV_IMAGE)_tmp_1 2>/dev/null >/dev/null || true
-	docker rm -f dev_$(WBDEV_IMAGE)_tmp_2 2>/dev/null >/dev/null || true
-	docker image rm -f  $(TARGET_VERSION)_tmp_0 2>/dev/null >/dev/null || true
-	docker image rm -f  $(TARGET_VERSION)_tmp_1 2>/dev/null >/dev/null || true
-	docker image rm -f  $(TARGET_VERSION)_tmp_2 2>/dev/null >/dev/null || true
+	docker image rm $(WBDEV_IMAGE)_tmp_0 2>/dev/null >/dev/null || true
+	docker image rm $(WBDEV_IMAGE)_tmp_1 2>/dev/null >/dev/null || true
+	docker image rm $(WBDEV_IMAGE)>/dev/null >/dev/null || true
+	docker rm -f  $(TARGET_VERSION)_tmp_0 2>/dev/null >/dev/null || true
+	docker rm -f  $(TARGET_VERSION)_tmp_1 2>/dev/null >/dev/null || true
+	docker rm -f  $(TARGET_VERSION)_tmp_2 2>/dev/null >/dev/null || true
 
 stage1:
 	echo "####################"
@@ -58,15 +58,16 @@ stage3:
 	echo "####################"
 	echo "     Stage3"
 	echo "####################"
-	docker commit  dev_$(TARGET_VERSION)_tmp_0 $(WBDEV_IMAGE)_tmp_1
+	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' dev_$(TARGET_VERSION)_tmp_0 $(WBDEV_IMAGE)
+#	docker commit  dev_$(TARGET_VERSION)_tmp_0 $(WBDEV_IMAGE)
 	docker rm -f dev_$(TARGET_VERSION)_tmp_0
 
-stage4:
-	echo "####################"
-	echo "     Stage4"
-	echo "####################"
+#stage4:
+#	echo "####################"
+#	echo "     Stage4"
+#	echo "####################"
 #	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' dev_$(TARGET_VERSION)_tmp_1 $(WBDEV_IMAGE)
-	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' dev_$(TARGET_VERSION)_tmp_0 $(WBDEV_IMAGE)
+#	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' $(WBDEV_IMAGE)_tmp_1 $(WBDEV_IMAGE)
 
 
 stage0:

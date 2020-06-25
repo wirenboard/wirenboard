@@ -36,7 +36,8 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
-OUTPUT=${ROOTFS}  # FIXME: use ROOTFS var consistently in all scripts 
+  # FIXME: use ROOTFS var consistently in all scripts 
+OUTPUT=${ROOTFS}
 
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
@@ -166,10 +167,11 @@ else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
 
-	echo "Copy qemu to rootfs"
+	
 	mkdir -p ${OUTPUT}/usr/bin
 	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+	echo "modprobe binfmt_misc"
 	modprobe binfmt_misc || true
 
 echo debootstrap \
@@ -391,5 +393,9 @@ sed "/$(hostname)/d" -i "`readlink -f ${OUTPUT}/etc/hosts`"
 
 # (re-)start mosquitto on host
 service mosquitto start || /bin/true
+
+#/root/wirenboard/devenv/entrypoint.sh make
+#mkdir -p /rootfs/stretch-armhf/root/wbdev/go/src/github.com/
+#ln -s /root/wbdev/go/src/github.com/contactless/ /rootfs/stretch-armhf/root/wbdev/go/src/github.com/contactless
 
 exit 0
