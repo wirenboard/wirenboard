@@ -168,15 +168,6 @@ case "$cmd" in
         chu "$@"
         ;;
 
-    make)
-	echo "make started"
-        if [ "$INSTALL_DEPS" = "yes" ]; then
-            chr apt-get update
-            chr mk-build-deps -ir -t "apt-get --force-yes -y"
-        fi
-        chu make "$@"
-        ;;
-
     make1)
 	echo "make started"
         if [ "$INSTALL_DEPS" = "yes" ]; then
@@ -184,6 +175,15 @@ case "$cmd" in
             chr mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu1 make "$@"
+        ;;
+
+    make)
+	echo "make started"
+        if [ "$INSTALL_DEPS" = "yes" ]; then
+            chr apt-get update
+            chr mk-build-deps -ir -t "apt-get --force-yes -y"
+        fi
+        chu make "$@"
         ;;
 
 
