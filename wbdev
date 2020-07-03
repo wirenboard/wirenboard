@@ -7,26 +7,46 @@ ssh_opts=
 if [ -n "$SSH_AUTH_SOCK" ]; then
     ssh_opts="-e SSH_AUTH_SOCK=/ssh-agent -v $SSH_AUTH_SOCK:/ssh-agent"
 fi
+
+case "$WBDEV_BUILD_METHOD" in
+sbuild|qemuchroot)
+    ;;
+*)
+    echo "Warning: sbuild will be used. Set WBDEV_BUILD_METHOD=qemuchroot for legacy virtualized build."
+    WBDEV_BUILD_METHOD="sbuild"
+esac
+
+
 ROOTFS="/rootfs/stretch-armel"
-TARGET_ARCH="armel"
+TARGET_ARCH=${WBDEV_ARCH:-"armel"}
+TARGET_RELEASE=${WBDEV_RELEASE:-"stretch"}
 
 case "$WBDEV_TARGET" in
 wheezy-armel)
     ROOTFS="/rootfs/wheezy-armel"
     TARGET_ARCH="armel"
+    TARGET_RELEASE="wheezy"
+    ;;
+wheezy-armhf)
+    ROOTFS="/rootfs/wheezy-armhf"
+    TARGET_ARCH="armhf"
+    TARGET_RELEASE="wheezy"
     ;;
 stretch-armhf|wb6)
     ROOTFS="/rootfs/stretch-armhf"
     TARGET_ARCH="armhf"
+    TARGET_RELEASE="stretch"
     ;;
 stretch-armel|wb5)
     ROOTFS="/rootfs/stretch-armel"
     TARGET_ARCH="armel"
+    TARGET_RELEASE="stretch"
     ;;
 *)
     echo "Warning: WBDEV_TARGET is not set or not supported, defaulting to stretch-armel (aka wb5)"
     ;;
 esac
+ROOTFS=/
 
 IMAGE=${WBDEV_IMAGE:-contactless/devenv:latest}
 
@@ -49,6 +69,10 @@ docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e ROOTFS="$ROOTFS" \
        -e TARGET_ARCH="$TARGET_ARCH" \
        -e INSTALL_DEPS="$INSTALL_DEPS" \
+       -e BUILD_METHOD="$WBDEV_BUILD_METHOD" \
+       -e TARGET_RELEASE="$TARGET_RELEASE" \
+       -e USE_EXPERIMENTAL_DEPS="$WBDEV_EXPERIMENTAL_DEPS" \
+       -e USE_UNSTABLE_DEPS="$WBDEV_UNSTABLE_DEPS" \
        -v $HOME:$VM_HOME \
        -v ${PWD%/*}:$PREFIX \
        $ssh_opts \

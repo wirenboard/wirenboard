@@ -29,6 +29,10 @@ DEV_DIR="${DEV_DIR:-}"
 ROOTFS=${ROOTFS:-"/rootfs/wheezy-armel"}
 TARGET_ARCH=${TARGET_ARCH:-armel}
 INSTALL_DEPS=${INSTALL_DEPS:-no}
+TARGET_RELEASE=${TARGET_RELEASE:-stretch}
+BUILD_METHOD=${BUILD_METHOD:-qemuchroot}
+USE_EXPERIMENTAL_DEPS=${USE_EXPERIMENTAL_DEPS:-""}
+USE_UNSTABLE_DEPS=${USE_UNSTABLE_DEPS:-""}
 
 export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
@@ -119,6 +123,22 @@ update_workspace() {
     done
 }
 
+sbuild_buildpackage() {
+    local ARCH=$1
+    shift
+
+    local UNSTABLE_REPO_SPEC=""
+    local EXP_REPO_SPEC=""
+    if [ -n "$USE_EXPERIMENTAL_DEPS" ]; then
+        EXP_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/experimental/${TARGET_RELEASE} ${TARGET_RELEASE} main"
+    fi
+    if [ -n "$USE_UNSTABLE_DEPS" ]; then
+        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/unstable/${TARGET_RELEASE} ${TARGET_RELEASE} main"
+    fi
+
+    sbuild -c ${TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$EXP_REPO_SPEC" --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} -d ${TARGET_RELEASE} "$@"
+}
+
 case "$cmd" in
     user)
         if [ -n "$shell_cmd" ]; then
@@ -128,11 +148,15 @@ case "$cmd" in
         fi
         ;;
     ndeb)
-        if [ "$INSTALL_DEPS" = "yes" ]; then
-            apt-get update || apt-get update # workaround for missing apt diff files
-            mk-build-deps -ir -t "apt-get --force-yes -y"
+        if [ "$BUILD_METHOD" = "sbuild" ]; then
+            sbuild_buildpackage amd64 "$@"
+        else
+            if [ "$INSTALL_DEPS" = "yes" ]; then
+                apt-get update || apt-get update # workaround for missing apt diff files
+                mk-build-deps -ir -t "apt-get --force-yes -y"
+            fi
+            devsudo dpkg-buildpackage -us -uc "$@"
         fi
-        devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
         case "$TARGET_ARCH" in
@@ -165,11 +189,15 @@ case "$cmd" in
         chu make "$@"
         ;;
     cdeb)
-        if [ "$INSTALL_DEPS" = "yes" ]; then
-            chr apt-get update
-            chr mk-build-deps -ir -t "apt-get --force-yes -y"
+        if [ "$BUILD_METHOD" = "sbuild" ]; then
+            sbuild_buildpackage ${TARGET_ARCH} "$@"
+        else
+            if [ "$INSTALL_DEPS" = "yes" ]; then
+                chr apt-get update
+                chr mk-build-deps -ir -t "apt-get --force-yes -y"
+            fi
+            chu dpkg-buildpackage -us -uc "$@"
         fi
-        chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
         chr "$@"
