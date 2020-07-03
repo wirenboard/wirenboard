@@ -69,15 +69,6 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# build and install libwbmqtt and libwbmqtt-dev
-RUN (cd /tmp && \
-     mkdir wb_build_tmp && \
-     cd wb_build_tmp && \
-     git clone https://github.com/contactless/libwbmqtt.git && \
-     (cd libwbmqtt && dpkg-buildpackage -us -uc) && \
-     dpkg -i libwbmqtt*.deb) && \
-  rm -rf /tmp/wb_build_tmp
-
 # build and install google test
 RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
 RUN (ln -s /usr/src/gtest /usr/src/gmock/gtest)
