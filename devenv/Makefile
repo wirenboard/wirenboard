@@ -12,6 +12,7 @@ upentry:
 	docker run --name wbdevenv_tmp --entrypoint /bin/bash $(WBDEV_IMAGE)
 	docker cp entrypoint.sh wbdevenv_tmp:/sbin/entrypoint.sh
 	docker cp projects.list wbdevenv_tmp:/projects.list
+	docker cp build.sh wbdevenv_tmp:/root/build.shd
 	docker cp wbdev_profile.sh wbdevenv_tmp:/etc/profile.d/
 	docker commit --change 'ENTRYPOINT ["/sbin/entrypoint.sh"]' wbdevenv_tmp $(WBDEV_IMAGE)
 	docker rm -f wbdevenv_tmp
