@@ -46,7 +46,6 @@ stretch-armel|wb5)
     echo "Warning: WBDEV_TARGET is not set or not supported, defaulting to stretch-armel (aka wb5)"
     ;;
 esac
-ROOTFS=/
 
 IMAGE=${WBDEV_IMAGE:-contactless/devenv:latest}
 
