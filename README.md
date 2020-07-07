@@ -13,7 +13,7 @@ development environment. It can be used as standalone script
 and can be downloaded separately:
 
 ```
-wget https://raw.githubusercontent.com/contactless/wirenboard/master/wbdev
+wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/wbdev
 chmod +x wbdev
 ```
 

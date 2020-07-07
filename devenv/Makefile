@@ -11,6 +11,7 @@ upentry:
 	docker rm -f wbdevenv_tmp 2>/dev/null >/dev/null || true
 	docker run --name wbdevenv_tmp --entrypoint /bin/bash $(WBDEV_IMAGE)
 	docker cp entrypoint.sh wbdevenv_tmp:/sbin/entrypoint.sh
+	docker cp wbdev_second_half.sh wbdevenv_tmp:/wbdev_second_half.sh
 	docker cp projects.list wbdevenv_tmp:/projects.list
 	docker cp build.sh wbdevenv_tmp:/root/build.shd
 	docker cp wbdev_profile.sh wbdevenv_tmp:/etc/profile.d/

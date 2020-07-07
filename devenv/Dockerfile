@@ -52,6 +52,7 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
  
+COPY wbdev_second_half.sh /
 COPY build.sh /root/
 COPY rootfs /root/rootfs
 COPY boards /root/boards
