@@ -169,8 +169,10 @@ sbuild_buildpackage() {
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
         UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/unstable/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_RELEASE} main"
     fi
-
-    sbuild -c ${WBDEV_TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$EXP_REPO_SPEC" --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} -d ${WBDEV_TARGET_RELEASE} "$@"
+    sbuild -c ${WBDEV_TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" \
+           --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$EXP_REPO_SPEC" \
+           --arch-all --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} \
+           -d ${WBDEV_TARGET_RELEASE} "$@"
 }
 
 case "$cmd" in
