@@ -25,10 +25,36 @@ DEV_UID="${DEV_UID:-1000}"
 DEV_USER="${DEV_USER:-user}"
 DEV_GID="${DEV_GID:-$DEV_UID}"
 DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
-DEV_DIR="${DEV_DIR:-}"
 ROOTFS=${ROOTFS:-"/rootfs/wheezy-armel"}
-TARGET_ARCH=${TARGET_ARCH:-armel}
-INSTALL_DEPS=${INSTALL_DEPS:-no}
+WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armel}
+WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
+WBDEV_TARGET_RELEASE=${WBDEV_INSTALL_DEPS:-"stretch"}
+WBDEV_TARGET=${WBDEV_TARGET:-""}
+
+# Parse parameters supplied via env variables
+case "$WBDEV_TARGET" in
+wheezy-armel)
+    WBDEV_TARGET_ARCH="armel"
+    WBDEV_TARGET_RELEASE="wheezy"
+    ;;
+wheezy-armhf)
+    WBDEV_TARGET_ARCH="armhf"
+    WBDEV_TARGET_RELEASE="wheezy"
+    ;;
+stretch-armhf|wb6)
+    WBDEV_TARGET_ARCH="armhf"
+    WBDEV_TARGET_RELEASE="stretch"
+    ;;
+stretch-armel|wb5)
+    WBDEV_TARGET_ARCH="armel"
+    WBDEV_TARGET_RELEASE="stretch"
+    ;;
+*)
+    echo "Warning: WBDEV_TARGET is not set or not supported, will use ${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
+    ;;
+esac
+
+ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 
 export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
@@ -128,14 +154,14 @@ case "$cmd" in
         fi
         ;;
     ndeb)
-        if [ "$INSTALL_DEPS" = "yes" ]; then
+        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
             apt-get update || apt-get update # workaround for missing apt diff files
             mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
-        case "$TARGET_ARCH" in
+        case "$WBDEV_TARGET_ARCH" in
             armel)
                 devsudo CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc "$@"
                 ;;
@@ -145,7 +171,7 @@ case "$cmd" in
         esac
         ;;
     hmake)
-        if [ "$INSTALL_DEPS" = "yes" ]; then
+        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
             apt-get update
             mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
@@ -158,14 +184,14 @@ case "$cmd" in
         chu "$@"
         ;;
     make)
-        if [ "$INSTALL_DEPS" = "yes" ]; then
+        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
             chr apt-get update
             chr mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu make "$@"
         ;;
     cdeb)
-        if [ "$INSTALL_DEPS" = "yes" ]; then
+        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
             chr apt-get update
             chr mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
