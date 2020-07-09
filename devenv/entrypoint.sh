@@ -25,6 +25,7 @@ DEV_UID="${DEV_UID:-1000}"
 DEV_USER="${DEV_USER:-user}"
 DEV_GID="${DEV_GID:-$DEV_UID}"
 DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
+DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-}"
 
 WBDEV_BUILD_METHOD=${WBDEV_BUILD_METHOD:-}
 WBDEV_USE_EXPERIMENTAL_DEPS=${WBDEV_USE_EXPERIMENTAL_DEPS:-""}
@@ -169,6 +170,8 @@ sbuild_buildpackage() {
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
         UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/unstable/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_RELEASE} main"
     fi
+
+    export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
     sbuild -c ${WBDEV_TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" \
            --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$EXP_REPO_SPEC" \
            --arch-all --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} \

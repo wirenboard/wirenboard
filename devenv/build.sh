@@ -11,11 +11,11 @@ do_build() {
 }
 
 do_build_sbuild_env() {
-	export RELEASE=$12
-	export ROOTFS="/srv/chroot/sbuild-$1-cross"
-	export CHROOT_NAME="$1-amd64-sbuild"
+	export RELEASE=$1
+	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
+	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake"  $1 ${ROOTFS} http://deb.debian.org/debian
+	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
 
 	echo "deb [arch=amd64,armhf,armel] http://releases.contactless.ru/stable/stretch stretch main" > ${ROOTFS}/etc/apt/sources.list.d/contactless.list
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
@@ -24,11 +24,34 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
-	#install multi-arch common build dependencies
+	#install multi-arch common build dependencies 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel
 
-	#make gtest
-	schroot -c ${CHROOT_NAME} --directory=/ -- bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
+	#virtualization support packages
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install qemu-user-static binfmt-support libc6:armhf 
+
+	#install precompiled gtest
+	if [[ "$RELEASE" = "stretch" ]]; then
+		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev
+	else
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:armhf libgtest-dev:armel libgtest-dev
+	fi
+
+	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
+	if dpkg --compare-versions `dpkg -s sbuild | grep  -oP "Version: \K.*$"` lt 0.78.0; then
+		cat <<EOF > ${ROOTFS}/deb_build_options_wrapper.sh
+#!/bin/bash
+DEB_BUILD_OPTIONS=\${_DEB_BUILD_OPTIONS} "\$@"
+EOF
+		cat <<EOF > /etc/sbuild/sbuild.conf
+use Dpkg::Build::Info;
+\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), '_DEB_BUILD_OPTIONS'];
+\$build_env_cmnd = '/deb_build_options_wrapper.sh';
+EOF
+		chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
+	fi
 
 	# remove essential but conflicting libraries
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y --allow-remove-essential remove libmosquittopp-dev libmosquitto-dev  libmosquitto1 libmosquittopp1 libcomerr2 e2fslibs
