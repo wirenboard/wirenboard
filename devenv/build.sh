@@ -28,7 +28,7 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel
 
 	#virtualization support packages
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install qemu-user-static binfmt-support libc6:armhf 
+	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
 
 	#install precompiled gtest
 	if [[ "$RELEASE" = "stretch" ]]; then
