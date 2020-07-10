@@ -1,8 +1,7 @@
 #!/bin/bash -e
-WBDEV_IMAGE=${WBDEV_IMAGE:-contactless/devenv:latest}
-
+WBDEV_IMAGE=${WBDEV_IMAGE:-"contactless/devenv:latest"}
 FNAME=`mktemp /tmp/wbdev.sh.XXXXX`
 docker run --rm --entrypoint cat ${WBDEV_IMAGE} /wbdev_second_half.sh > ${FNAME}
 chmod a+x ${FNAME}
-${FNAME} "$@"
+WBDEV_IMAGE=${WBDEV_IMAGE} ${FNAME} "$@"
 rm ${FNAME}
