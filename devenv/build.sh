@@ -53,6 +53,9 @@ EOF
 		chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
 	fi
 
+	#output everyting on screen instead of file
+	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf
+
 	# remove essential but conflicting libraries
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y --allow-remove-essential remove libmosquittopp-dev libmosquitto-dev  libmosquitto1 libmosquittopp1 libcomerr2 e2fslibs
 
