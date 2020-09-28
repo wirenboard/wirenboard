@@ -61,6 +61,10 @@ EOF
 
 	#clean
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y autoremove
+
+	# set correct symlink to /dev/ptmx
+	rm -f ${ROOTFS}/dev/ptmx
+	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
 do_build stretch armel 58
