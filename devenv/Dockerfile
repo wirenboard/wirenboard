@@ -31,7 +31,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
  
 #add fresh qemu-user-static from backports
 RUN wget http://ftp.us.debian.org/debian/pool/main/q/qemu/qemu-user-static_5.0-14~bpo10+1_amd64.deb && \
-    apt install ./qemu-user-static_5.0-14~bpo10+1_amd64.deb
+    apt install -y ./qemu-user-static_5.0-14~bpo10+1_amd64.deb
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
 ENV GOLANG_VERSION 1.13.1
