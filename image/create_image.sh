@@ -97,7 +97,7 @@ cleanup() {
 	sudo umount $MOUNTPOINT
 	sudo rmdir $MOUNTPOINT
 	sync
-	sudo e2fsck -f ${DEV}p2
+	sudo e2fsck -f -p ${DEV}p2
 	sync
 	sudo kpartx -d $IMGFILE
 }
