@@ -36,7 +36,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
-OUTPUT=${ROOTFS}  # FIXME: use ROOTFS var consistently in all scripts 
+OUTPUT=${ROOTFS}  # FIXME: use ROOTFS var consistently in all scripts
 
 
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
@@ -105,7 +105,7 @@ setup_additional_repos() {
 	cat  $ADD_REPO_FILE
 	echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
 	cat  $ADD_REPO_PIN_FILE
-	
+
 }
 APT_LIST_TMP_FNAME="${OUTPUT}/etc/apt/sources.list.d/wb-install.list"
 APT_PIN_TMP_FNAME="${OUTPUT}/etc/apt/preferences.d/wb-install"
@@ -127,7 +127,7 @@ install_contactless_repo() {
 		chr apt-get update
 		chr apt-get install -y gnupg1
 	fi
-	
+
 }
 
 echo "Install dependencies"
@@ -152,7 +152,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	chr apt-get update
 
 	chr apt-get -y upgrade
-	
+
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
@@ -215,16 +215,16 @@ EOM
 
     install_contactless_repo
     # apt pin
-    echo "Set temporary APT PIN" 
+    echo "Set temporary APT PIN"
     echo "Package: *" > ${APT_PIN_TMP_FNAME}
     echo "Pin: origin releases.contactless.ru" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-       
+
 	echo "Install public key for contactless repo"
 	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
-    
+
     # setup additional repositories
     echo "Install additional repos"
     setup_additional_repos ${@:2}
@@ -294,7 +294,7 @@ pkgs=(
 )
 
 chr_apt_update
-    
+
 if [[ ${RELEASE} == "stretch" ]]; then
     chr_apt_install libssl1.0-dev systemd-sysv
 fi
@@ -314,7 +314,7 @@ set_fdt() {
 # The fdt_file parameter is for compatibility with older bootloader
 # versions normally found on Wiren Boards older than WB6.5.
 
-# In order to override devicetree on boards with newer bootloaders set both 
+# In order to override devicetree on boards with newer bootloaders set both
 # fdt_file and fdt_file_override here.
 
 fdt_file=/boot/dtbs/${1}.dtb
