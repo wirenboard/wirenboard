@@ -26,7 +26,8 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf && \
-    apt-get install -y --force-yes proot
+    apt-get install -y --force-yes proot && \
+    apt-get install -y --force-yes libssl-dev
 # FIXME: we should not install anything with --force-yes
  
 #add fresh qemu-user-static from backports
