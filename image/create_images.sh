@@ -37,9 +37,12 @@ mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${VERSION}_emmc_wb${BOARD}.img"
 WEBUPD_NAME="${OUT_DIR}/${VERSION}_webupd_wb${BOARD}.fit"
 
-rm -f ${IMG_NAME}
-$TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
-zip -j ${IMG_NAME}.zip ${IMG_NAME}
+if  [ -n "$MAKE_IMG" ]; then
+    echo "Create IMG"
+    rm -f ${IMG_NAME}
+    $TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
+    zip -j ${IMG_NAME}.zip ${IMG_NAME}
+fi
 
 # try to load zImage from contribs
 ZIMAGE=`readlink -f ${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR`
