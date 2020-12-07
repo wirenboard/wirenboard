@@ -331,7 +331,7 @@ install_wb5_packages() {
 #		wb-test-suite \
 		u-boot-tools \
 		wb-dt-overlays wb-mqtt-mbgate wb-mqtt-db-cli cron bluez-hcidump wb-daemon-watchdogs \
-		wb-mcu-fw-flasher wb-mcu-fw-updater
+#		wb-mcu-fw-flasher wb-mcu-fw-updater
     )
 
     if [[ ${RELEASE} == "wheezy" ]]; then
