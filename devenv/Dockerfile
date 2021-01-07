@@ -25,7 +25,8 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      qemu-user-static binfmt-support node-rimraf && \
+      qemu-user-static binfmt-support node-rimraf \
+      sbuild && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
@@ -72,15 +73,6 @@ RUN locale-gen && update-locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-
-# build and install libwbmqtt and libwbmqtt-dev
-RUN (cd /tmp && \
-     mkdir wb_build_tmp && \
-     cd wb_build_tmp && \
-     git clone https://github.com/contactless/libwbmqtt.git && \
-     (cd libwbmqtt && dpkg-buildpackage -us -uc) && \
-     dpkg -i libwbmqtt*.deb) && \
-  rm -rf /tmp/wb_build_tmp
 
 # build and install google test
 RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
