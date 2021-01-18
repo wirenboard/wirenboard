@@ -34,7 +34,7 @@ do_build_sbuild_env() {
 	if [[ "$RELEASE" = "stretch" ]]; then
 		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev libcomerr2:armel libcomerr2:armhf libcomerr2 e2fslibs:armel e2fslibs:armhf e2fslibs
 	else
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:armhf libgtest-dev:armel libgtest-dev
 	fi
@@ -55,12 +55,6 @@ EOF
 
 	#output everyting on screen instead of file
 	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf
-
-	# remove essential but conflicting libraries
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y --allow-remove-essential remove libmosquittopp-dev libmosquitto-dev  libmosquitto1 libmosquittopp1 libcomerr2 e2fslibs
-
-	#clean
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y autoremove
 
 	# set correct symlink to /dev/ptmx
 	rm -f ${ROOTFS}/dev/ptmx
