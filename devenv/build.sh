@@ -15,13 +15,19 @@ do_build_sbuild_env() {
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
-
-	echo "deb [arch=amd64,armhf,armel] http://releases.contactless.ru/stable/stretch stretch main" > ${ROOTFS}/etc/apt/sources.list.d/contactless.list
-	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
+	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
+
+	#install mosquitto and e2fslibs-dev:armhf from debian repo to avoid future conflicts with contactless versions 
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
+
+	#add conactless repo
+	echo "deb [arch=amd64,armhf,armel] http://releases.contactless.ru/stable/stretch stretch main" > ${ROOTFS}/etc/apt/sources.list.d/contactless.list
+	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
+
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install multi-arch common build dependencies 
@@ -30,13 +36,13 @@ do_build_sbuild_env() {
 	#virtualization support packages
 	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
 
-	#install precompiled gtest
+	#install precompiled gtest and gmock
 	if [[ "$RELEASE" = "stretch" ]]; then
 		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
 	else
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:armhf libgtest-dev:armel libgtest-dev
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
 	fi
 
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
@@ -55,12 +61,6 @@ EOF
 
 	#output everyting on screen instead of file
 	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf
-
-	# remove essential but conflicting libraries
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y --allow-remove-essential remove libmosquittopp-dev libmosquitto-dev  libmosquitto1 libmosquittopp1 libcomerr2 e2fslibs
-
-	#clean
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y autoremove
 
 	# set correct symlink to /dev/ptmx
 	rm -f ${ROOTFS}/dev/ptmx
