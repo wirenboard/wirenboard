@@ -288,7 +288,7 @@ chr_apt_update
 
 echo "Install packages from contactless repo"
 pkgs=(
-    cmux hubpower python-wb-io modbus-utils serial-tool busybox busybox-syslogd
+    cmux hubpower python-wb-io modbus-utils serial-tool busybox
     libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
     openssl ca-certificates avahi-daemon pps-tools linux-image-${KERNEL_FLAVOUR} device-tree-compiler
 )
