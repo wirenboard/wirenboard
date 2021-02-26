@@ -7,7 +7,4 @@ board_install() {
 	install_wb5_packages
 
 	set_fdt imx6ul-wirenboard-evk
-
-	# FIXME: armhf busybox-syslogd don't supports -s option, so here is a temporary kludge
-	sed -r -i 's/(SYSLOG_OPTS=).*/\1""/' $OUTPUT/etc/default/busybox-syslogd
 }
