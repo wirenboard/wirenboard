@@ -88,6 +88,7 @@ COMPATIBLE=`dtb_get_compatible < "$DTB"`
 [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
 
 VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
+source $ROOTFS/usr/lib/wb-release || die "Unable to get release information"
 
 ITS=$TMPDIR/update.its
 
@@ -100,6 +101,10 @@ cat <<EOF
 	compatible = "$COMPATIBLE";
 	firmware-version = "$VERSION";
 	firmware-compatible = "unknown";
+	release-name = "$RELEASE_NAME";
+	release-suite = "$SUITE";
+	release-target = "$TARGET";
+	release-repo-prefix = "$REPO_PREFIX";
 	#address-cells = <1>;
 	images {
 EOF
@@ -124,6 +129,7 @@ mkimage -v \
 	"$UNALIGNED_OUTPUT" || {
 	echo "Failed ITS:"
 	cat "$ITS"
+	exit 1
 }
 
 echo -en "\n__WB_UPDATE_FIT_END__" >> "$UNALIGNED_OUTPUT"
