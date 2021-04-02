@@ -4,6 +4,7 @@ MAINTAINER ivan4th <ivan4th@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
  
 RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch main" > /etc/apt/sources.list.d/contactless.list && \
+    echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
     apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
@@ -26,14 +27,10 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf \
-      sbuild && \
+      sbuild kpartx zip device-tree-compiler u-boot-tools fit-aligner && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
-#add fresh qemu-user-static from backports
-# FIXME: this should be installed from valid Wirenboard backports archive via apt-get
-RUN wget http://releases.contactless.ru/experimental/stretch/pool/main/q/qemu/qemu-user-static_5.2+dfsg-3~bpo10+1_amd64.deb && \
-    apt install -y ./qemu-user-static_5.2+dfsg-3~bpo10+1_amd64.deb
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
 ENV GOLANG_VERSION 1.13.1
