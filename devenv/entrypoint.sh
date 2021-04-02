@@ -25,13 +25,26 @@ DEV_UID="${DEV_UID:-1000}"
 DEV_USER="${DEV_USER:-user}"
 DEV_GID="${DEV_GID:-$DEV_UID}"
 DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
-ROOTFS=${ROOTFS:-"/rootfs/wheezy-armel"}
+DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-}"
+
+WBDEV_BUILD_METHOD=${WBDEV_BUILD_METHOD:-}
+WBDEV_USE_EXPERIMENTAL_DEPS=${WBDEV_USE_EXPERIMENTAL_DEPS:-""}
+WBDEV_USE_UNSTABLE_DEPS=${WBDEV_USE_UNSTABLE_DEPS:-""}
+
 WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armel}
 WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
-WBDEV_TARGET_RELEASE=${WBDEV_INSTALL_DEPS:-"stretch"}
+WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"stretch"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
 
 # Parse parameters supplied via env variables
+case "$WBDEV_BUILD_METHOD" in
+sbuild|qemuchroot)
+    ;;
+*)
+    echo "Warning: sbuild+multiarch will be used. Set WBDEV_BUILD_METHOD=qemuchroot for legacy virtualized build."
+    WBDEV_BUILD_METHOD="sbuild"
+esac
+
 case "$WBDEV_TARGET" in
 wheezy-armel)
     WBDEV_TARGET_ARCH="armel"
@@ -145,6 +158,26 @@ update_workspace() {
     done
 }
 
+sbuild_buildpackage() {
+    local ARCH=$1
+    shift
+
+    local UNSTABLE_REPO_SPEC=""
+    local EXP_REPO_SPEC=""
+    if [ -n "$WBDEV_USE_EXPERIMENTAL_DEPS" ]; then
+        EXP_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/experimental/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_RELEASE} main"
+    fi
+    if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/unstable/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_RELEASE} main"
+    fi
+
+    export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
+    sbuild -c ${WBDEV_TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" \
+           --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$EXP_REPO_SPEC" \
+           --arch-all --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} \
+           -d ${WBDEV_TARGET_RELEASE} "$@"
+}
+
 case "$cmd" in
     user)
         if [ -n "$shell_cmd" ]; then
@@ -154,11 +187,15 @@ case "$cmd" in
         fi
         ;;
     ndeb)
-        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
-            apt-get update || apt-get update # workaround for missing apt diff files
-            mk-build-deps -ir -t "apt-get --force-yes -y"
+        if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
+            sbuild_buildpackage amd64 "$@"
+        else
+            if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
+                apt-get update || apt-get update # workaround for missing apt diff files
+                mk-build-deps -ir -t "apt-get --force-yes -y"
+            fi
+            devsudo dpkg-buildpackage -us -uc "$@"
         fi
-        devsudo dpkg-buildpackage -us -uc "$@"
         ;;
     gdeb)
         case "$WBDEV_TARGET_ARCH" in
@@ -191,11 +228,15 @@ case "$cmd" in
         chu make "$@"
         ;;
     cdeb)
-        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
-            chr apt-get update
-            chr mk-build-deps -ir -t "apt-get --force-yes -y"
+        if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
+            sbuild_buildpackage ${WBDEV_TARGET_ARCH} "$@"
+        else
+            if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
+                chr apt-get update
+                chr mk-build-deps -ir -t "apt-get --force-yes -y"
+            fi
+            chu dpkg-buildpackage -us -uc "$@"
         fi
-        chu dpkg-buildpackage -us -uc "$@"
         ;;
     chroot)
         chr "$@"

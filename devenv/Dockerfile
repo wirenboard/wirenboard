@@ -25,13 +25,15 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       python-netaddr python-pyparsing liblircclient-dev \
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      qemu-user-static binfmt-support node-rimraf && \
+      qemu-user-static binfmt-support node-rimraf \
+      sbuild && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
 #add fresh qemu-user-static from backports
-RUN wget http://ftp.us.debian.org/debian/pool/main/q/qemu/qemu-user-static_5.0-14~bpo10+1_amd64.deb && \
-    apt install -y ./qemu-user-static_5.0-14~bpo10+1_amd64.deb
+# FIXME: this should be installed from valid Wirenboard backports archive via apt-get
+RUN wget http://releases.contactless.ru/experimental/stretch/pool/main/q/qemu/qemu-user-static_5.2+dfsg-3~bpo10+1_amd64.deb && \
+    apt install -y ./qemu-user-static_5.2+dfsg-3~bpo10+1_amd64.deb
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
 ENV GOLANG_VERSION 1.13.1
@@ -72,15 +74,6 @@ RUN locale-gen && update-locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-
-# build and install libwbmqtt and libwbmqtt-dev
-RUN (cd /tmp && \
-     mkdir wb_build_tmp && \
-     cd wb_build_tmp && \
-     git clone https://github.com/contactless/libwbmqtt.git && \
-     (cd libwbmqtt && dpkg-buildpackage -us -uc) && \
-     dpkg -i libwbmqtt*.deb) && \
-  rm -rf /tmp/wb_build_tmp
 
 # build and install google test
 RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)

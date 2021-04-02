@@ -24,9 +24,17 @@ first.
 The development environment consists "host" environment which is
 Debian "stretch" Linux image used to build Python noarch packages,
 Go-based packages such as `wb-rules` and `wb-mqtt-confed` and
-`wb-mqtt-homeui` frontend. It also contains qemu chroot environment
-used to build C++-based armel and armhf packages such as those from
-`wb-homa-drivers` project.
+`wb-mqtt-homeui` frontend.
+
+Cross-compilation is used to build C/C++ packages such as `wb-mqtt-serial`
+for armhf and armel target architectures. It's implemented using
+[Debian sbuild](https://wiki.debian.org/sbuild) with different 
+non-virtualized chroot rootfses for each Debian release.
+
+It also contains ARM qemu virtualized chroot environments with root
+filesystems closely resembling those on Wiren Board controllers.
+These chroot environments are used to build C/C++-based
+packages in 'chroot' compatibility mode.
 
 When `wbdev` script is invoked, a user with the same user
 name, UID and GID as current user is created inside the container.
@@ -61,6 +69,9 @@ commands there are `ndeb`, `gdeb`, `cdeb` and `make` commands that can
 be used to build projects without starting a session inside the
 container.
 
+Inside the Docker container there are ARM qemu virtualized chroots
+with root filesystems closely resembling those on Wiren Board controllers.
+
 Usage:
 
 * `wbdev user [command...]` or just `wbdev` starts the
@@ -81,8 +92,11 @@ Usage:
 * `wbdev gdeb` builds an armel or armhf (see below) deb from a Go project in the current
   directory (should be used under a wbdev workspace, see **WBDEV
   Workspace** below).
-* `wbdev cdeb` builds an armel or armhf deb from a C++ project in the current
-  directory.
+* `wbdev cdeb [args...]` builds an armel or armhf deb from a C++ project in the current
+  directory. Sbuild is used by default. Arguments are passed to sbuild.
+  For instance, ` --build-failed-commands="%SBUILD_SHELL"` will invoke shell in sbuild env
+  if build is failed. See
+  [man sbuild](https://manpages.debian.org/stretch/sbuild/sbuild.1.en.html) for details.
 * `wbdev make [args...]` invokes `make` in qemu chroot environment in
   the current directory.
 * `wbdev hmake [args...]` invokes `make` in host user mode in the
@@ -94,10 +108,16 @@ Usage:
 To change target architecture you should use environment variable
 WBDEV_TARGET. Possible values:
 
-* `wheezy-armel` build package for armel target with linux wheezy (old WB5.x)
-* `wheezy-armhf` build package for armhf target with linux wheezy 
-* `stretch-armel` build package for armel target with linux stretch (latest WB5.x)
-* `stretch-armhf` build package for armhf target with linux stretch (WB6.x) 
+* `wb5` build package for armel target (latest WB5.x)
+* `wb6` build package for armhf target (WB6.x) 
+
+Debian release (default `stretch`) could be overriden by `WBDEV_RELEASE` environment
+variable.
+
+Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
+
+Set nonzero value to `WBDEV_USE_EXPERIMENTAL_DEPS` or `WBDEV_USE_UNSTABLE_DEPS` to
+add experimental or unstable Wiren Board Debian repositories respectively.
 
 If required, another Docker image could be set via
 environment variable WBDEV_IMAGE.
