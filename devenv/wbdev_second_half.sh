@@ -24,11 +24,12 @@ ENV_CMDLINE=""
 for var in `env | grep -oP "WBDEV_[^=]*"`; do
     ENV_CMDLINE="$ENV_CMDLINE -e $var"
 done
-CMDLINE="docker run $DOCKER_TTY_OPTS --privileged --rm \
+
+docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \
-       -e DEV_DIR=\"$PREFIX/${PWD##*/}\" \
-       -e DEV_TERM=\"$TERM\" \
+       -e DEV_DIR="$PREFIX/${PWD##*/}" \
+       -e DEV_TERM="$TERM" \
        $ENV_CMDLINE \
        -e DEB_BUILD_OPTIONS \
        -v $HOME:$VM_HOME \
@@ -36,5 +37,4 @@ CMDLINE="docker run $DOCKER_TTY_OPTS --privileged --rm \
        $ssh_opts \
        -h wbdevenv \
        $WBDEV_IMAGE \
-       $@"
-eval $CMDLINE
+       "$@"
