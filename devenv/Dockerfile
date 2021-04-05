@@ -4,9 +4,10 @@ MAINTAINER ivan4th <ivan4th@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
  
 RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch main" > /etc/apt/sources.list.d/contactless.list && \
+    echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
+    apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https contactless-keyring && \
     echo "deb [arch=amd64,i386] https://deb.nodesource.com/node_8.x stretch main" > /etc/apt/sources.list.d/nodesource.list && \
     curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     curl http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key | apt-key add - && \
@@ -15,7 +16,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
     apt-get update && \
-    apt-get install -y --force-yes contactless-keyring git mercurial curl wget debootstrap \
+    apt-get install -y --force-yes git mercurial curl wget debootstrap \
       build-essential pkg-config debhelper    \
       nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
       devscripts python-virtualenv git equivs \
@@ -26,14 +27,10 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf \
-      sbuild && \
+      sbuild kpartx zip device-tree-compiler u-boot-tools=2016.11+dfsg1-4 fit-aligner && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
-#add fresh qemu-user-static from backports
-# FIXME: this should be installed from valid Wirenboard backports archive via apt-get
-RUN wget http://releases.contactless.ru/experimental/stretch/pool/main/q/qemu/qemu-user-static_5.2+dfsg-3~bpo10+1_amd64.deb && \
-    apt install -y ./qemu-user-static_5.2+dfsg-3~bpo10+1_amd64.deb
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
 ENV GOLANG_VERSION 1.13.1
