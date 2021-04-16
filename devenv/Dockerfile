@@ -27,7 +27,7 @@ RUN echo "deb [arch=amd64] http://releases.contactless.ru/stable/stretch stretch
       libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf \
-      sbuild kpartx zip device-tree-compiler u-boot-tools=2016.11+dfsg1-4 fit-aligner && \
+      sbuild kpartx zip device-tree-compiler u-boot-tools=2016.11+dfsg1-4 fit-aligner libssl-dev && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
