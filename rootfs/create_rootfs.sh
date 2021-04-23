@@ -113,15 +113,10 @@ check_additional_repos() {
 
 FULL_REPO_URL=`echo "$WB_REPO/$WB_REPO_PREFIX/$WB_TARGET" | sed 's#//\+#/#g' | sed 's#http\(s\)\?:/#http\1://#g'`
 WB_TARGET_FOR_FILENAME=`echo $WB_TARGET | sed 's#/#_#'`
-WB_REPO_HASH=`echo $FULL_REPO_URL | sha256sum - | head -c 8`
-ROOTFS_BASE_SUFFIX="repo${WB_REPO_HASH}_${WB_TARGET_FOR_FILENAME}"
 
-# use alternative rootfs tarball for experimental builds (with additional repos)
-if $USE_EXPERIMENTAL; then
-    ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ROOTFS_BASE_SUFFIX}_${ARCH}_exp.tar.gz"
-else
-    ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ROOTFS_BASE_SUFFIX}_${ARCH}.tar.gz"
-fi
+WB_REPO_HASH=`echo "$FULL_REPO_URL $ADD_REPOS" | sha256sum - | head -c 8`
+ROOTFS_BASE_SUFFIX="${WB_RELEASE}_${WB_TARGET_FOR_FILENAME}_r${WB_REPO_HASH}"
+ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ROOTFS_BASE_SUFFIX}.tar.gz"
 
 ROOTFS_DIR=$OUTPUT
 
