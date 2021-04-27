@@ -1,3 +1,5 @@
+def changesDetected = false
+
 pipeline {
     agent {
         label "devenv"
@@ -14,7 +16,26 @@ pipeline {
                 git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
             }
         }
+        stage('Check difference') {
+            environment {
+                APTLY_CONFIG = credentials('release-aptly-config')
+            }
+            steps {
+                lock('release-aptly-config-db') {
+                    script {
+                        def currentStaging = sh(returnStdout: true,
+                          script: 'wbci-repo -c $APTLY_CONFIG deref staging.latest')
+                        def currentUnstable = sh(returnStdout: true,
+                          script: 'wbci-repo -c $APTLY_CONFIG deref unstable.latest')
+                        changesDetected = (currentUnstable != currentStaging)
+                    }
+                }
+            }
+        }
         stage('Build testing images') {
+            when { expression {
+                changesDetected
+            }}
             steps {
                 script {
                     def targets = params.BOARDS.split(' ')
@@ -38,6 +59,9 @@ pipeline {
             }
         }
         stage('Advance testing') {
+            when { expression {
+                changesDetected
+            }}
             environment {
                 APTLY_CONFIG = credentials('release-aptly-config')
             }
@@ -49,6 +73,9 @@ pipeline {
             }
         }
         stage('Upload via wb-releases') {
+            when { expression {
+                changesDetected
+            }}
             steps {
                 build job: 'contactless/wb-releases/master', wait: true, parameters: [
                     booleanParam(name: 'FORCE_OVERWRITE', value: params.FORCE_OVERWRITE)
