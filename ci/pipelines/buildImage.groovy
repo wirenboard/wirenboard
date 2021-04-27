@@ -43,6 +43,11 @@ pipeline {
                               target: 'contrib/u-boot',
                               flatten: true,
                               fingerprintArtifacts: true
+
+                dir('contrib/u-boot') {
+                    sh 'mv u-boot_*.wb6.imx u-boot.wb6.imx'
+                    sh 'mv u-boot_*.wb5.sd u-boot.wb5.sd'
+                }
             }
         }
         stage('Cleanup old rootfs') {
