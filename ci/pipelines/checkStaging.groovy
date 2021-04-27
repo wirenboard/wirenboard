@@ -32,7 +32,7 @@ pipeline {
                 }
             }
         }
-        stage('Build testing images') {
+        stage('Build staging images') {
             when { expression {
                 changesDetected
             }}
@@ -58,7 +58,7 @@ pipeline {
                 }
             }
         }
-        stage('Advance testing') {
+        stage('Advance unstable') {
             when { expression {
                 changesDetected
             }}
