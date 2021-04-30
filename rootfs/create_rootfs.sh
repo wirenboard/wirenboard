@@ -374,7 +374,7 @@ EOF
 install_wb5_packages() {
     pkgs=(
         wb-suite netplug hostapd bluez can-utils u-boot-tools \
-		cron bluez-hcidump
+		cron bluez-hcidump wb-test-suite
     )
 
     if [[ ${DEBIAN_RELEASE} == "wheezy" ]]; then
