@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
+                git branch: "${params.WIRENBOARD_BRANCH}", url: 'git@github.com:wirenboard/wirenboard'
             }
         }
         stage('Gather FIT image from build-image') {
@@ -44,7 +44,7 @@ pipeline {
                         def remoteName = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${filenameRegex}#'""").trim()
 
-                        if (remoteName == fileName) {
+                        if (remoteName == fitName) {
                             error('FIT filename parsing failed')
                         }
 
