@@ -36,11 +36,14 @@ pipeline {
                         // FIXME: remove this weird magic with renaming, have no idea why is it here
                         def parserRegex = '([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})_(.*)_webupd_wb(.*)\\.fit'
                         def sectionRegex = '\\6'
+                        def boardRegex = '\\7'
                         def filenameRegex = 'wb-\\7-\\6-\\1-\\2-\\3_\\4:\\5:00.fit'
 
                         def fitName = sh(returnStdout: true, script: 'ls *.fit').trim()
                         def remoteSection = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${sectionRegex}#'""").trim()
+                        def boardVersion = sh(returnStdout: true, script: """
+                            echo ${fitName} | sed -E 's#${parserRegex}#${boardRegex}#'""").trim()
                         def remoteName = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${filenameRegex}#'""").trim()
 
@@ -56,9 +59,10 @@ pipeline {
 
                         env.FIT_NAME = fitName
                         env.REMOTE_SECTION = remoteSection
+                        env.BOARD_VERSION = boardVersion
                         env.REMOTE_FIT_NAME = remoteName
 
-                        env.S3_PREFIX = "${env.S3_ROOTDIR}/${env.REMOTE_SECTION}"
+                        env.S3_PREFIX = "${env.S3_ROOTDIR}/${env.REMOTE_SECTION}/${env.BOARD_VERSION}"
                     }
                 }
             }
