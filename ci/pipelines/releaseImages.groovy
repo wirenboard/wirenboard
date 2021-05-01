@@ -28,7 +28,7 @@ pipeline {
                                 string(name: 'WB_RELEASE', value: params.WB_RELEASE),
                                 string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
                                 booleanParam(name: 'CLEANUP_ROOTFS', value: params.CLEANUP_ROOTFS)
-                            ]
+                            ])
 
                         imagesJobs.add(imageJob)
                     }
@@ -44,13 +44,13 @@ pipeline {
                         def currentImageJob = job
                         jobs["publish ${currentImageJob.getId()}"] = {
                             stage("Publish ${currentImageJob.getId()}") {
-                                build job: 'pipelines/publish-image',
+                                build(job: 'pipelines/publish-image',
                                       wait: true,
                                       parameters: [
                                         string(name: 'IMAGE_BUILDNUMBER', value: currentImageJob.getId()),
                                         booleanParam(name: 'SET_LATEST', value: true),
                                         booleanParam(name: 'PUBLISH_IMG', value: false)
-                                      ]
+                                      ])
                             }
                         }
                     }
