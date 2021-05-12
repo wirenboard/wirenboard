@@ -18,17 +18,19 @@ pkgs=(devscripts python-virtualenv equivs build-essential \
     libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
     cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
     libusb-1.0-0-dev knxd-dev knxd-tools knxd \
-    cdbs libqt4-dev linux-headers-4.9.22 git git-man
+    cdbs libqt4-dev git git-man
 )
 
 
 chr_apt_install "${pkgs[@]}"
 
 if [[ ${RELEASE} == "wheezy" ]]; then
-    chr_apt_install gcc-4.7 g++-4.7 libpng12-dev valgrind
+    chr_apt_install gcc-4.7 g++-4.7 libpng12-dev valgrind linux-headers-4.9.22
 elif [[ ${RELEASE} == "stretch" ]]; then
-    chr_apt_install gcc g++ libpng-dev
+    chr_apt_install gcc g++ libpng-dev linux-headers-${PLATFORM}
 fi
+
+chr_apt_install linux-headers-wb6
 
 ##fix me
 echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf

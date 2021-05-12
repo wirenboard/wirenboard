@@ -3,7 +3,7 @@ set -u -e
 cd /root
 
 do_build() {
-	export RELEASE=$1 ARCH=$2 BOARD=$3
+	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
 	time /root/rootfs/create_rootfs.sh $BOARD
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
@@ -68,9 +68,9 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build stretch armel 58
-do_build stretch armhf 6x
-do_build wheezy armel 58
+do_build stretch armel 58 wb2
+do_build stretch armhf 6x wb6
+do_build wheezy armel 58 wb2
 
 do_build_sbuild_env stretch 
 do_build_sbuild_env buster 
