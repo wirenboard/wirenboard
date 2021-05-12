@@ -126,12 +126,7 @@ ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/00-wb-additional-tmp
 APT_LIST_TMP_FNAME=${OUTPUT}/etc/apt/sources.list.d/wb-install-tmp.list
 APT_PIN_TMP_FNAME=${OUTPUT}/etc/apt/preferences.d/01wb-install-tmp
 
-if [[ ${DEBIAN_RELEASE} == "wheezy" ]]; then
-	REPO="http://archive.debian.org/debian/"
-else
-	#REPO="http://deb.debian.org/debian"
-	REPO="http://mirror.yandex.ru/debian/"
-fi
+REPO="http://mirror.yandex.ru/debian/"
 
 setup_additional_repos() {
     # setup additional repos
@@ -167,12 +162,7 @@ install_contactless_repo() {
     rm -f ${APT_LIST_TMP_FNAME}
 
 	echo "Install initial repos"
-	if [[ ${DEBIAN_RELEASE} == "wheezy" ]]; then
-        	echo "deb http://archive.debian.org/debian ${RELEASE}-backports main" > ${APT_LIST_TMP_FNAME}
-	        echo "deb http://releases.contactless.ru/ ${RELEASE} main"  >> ${APT_LIST_TMP_FNAME}
-    else
-        echo "deb $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
-    fi
+    echo "deb $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
 
     if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
 		echo "Install gnupg"
@@ -307,11 +297,7 @@ EOM
         python3-minimal unzip minicom iw ppp libmodbus5 \
         python-smbus ssmtp moreutils liblog4cpp5-dev firmware-realtek
 
-	if [[ ${DEBIAN_RELEASE} == "wheezy" ]]; then
-        # not present at stretch
-        chr_apt_install --force-yes console-tools module-init-tools
-        chr_apt_install --force-yes liblog4cpp5
-	elif [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+	if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
         chr_apt_install --force-yes liblog4cpp5v5 logrotate
         fi
 
@@ -376,10 +362,6 @@ install_wb5_packages() {
         wb-suite netplug hostapd bluez can-utils u-boot-tools \
 		cron bluez-hcidump wb-test-suite
     )
-
-    if [[ ${DEBIAN_RELEASE} == "wheezy" ]]; then
-	chr_apt_install --force-yes lirc-scripts
-    fi
 
     if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
 	chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools

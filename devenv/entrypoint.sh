@@ -46,14 +46,6 @@ sbuild|qemuchroot)
 esac
 
 case "$WBDEV_TARGET" in
-wheezy-armel)
-    WBDEV_TARGET_ARCH="armel"
-    WBDEV_TARGET_RELEASE="wheezy"
-    ;;
-wheezy-armhf)
-    WBDEV_TARGET_ARCH="armhf"
-    WBDEV_TARGET_RELEASE="wheezy"
-    ;;
 stretch-armhf|wb6)
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="stretch"
