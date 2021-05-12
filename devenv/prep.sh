@@ -30,8 +30,6 @@ elif [[ ${RELEASE} == "stretch" ]]; then
     chr_apt_install gcc g++ libpng-dev linux-headers-${PLATFORM}
 fi
 
-chr_apt_install linux-headers-wb6
-
 ##fix me
 echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
