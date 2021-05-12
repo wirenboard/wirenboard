@@ -15,7 +15,7 @@ do_build_sbuild_env() {
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
+	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
@@ -26,12 +26,13 @@ do_build_sbuild_env() {
 
 	#add conactless repo
 	echo "deb [arch=amd64,armhf,armel] http://releases.contactless.ru/stable/stretch stretch main" > ${ROOTFS}/etc/apt/sources.list.d/contactless.list
+    echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install multi-arch common build dependencies 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go
 
 	#virtualization support packages
 	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
