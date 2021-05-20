@@ -14,7 +14,7 @@ pipeline {
     }
     parameters {
         string(name: 'BOARDS', defaultValue: '6x 67', description: 'space-separated list')
-        string(name: 'WIRENBOARD_BRANCH', defaultValue: 'feature/32254-releases', description: 'wirenboard/wirenboard repo branch')
+        string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')

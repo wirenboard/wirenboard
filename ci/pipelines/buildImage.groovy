@@ -14,7 +14,7 @@ pipeline {
         string(name: 'REPO_PREFIX', defaultValue: '', description: 'APT repository prefix (after deb.wirenboard.com)')
         string(name: 'ADDITIONAL_REPOS', defaultValue: '',
                description: 'space-separated for multiple repos, example: http://example.com/path/to@stable:main')
-        string(name: 'WIRENBOARD_BRANCH', defaultValue: 'feature/32254-releases', description: 'wirenboard/wirenboard repo branch')
+        string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WB_TARGET', defaultValue: '', description: 'leave empty for auto detection. Examples: wb6/stretch, all')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
