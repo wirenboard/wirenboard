@@ -77,7 +77,7 @@ pipeline {
                 changesDetected
             }}
             steps {
-                build job: 'contactless/wb-releases/master', wait: true, parameters: [
+                build job: 'wirenboard/wb-releases/master', wait: true, parameters: [
                     booleanParam(name: 'FORCE_OVERWRITE', value: params.FORCE_OVERWRITE)
                 ]
             }
