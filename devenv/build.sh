@@ -25,9 +25,22 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
 
 	#add conactless repo
-	echo "deb [arch=amd64,armhf,armel] http://releases.contactless.ru/stable/stretch stretch main" > ${ROOTFS}/etc/apt/sources.list.d/contactless.list
     echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
+
+    cat <<EOF >${ROOTFS}/etc/apt/preferences.d/wb-releases
+Package: *
+Pin: o=wirenboard a=pool
+Pin-Priority: 10
+
+Package: *
+Pin: o=wirenboard a=unstable
+Pin-Priority: 990
+
+Package: *
+Pin: o=wirenboard
+Pin-Priority: 991
+EOF
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
