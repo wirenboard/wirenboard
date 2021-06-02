@@ -13,6 +13,7 @@ pipeline {
         string(name: 'IMAGE_BUILDNUMBER', defaultValue: '', description: 'from pipelines/build-image')
         booleanParam(name: 'SET_LATEST', defaultValue: false, description: 'remove saved rootfs images before build')
         booleanParam(name: 'PUBLISH_IMG', defaultValue: true, description: 'works with SET_LATEST=true')
+        string(name: 'LATEST_NAME', defaultValue: 'latest_stretch', description: 'used to publish "latest_*.fit, .md5 and .img files')
     }
     environment {
         S3CMD_CONFIG = credentials('s3cmd-fw-releases-config')
@@ -34,21 +35,17 @@ pipeline {
             steps {
                 dir(env.TARGET_DIR) {
                     script {
-                        // FIXME: remove this weird magic with renaming, have no idea why is it here
-                        def parserRegex = '([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})_(.*)_webupd_wb(.*)\\.fit'
-                        def sectionRegex = '\\6'
-                        def boardRegex = '\\7'
-                        def filenameRegex = 'wb-\\7-\\6-\\1-\\2-\\3_\\4:\\5:00.fit'
+                        def parserRegex = '[0-9]*_(.*)_webupd_wb(.*)\\.fit'
+                        def sectionRegex = '\\1'
+                        def boardRegex = '\\2'
 
                         def fitName = sh(returnStdout: true, script: 'ls *.fit').trim()
                         def remoteSection = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${sectionRegex}#'""").trim()
                         def boardVersion = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${boardRegex}#'""").trim()
-                        def remoteName = sh(returnStdout: true, script: """
-                            echo ${fitName} | sed -E 's#${parserRegex}#${filenameRegex}#'""").trim()
 
-                        if (remoteName == fitName) {
+                        if (remoteSection == fitName) {
                             error('FIT filename parsing failed')
                         }
 
@@ -59,11 +56,7 @@ pipeline {
                         }
 
                         env.FIT_NAME = fitName
-                        env.REMOTE_SECTION = remoteSection
-                        env.BOARD_VERSION = boardVersion
-                        env.REMOTE_FIT_NAME = remoteName
-
-                        env.S3_PREFIX = "${env.S3_ROOTDIR}/${env.REMOTE_SECTION}/${env.BOARD_VERSION}"
+                        env.S3_PREFIX = "${env.S3_ROOTDIR}/${remoteSection}/${boardVersion}"
                     }
                 }
             }
@@ -71,7 +64,7 @@ pipeline {
         stage('Publish image') {
             steps {
                 dir(env.TARGET_DIR) {
-                    sh '''s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${REMOTE_FIT_NAME} \
+                    sh '''s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_NAME} \
                         --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
                 }
             }
@@ -81,9 +74,9 @@ pipeline {
                 params.SET_LATEST
             }}
             environment {
-                FIT_MD5_NAME = 'latest_stretch.fit.md5'
-                FIT_PUB_NAME = 'latest_stretch.fit'
-                FIT_FRESET_PUB_NAME = 'latest_stretch_FACTORYRESET.fit'
+                FIT_MD5_NAME = "${params.LATEST_NAME}.fit.md5"
+                FIT_PUB_NAME = "${params.LATEST_NAME}.fit"
+                FIT_FRESET_PUB_NAME = "${params.LATEST_NAME}_FACTORYRESET.fit"
             }
             steps {
                 dir(env.TARGET_DIR) {
