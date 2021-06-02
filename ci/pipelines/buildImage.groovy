@@ -31,15 +31,7 @@ pipeline {
                               fingerprintArtifacts: true
 
                 copyArtifacts projectName: 'build-u-boot',
-                              selector: latestSavedBuild(),
-                              filter: 'result/u-boot_*.wb6.imx',
-                              target: 'contrib/u-boot',
-                              flatten: true,
-                              fingerprintArtifacts: true
-
-                copyArtifacts projectName: 'build-u-boot',
-                              selector: specific("116"),  // this is saved build with latest WB5 u-boot
-                              filter: 'result/u-boot_*.wb5.sd',
+                              filter: 'result/u-boot_*',
                               target: 'contrib/u-boot',
                               flatten: true,
                               fingerprintArtifacts: true
