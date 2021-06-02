@@ -50,9 +50,10 @@ pipeline {
                         }
 
                         if (params.PUBLISH_IMG) {
+                            // FIXME: switch to *.img.zip usage in production scripts and remove *.img publish
                             sh 'unzip *.img.zip'
-                            def imgName = sh(returnStdout: true, script: 'ls *.img').trim()
-                            env.IMG_NAME = imgName
+                            env.IMG_NAME = sh(returnStdout: true, script: 'ls *.img').trim()
+                            env.IMG_ZIP_NAME = sh(returnStdout: true, script: 'ls *.img.zip').trim()
                         }
 
                         env.FIT_NAME = fitName
@@ -95,14 +96,16 @@ pipeline {
                 params.PUBLISH_IMG && params.SET_LATEST
             }}
             environment {
-                IMG_MD5_NAME = 'latest_stretch.img.md5'
-                IMG_PUB_NAME = 'latest_stretch.img'
+                IMG_PUB_NAME = "${params.LATEST_NAME}.img"
             }
             steps {
                 dir(env.TARGET_DIR) {
-                    sh 'md5sum $IMG_NAME | awk \'{print \$1}\' > $IMG_MD5_NAME'
-                    sh 's3cmd -c $S3CMD_CONFIG put $IMG_MD5_NAME ${S3_PREFIX}/${IMG_MD5_NAME}'
+                    sh 'md5sum $IMG_NAME | awk \'{print \$1}\' > ${IMG_PUB_NAME}.md5'
+                    sh 'md5sum $IMG_ZIP_NAME | awk \'{print \$1}\' > ${IMG_PUB_NAME}.zip.md5'
+                    sh 's3cmd -c $S3CMD_CONFIG put ${IMG_PUB_NAME}.md5 ${S3_PREFIX}/${IMG_PUB_NAME}.md5'
+                    sh 's3cmd -c $S3CMD_CONFIG put ${IMG_PUB_NAME}.zip.md5 ${S3_PREFIX}/${IMG_PUB_NAME}.zip.md5'
                     sh 's3cmd -c $S3CMD_CONFIG put $IMG_NAME ${S3_PREFIX}/${IMG_PUB_NAME}'
+                    sh 's3cmd -c $S3CMD_CONFIG put $IMG_ZIP_NAME ${S3_PREFIX}/${IMG_PUB_NAME}.zip'
                 }
             }
         }
