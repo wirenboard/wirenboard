@@ -1,3 +1,14 @@
+// This pipeline checks current staging repository consistency by building firmware images
+// for devices which can run staging. If checks are successful, unstable repository updates
+// to current staging.
+//
+// Used in Jenkins job pipelines/check-staging.
+//
+// wirenboard/wb-releases triggers this job, so it runs when new packages are added to staging.
+//
+// Image building is pretty time-consuming. To avoid unnecessary builds, this pipeline checks
+// if unstable and staging are not the same before proceed.
+
 def changesDetected = false
 
 pipeline {

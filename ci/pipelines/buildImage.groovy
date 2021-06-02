@@ -1,3 +1,9 @@
+// Builds firmware images for Wiren Board controllers.
+//
+// Used in Jenkins job pipelines/build-image.
+//
+// This job is triggered by pipelines/check-staging and pipelines/release-images.
+
 pipeline {
     agent {
         label "devenv"

@@ -1,3 +1,11 @@
+// This pipeline triggers pipelines/build-image job to build stable images
+// and then triggers pipelines/publish-image job to publish these images.
+//
+// Used in Jenkins job pipelines/release-images.
+//
+// wirenboard/wb-releases schedules this job if releases.yaml is changed, so
+// new images are published automatically when our packages are updated.
+
 def imagesJobs = []
 
 pipeline {

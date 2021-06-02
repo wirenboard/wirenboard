@@ -1,3 +1,10 @@
+// This pipeline takes firmware images from scecified pipelines/build-image build
+// and publishes them on Amazon S3 cloud to make them available for users.
+//
+// Used in Jenkins job pipelines/publish-image.
+//
+// This job is triggered by pipelines/release-images.
+
 pipeline {
     agent {
         label "devenv"
