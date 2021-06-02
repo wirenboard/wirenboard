@@ -28,13 +28,15 @@ DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
 DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-}"
 
 WBDEV_BUILD_METHOD=${WBDEV_BUILD_METHOD:-}
-WBDEV_USE_EXPERIMENTAL_DEPS=${WBDEV_USE_EXPERIMENTAL_DEPS:-""}
 WBDEV_USE_UNSTABLE_DEPS=${WBDEV_USE_UNSTABLE_DEPS:-""}
 
+WBDEV_TARGET_BOARD=${WBDEV_TARGET_BOARD:-wb5}
 WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armel}
 WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
 WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"stretch"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
+
+WBDEV_TARGET_REPO_RELEASE=${WBDEV_TARGET_REPO_RELEASE:-"stable"}
 
 # Parse parameters supplied via env variables
 case "$WBDEV_BUILD_METHOD" in
@@ -47,10 +49,12 @@ esac
 
 case "$WBDEV_TARGET" in
 stretch-armhf|wb6)
+    WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
 stretch-armel|wb5)
+    WBDEV_TARGET_BOARD="wb5"
     WBDEV_TARGET_ARCH="armel"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
@@ -154,18 +158,17 @@ sbuild_buildpackage() {
     local ARCH=$1
     shift
 
+    local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
+    STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} ${WBDEV_TARGET_REPO_RELEASE} main"
+
     local UNSTABLE_REPO_SPEC=""
-    local EXP_REPO_SPEC=""
-    if [ -n "$WBDEV_USE_EXPERIMENTAL_DEPS" ]; then
-        EXP_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/experimental/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_RELEASE} main"
-    fi
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://releases.contactless.ru/unstable/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_RELEASE} main"
+        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} unstable main"
     fi
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
     sbuild -c ${WBDEV_TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" \
-           --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$EXP_REPO_SPEC" \
+           --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$STABLE_REPO_SPEC" \
            --arch-all --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} \
            -d ${WBDEV_TARGET_RELEASE} "$@"
 }
