@@ -154,6 +154,13 @@ update_workspace() {
     done
 }
 
+platform_has_suite() {
+    local SUITE=$1
+    local URL="http://deb.wirenboard.com/${WB_REPO_PLATFORM}/dists/${SUITE}/Release"
+    echo "Checking $URL"
+    curl --silent --head --fail --output /dev/null $URL
+}
+
 sbuild_buildpackage() {
     local ARCH=$1
     shift
@@ -163,7 +170,12 @@ sbuild_buildpackage() {
 
     local UNSTABLE_REPO_SPEC=""
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} unstable main"
+        if platform_has_suite unstable; then
+            echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
+            UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} unstable main"
+        else
+            echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite (or network error)"
+        fi
     fi
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
