@@ -1,5 +1,6 @@
 # Wiren Board 5.8
 export FORCE_WB_VERSION=58
+export DTB=/boot/dtbs/imx28-wirenboard58.dtb
 
 board_include board_S.sh
 board_include soc_imx28.sh

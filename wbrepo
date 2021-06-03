@@ -10,6 +10,11 @@ DISTRIBUTION=testing
 # list of arches
 ARCH=armel,armhf,all
 
+# repo origin and label should be different from main repository
+# to distinguish it in apt pins
+ORIGIN=wirenboard-wbrepo
+LABEL=experimental-$USER-`date +'%s'`
+
 # Aptly special config file name, with path
 CONFIG_FILE=~/.wbrepo/wbrepo.conf
 # Local repository dir
@@ -25,6 +30,9 @@ KEY_OWNER_EMAIL=repokeeper@localhost.local
 
 # service variables, don't change
 APTLY_ARGS="-config=$CONFIG_FILE "
+
+# repo description arguments
+REPO_ARGS="-origin='$ORIGIN' -label='$LABEL'"
 
 # trap Ctrl-C to stop everything
 trap 'stopall' INT
@@ -123,12 +131,12 @@ case $1 in
 add)
     aptly $APTLY_ARGS repo add $REPO_NAME ${@:2}
     aptly $APTLY_ARGS publish drop $DISTRIBUTION >/dev/null 2>/dev/null || true
-    aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_NAME 2>/dev/null
+    aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_ARGS $REPO_NAME 2>/dev/null
 ;;
 remove)
     aptly $APTLY_ARGS repo remove $REPO_NAME "${@:2}"
     aptly $APTLY_ARGS publish drop $DISTRIBUTION >/dev/null 2>/dev/null || true
-    aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_NAME 2>/dev/null
+    aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_ARGS $REPO_NAME 2>/dev/null
 ;;
 list)
 	aptly $APTLY_ARGS repo show -with-packages $REPO_NAME

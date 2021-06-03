@@ -3,9 +3,9 @@ set -u -e
 cd /root
 
 do_build() {
-	export RELEASE=$1 ARCH=$2 BOARD=$3
+	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
-	time /root/rootfs/create_rootfs.sh $BOARD
+	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
 }
@@ -15,7 +15,7 @@ do_build_sbuild_env() {
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
+	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
@@ -25,13 +25,27 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
 
 	#add conactless repo
-	echo "deb [arch=amd64,armhf,armel] http://releases.contactless.ru/stable/stretch stretch main" > ${ROOTFS}/etc/apt/sources.list.d/contactless.list
+    echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
+
+    cat <<EOF >${ROOTFS}/etc/apt/preferences.d/wb-releases
+Package: *
+Pin: o=wirenboard a=pool
+Pin-Priority: 10
+
+Package: *
+Pin: o=wirenboard a=unstable
+Pin-Priority: 990
+
+Package: *
+Pin: o=wirenboard
+Pin-Priority: 991
+EOF
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install multi-arch common build dependencies 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go
 
 	#virtualization support packages
 	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
@@ -67,9 +81,8 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build stretch armel 58
-do_build stretch armhf 6x
-do_build wheezy armel 58
+do_build stretch armel 58 wb2
+do_build stretch armhf 6x wb6
 
 do_build_sbuild_env stretch 
 do_build_sbuild_env buster 
