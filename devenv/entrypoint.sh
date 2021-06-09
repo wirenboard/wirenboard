@@ -197,7 +197,7 @@ sbuild_buildpackage() {
             echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
             UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} unstable main"
         else
-            echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite (or network error)"
+            echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
         fi
     fi
 
