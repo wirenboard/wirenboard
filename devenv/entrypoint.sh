@@ -154,11 +154,34 @@ update_workspace() {
     done
 }
 
+die() {
+    echo "$@" >&2
+    exit 1
+}
+
 platform_has_suite() {
     local SUITE=$1
     local URL="http://deb.wirenboard.com/${WB_REPO_PLATFORM}/dists/${SUITE}/Release"
     echo "Checking $URL"
-    curl --silent --head --fail --output /dev/null $URL
+    local HTTP_CODE=`curl --silent --head --output /dev/null --write-out='%{http_code}\n' $URL`
+    local CURL_STATUS=$?
+
+    if [[ "$CURL_STATUS" != "0" ]]; then
+        die "Failed to retrieve $URL, curl returned $CURL_STATUS"
+    fi
+
+    # logic is the following:
+    #  - code=404 -> no such suite
+    #  - 200<=code<400 -> ok
+    #  - else -> failure
+
+    if [[ $HTTP_CODE -eq 404 ]]; then
+        return false  # no such suite
+    elif [[ $HTTP_CODE -ge 200 ]] && [[ $HTTP_CODE -lt 400 ]]; then
+        return true  # suite found
+    else
+        die "Failed to retrieve $URL, server returned $HTTP_CODE"
+    fi
 }
 
 sbuild_buildpackage() {
