@@ -19,6 +19,10 @@ pipeline {
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
+        booleanParam(name: 'SAVE_ARTIFACTS', defaultValue: true, description: 'save image after build (may be disabled for staging checks)')
+    }
+    environment {
+        OUT_DIR="jenkins_output/"
     }
     stages {
         stage('Checkout') {
@@ -67,9 +71,6 @@ pipeline {
             }
         }
         stage('Create image') {
-            environment {
-                OUT_DIR="jenkins_output/"
-            }
             steps {
                 cleanWs deleteDirs: true, patterns: [[pattern: "$OUT_DIR/", type: 'INCLUDE']]
                 sh """
@@ -77,14 +78,18 @@ pipeline {
                     OUT_DIR=$OUT_DIR MAKE_IMG=y ./image/create_images.sh $BOARD'
                 """
             }
-
             post {
                 always {
                     sh 'wbdev root chown -R jenkins:jenkins .'
                 }
-                success {
-                    archiveArtifacts artifacts: "$OUT_DIR/*.img.zip,$OUT_DIR/*.fit"
-                }
+            }
+        }
+        stage('Archive image') {
+            when { expression {
+                params.SAVE_ARTIFACTS
+            }}
+            steps {
+                archiveArtifacts artifacts: "$OUT_DIR/*.img.zip,$OUT_DIR/*.fit"
             }
         }
     }
