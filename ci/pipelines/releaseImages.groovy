@@ -35,7 +35,8 @@ pipeline {
                                 string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
                                 string(name: 'WB_RELEASE', value: params.WB_RELEASE),
                                 string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
-                                booleanParam(name: 'CLEANUP_ROOTFS', value: params.CLEANUP_ROOTFS)
+                                booleanParam(name: 'CLEANUP_ROOTFS', value: params.CLEANUP_ROOTFS),
+                                booleanParam(name: 'SAVE_ARTIFACTS', value: true)
                             ])
 
                         imagesJobs.add(imageJob)
