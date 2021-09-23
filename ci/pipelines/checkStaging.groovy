@@ -59,7 +59,8 @@ pipeline {
                                 build job: 'pipelines/build-image', wait: true, parameters: [
                                     string(name: 'BOARD', value: currentTarget),
                                     string(name: 'WB_TARGET', value: 'all'),
-                                    string(name: 'WB_RELEASE', value: 'staging')
+                                    string(name: 'WB_RELEASE', value: 'staging'),
+                                    booleanParam(name: 'SAVE_ARTIFACTS', value: false)
                                 ]
                             }
                         }
