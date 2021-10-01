@@ -29,23 +29,27 @@ do_build_sbuild_env() {
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
 
     cat <<EOF >${ROOTFS}/etc/apt/preferences.d/wb-releases
-Package: *
+Package: *:any
 Pin: release o=wirenboard a=pool
 Pin-Priority: 10
 
-Package: *
+Package: *:any
 Pin: release o=wirenboard a=unstable
 Pin-Priority: 990
 
-Package: *
+Package: *:any
 Pin: release o=wirenboard
 Pin-Priority: 991
 EOF
     cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
-Package: node* npm libuv1*
+Package: node*:any npm:any libuv1*:any
 Pin: release a=stretch-backports
 Pin-Priority: 510
 EOF
+
+	if [[ "$RELEASE" = "stretch" ]]; then
+		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
+	fi
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
@@ -57,8 +61,6 @@ EOF
 
 	#install precompiled gtest and gmock
 	if [[ "$RELEASE" = "stretch" ]]; then
-		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
 	else
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
