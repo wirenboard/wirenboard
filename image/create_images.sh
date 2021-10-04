@@ -64,12 +64,22 @@ if  [ -n "$MAKE_IMG" ]; then
 fi
 
 # try to load zImage from contribs
-ZIMAGE=`readlink -f ${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR`
-[[ -f $ZIMAGE ]] || {
-    [[ -L ${ROOTFS}/boot/zImage ]] && \
-        ZIMAGE=${ROOTFS}`readlink -f ${ROOTFS}/boot/zImage` || \
-        ZIMAGE=`readlink -f ${ROOTFS}/boot/zImage`
-}
+ZIMAGE_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR"
+mkdir -p `dirname $ZIMAGE_DEFAULT_PATH`
+
+ZIMAGE=`readlink -f ${ZIMAGE_DEFAULT_PATH} || true`
+if [[ ! -f $ZIMAGE ]]; then
+    echo "Local zImage not found, downloading one to $ZIMAGE_DEFAULT_PATH"
+    ZIMAGE_URL="http://fw-releases.wirenboard.com/utils/build-image/zImage.$KERNEL_FLAVOUR"
+    wget -O "$ZIMAGE_DEFAULT_PATH" "$ZIMAGE_URL"
+    ZIMAGE=`readlink -f ${ZIMAGE_DEFAULT_PATH}`
+fi
+
+if [[ ! -f $ZIMAGE ]]; then
+    echo "Failed to find zImage even after downloading, something went wrong"
+    exit 1
+fi
+
 echo "Using zImage from $ZIMAGE"
 $TOP_DIR/image/create_update.sh ${ROOTFS} ${ZIMAGE} ${WEBUPD_NAME}
 
