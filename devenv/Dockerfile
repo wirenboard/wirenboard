@@ -14,6 +14,8 @@ RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /e
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
+    echo -e 'deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch main' >> /etc/apt/sources.list.d/clang.list && \
+    curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     apt-get update && \
     apt-get install -y --force-yes git mercurial curl wget debootstrap \
       build-essential pkg-config debhelper    \
@@ -27,7 +29,7 @@ RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /e
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf \
       sbuild kpartx zip device-tree-compiler u-boot-tools=2016.11+dfsg1-4 fit-aligner libssl-dev \
-      golang-go && \
+      golang-go clang-format && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
