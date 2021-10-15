@@ -30,6 +30,7 @@ docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_USER=$USER \
        -e DEV_DIR="$PREFIX/${PWD##*/}" \
        -e DEV_TERM="$TERM" \
+       -e DEV_HOME="$VM_HOME" \
        $ENV_CMDLINE \
        -e DEB_BUILD_OPTIONS \
        -v $HOME:$VM_HOME \

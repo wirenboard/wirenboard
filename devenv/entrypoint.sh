@@ -26,6 +26,7 @@ DEV_USER="${DEV_USER:-user}"
 DEV_GID="${DEV_GID:-$DEV_UID}"
 DEV_GROUP="${DEV_GROUP:-$DEV_USER}"
 DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-}"
+DEV_HOME="${DEV_HOME:-/home/$DEV_USER}"
 
 WBDEV_BUILD_METHOD=${WBDEV_BUILD_METHOD:-}
 WBDEV_USE_UNSTABLE_DEPS=${WBDEV_USE_UNSTABLE_DEPS:-""}
@@ -65,7 +66,7 @@ esac
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 
-export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
+export WORKSPACE_DIR="$DEV_HOME/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
 
 rm -f /.devdir $ROOTFS/.devdir
@@ -100,7 +101,7 @@ devsudo () {
     # Also we use 'env' here because without it (i.e. when
     # utilizing sudo's own environment passing mechanism)
     # PATH gets overridden in the subshell
-    sudo -E -u "$DEV_USER" env HOME="/home/$DEV_USER" PATH="$PATH" "$@"
+    sudo -E -u "$DEV_USER" env HOME="$DEV_HOME" PATH="$PATH" "$@"
 }
 
 chu () {
@@ -108,7 +109,7 @@ chu () {
 }
 
 chr () {
-    proot -S $ROOTFS -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+    proot -S $ROOTFS -q qemu-arm-static -b "$DEV_HOME:$DEV_HOME" $shell_cmd "$@"
 }
 
 loadprojects() {

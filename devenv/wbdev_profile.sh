@@ -1,7 +1,7 @@
 if [ -z "$DEV_USER" ]; then
     export WORKSPACE_DIR="$HOME/wbdev"
 else
-    export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
+    export WORKSPACE_DIR="$DEV_HOME/wbdev"
 fi
 export GOPATH="$WORKSPACE_DIR/go"
 export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
