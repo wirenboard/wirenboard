@@ -63,7 +63,7 @@ install_from_rootfs() {
 	if [[ -x "$ROOTFS/$src" ]]; then
 		chroot "$ROOTFS" ldd "$src" |
 		sed -rn 's#[^/]*(/[^ ]*).*#\1#p' |
-		while read lib; do
+		while read -r lib; do
 			[[ -e "$INITRAMFS/$lib" ]] || install_from_rootfs "$lib"
 		done
 	fi
@@ -94,8 +94,8 @@ install_file "$FILES_DIR/libupdate.wb6.sh" "/lib/libupdate.wb6.sh"
 install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
 
 [[ $FLAVOUR == "wb2" ]] && {
-    arm-linux-gnueabi-gcc -o $FILES_DIR/memdump $FILES_DIR/memdump.c -Wall -Wextra -pedantic -std=c99
-    install_file "$FILES_DIR/memdump" "/bin/memdump"
+    arm-linux-gnueabi-gcc -o "${FILES_DIR}/memdump" "${FILES_DIR}/memdump.c" -Wall -Wextra -pedantic -std=c99
+    install_file "${FILES_DIR}/memdump" "/bin/memdump"
 }
 
 case $FLAVOUR in
@@ -124,10 +124,10 @@ FROM_ROOTFS=(
     /usr/bin/dropbearkey
     /usr/bin/xxd
 
-    $LIBDIR/libnss_files.so.2
-    $LIBDIR/libnss_files-2.24.so
-    $LIBDIR/ld-2.24.so
-    $LIBDIR/ld-linux.so.3
+    "$LIBDIR/libnss_files.so.2"
+    "$LIBDIR/libnss_files-2.24.so"
+    "$LIBDIR/ld-2.24.so"
+    "$LIBDIR/ld-linux.so.3"
 
     /etc/shadow
     /etc/group
@@ -150,4 +150,4 @@ for f in "${FROM_ROOTFS[@]}"; do
 	install_from_rootfs "$f"
 done
 
-echo 'root:x:0:0:root:/:/bin/sh' > $INITRAMFS/etc/passwd
+echo 'root:x:0:0:root:/:/bin/sh' > "$INITRAMFS/etc/passwd"
