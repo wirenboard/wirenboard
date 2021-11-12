@@ -58,9 +58,6 @@ stretch-armel|wb5)
     WBDEV_TARGET_ARCH="armel"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
-*)
-    echo "Warning: WBDEV_TARGET is not set or not supported, will use ${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
-    ;;
 esac
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
@@ -209,6 +206,11 @@ sbuild_buildpackage() {
            -d ${WBDEV_TARGET_RELEASE} "$@"
 }
 
+print_target_info() {
+    echo "Build target: ${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH} (board ${WBDEV_TARGET_BOARD})"
+    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'stretch-armhf'/'stretch-armel' or 'wb6'/'wb5')"
+}
+
 case "$cmd" in
     user)
         if [ -n "$shell_cmd" ]; then
@@ -229,6 +231,7 @@ case "$cmd" in
         fi
         ;;
     gdeb)
+        print_target_info
         case "$WBDEV_TARGET_ARCH" in
             armel)
                 devsudo CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc "$@"
@@ -249,9 +252,11 @@ case "$cmd" in
         $shell_cmd "$@"
         ;;
     chuser)
+        print_target_info
         chu "$@"
         ;;
     make)
+        print_target_info
         if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
             chr apt-get update
             chr mk-build-deps -ir -t "apt-get --force-yes -y"
@@ -259,6 +264,7 @@ case "$cmd" in
         chu make "$@"
         ;;
     cdeb)
+        print_target_info
         if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
             sbuild_buildpackage ${WBDEV_TARGET_ARCH} "$@"
         else
@@ -270,6 +276,7 @@ case "$cmd" in
         fi
         ;;
     chroot)
+        print_target_info
         chr "$@"
         ;;
     update-workspace)
