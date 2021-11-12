@@ -26,6 +26,13 @@ for compat in $DT_COMPAT_LIST; do
 			modprobe ci_hdrc_imx
 			sleep 1
 			break
+            ;;
+        "wirenboard,wirenboard-700")
+            echo "Board is WB7, loading sunxi module"
+            modprobe sunxi
+            sleep 1
+            break
+            ;;
 	esac
 done
 
@@ -50,10 +57,11 @@ check_fit_end_signature() {
 	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
 }
 
+
+
 case "$BOOTMODE" in
 	usbupdate*)
 		echo "Load modules for USB to work"
-		modprobe ci-hdrc-imx
 		modprobe usb-storage
 		modprobe sd_mod
 
