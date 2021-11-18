@@ -32,8 +32,11 @@ VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || {
 	exit 4
 }
 
+DTB_NAME=$(sed -n 's/^fdt_file=\/boot\/dtbs\///p' "$ROOTFS/boot/uEnv.txt")
+
 echo "Board:       $BOARD"
 echo "RootFS:      $ROOTFS"
+echo "DTB name:    $DTB_NAME"
 echo "FW version:  $VERSION"
 echo "Debian:      $VERSION_CODENAME"
 echo "Release:     $RELEASE_NAME"
@@ -65,23 +68,40 @@ fi
 
 # try to load zImage from contribs
 ZIMAGE_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR"
-mkdir -p `dirname $ZIMAGE_DEFAULT_PATH`
+mkdir -p "$(dirname "$ZIMAGE_DEFAULT_PATH")"
 
-ZIMAGE=`readlink -f ${ZIMAGE_DEFAULT_PATH} || true`
+ZIMAGE="$(readlink -f "$ZIMAGE_DEFAULT_PATH" || true)"
 if [[ ! -f $ZIMAGE ]]; then
     echo "Local zImage not found, downloading one to $ZIMAGE_DEFAULT_PATH"
     ZIMAGE_URL="http://fw-releases.wirenboard.com/utils/build-image/zImage.$KERNEL_FLAVOUR"
     wget -O "$ZIMAGE_DEFAULT_PATH" "$ZIMAGE_URL"
-    ZIMAGE=`readlink -f ${ZIMAGE_DEFAULT_PATH}`
+    ZIMAGE="$(readlink -f "$ZIMAGE_DEFAULT_PATH")"
 fi
 
-if [[ ! -f $ZIMAGE ]]; then
+if [[ ! -f "$ZIMAGE" ]]; then
     echo "Failed to find zImage even after downloading, something went wrong"
     exit 1
 fi
 
+# try to load DTB from contribs
+DTB_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
+mkdir -p "$(dirname "$DTB_DEFAULT_PATH")"
+
+DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
+if [[ ! -e "$DTB" ]]; then
+    echo "Local DTB not found, downloading one to $DTB_DEFAULT_PATH"
+    DTB_URL="http://fw-releases.wirenboard.com/utils/build-image/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
+    wget -O "$DTB_DEFAULT_PATH" "$DTB_URL"
+    DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
+fi
+
+if [[ ! -e "$DTB" ]]; then
+    echo "Failed to find DTB even after downloading, something went wrong"
+    exit 1
+fi
+
 echo "Using zImage from $ZIMAGE"
-$TOP_DIR/image/create_update.sh ${ROOTFS} ${ZIMAGE} ${WEBUPD_NAME}
+"$TOP_DIR/image/create_update.sh" "$ROOTFS" "$ZIMAGE" "$DTB" "$WEBUPD_NAME"
 
 echo "Done"
 echo  ${OUT_DIR}
