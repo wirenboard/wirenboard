@@ -8,7 +8,7 @@ INSTALL_SCRIPT="`dirname $this`/install_update.sh"
 
 usage() {
 	cat <<EOF
-USAGE: $0 <path to rootfs> <path to zImage> <update file>"
+USAGE: $0 <path to rootfs> <path to zImage> <path to DTB> <update file>"
 rootfs can be either a directory (which will be packed to .tar.xz) 
 or just anything suitable for $(dirname $0)/install_update.sh.sh
 EOF
@@ -25,11 +25,12 @@ info() {
 	>&2 echo ">>> $@"
 }
 
-[[ $# != 3 ]] && usage
+[[ $# != 4 ]] && usage
 
 ROOTFS=$(readlink -f $1)
 ZIMAGE=$(readlink -f $2)
-OUTPUT=$(readlink -f $3)
+DTB=$(readlink -f $3)
+OUTPUT=$(readlink -f $4)
 
 [[ -e "$ROOTFS" ]] || die "$ROOTFS not found"
 
@@ -64,24 +65,14 @@ dtb_get_compatible() {
 }
 
 if [[ -d "$ROOTFS" ]]; then
-	DTB_DIR=$ROOTFS/boot/dtbs
-	[[ -h "$DTB_DIR" ]] && DTB_DIR="$ROOTFS/$(readlink $DTB_DIR)"
-	DTB=$DTB_DIR/`sed -n 's/^fdt_file=\/boot\/dtbs\///p' $ROOTFS/boot/uEnv.txt`
-	[[ -e "$DTB" ]] || die "Unable to get DTB path"
 	ROOTFS_TARBALL="$TMPDIR/rootfs.tar.gz"
 
 	echo "Creating rootfs tarball"
 	pushd "$ROOTFS" >/dev/null
 	sudo tar czp --numeric-owner ./ > "$ROOTFS_TARBALL" || die "tarball of $ROOTFS creation failed"
 	popd >/dev/null
-
-	unset DTB_DIR
 elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
-	DTB=`tar xf "$ROOTFS_TARBALL" ./boot/uEnv.txt -O | sed -n 's/^fdt_file=//p'`
-	[[ -n "$DTB" ]] || die "Unable to get DTB path"
-	tar xf "$ROOTFS_TARBALL" ".$DTB" -h -O > $TMPDIR/update.dtb || die "Unable to extract DTB from rootfs tarball"
-	DTB=$TMPDIR/update.dtb
 fi
 
 COMPATIBLE=`dtb_get_compatible < "$DTB"`
