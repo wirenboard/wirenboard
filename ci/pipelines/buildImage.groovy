@@ -19,6 +19,7 @@ pipeline {
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
+        string(name: 'U_BOOT_BRANCH', defaultValue: 'wb_v2017.03', description: 'from build-u-boot project')
         booleanParam(name: 'SAVE_ARTIFACTS', defaultValue: true, description: 'save image after build (may be disabled for staging checks)')
     }
     environment {
@@ -44,7 +45,8 @@ pipeline {
                               filter: 'result/u-boot_*',
                               target: 'contrib/u-boot',
                               flatten: true,
-                              fingerprintArtifacts: true
+                              fingerprintArtifacts: true,
+                              parameters: "BRANCH=" + params.U_BOOT_BRANCH
 
                 dir('contrib/u-boot') {
                     sh 'mv u-boot_*.wb6.imx u-boot.wb6.imx'
