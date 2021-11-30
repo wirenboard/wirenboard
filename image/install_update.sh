@@ -133,6 +133,27 @@ else
     info "WARNING: Failed to find certificates of device. Please report it to info@contactless.ru"
 fi
 
+info "Mount /dev, /proc and /sys to rootfs"
+mount -o bind /dev "$MNT/dev"
+mount -o bind /proc "$MNT/proc"
+mount -o bind /sys "$MNT/sys"
+
+POSTINST_DIR="$MNT/usr/lib/wb-image-update/postinst/"
+if [[ -d "$POSTINST_DIR" ]]; then
+    info "Running post-install scripts"
+
+    POSTINST_FILES="$(find "$POSTINST_DIR" -maxdepth 1 -type f | sort)"
+    for file in $POSTINST_FILES; do
+        info "> Processing $file"
+        "$file" "$MNT" "$FLAGS" || true
+    done
+fi
+
+info "Unmounting /dev, /proc and /sys from rootfs"
+umount "$MNT/dev"
+umount "$MNT/proc"
+umount "$MNT/sys"
+
 info "Unmounting new rootfs"
 umount $MNT
 sync; sync
