@@ -4,7 +4,7 @@ set -e
 set -x
 if [ $# -ne 4 ]; then
 	echo "USAGE: $0 <soc_type> <path to rootfs> <path to u-boot.sb or u-boot.sd> <path to img file>"
-    echo "<soc_type> should be either mx23 or mx28 or mx6ul"
+    echo "<soc_type> should be either mx23 or mx28 or mx6ul or sun8i_r40"
 
 	exit 1
 fi
@@ -50,6 +50,11 @@ write_uboot_mx28() {
 PART_START_mx6ul=$[1*MB/SECTOR_SIZE]
 write_uboot_mx6ul() {
 	sudo dd if=$UBOOT of=${IMGFILE} bs=$SECTOR_SIZE seek=2 conv=notrunc,fdatasync
+}
+
+PART_START_sun8i_r40=$[1*MB/SECTOR_SIZE]
+write_uboot_sun8i_r40() {
+    sudo dd if=$UBOOT of=${IMGFILE} bs=1024 seek=8 conv=notrunc,fdatasync
 }
 
 eval "PART_START=\${PART_START_${SOC_TYPE}}"

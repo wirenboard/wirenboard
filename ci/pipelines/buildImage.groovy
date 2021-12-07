@@ -9,9 +9,9 @@ pipeline {
         label "devenv"
     }
     parameters {
-        choice(name: 'BOARD', choices: wb.boards, description: 'Board version to build image for')
+        choice(name: 'BOARD', choices: ['7x'] + wb.boards, description: 'Board version to build image for')
         choice(name: 'DEB_RELEASE', choices: wb.debianReleases, description: 'Debian release')
-        string(name: 'REPO_PREFIX', defaultValue: '', description: 'APT repository prefix (after deb.wirenboard.com)')
+        string(name: 'REPO_PREFIX', defaultValue: 'git/feature/41790-wb7', description: 'APT repository prefix (after deb.wirenboard.com)')
         string(name: 'ADDITIONAL_REPOS', defaultValue: '',
                description: 'space-separated for multiple repos, example: http://example.com/path/to@stable:main')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
