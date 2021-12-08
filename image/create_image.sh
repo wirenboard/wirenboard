@@ -54,7 +54,7 @@ write_uboot_mx6ul() {
 
 PART_START_sun8i_r40=$[1*MB/SECTOR_SIZE]
 write_uboot_sun8i_r40() {
-    sudo dd if=$UBOOT of=${IMGFILE} bs=1024 seek=8 conv=notruc,fdatasync
+    sudo dd if=$UBOOT of=${IMGFILE} bs=1024 seek=8 conv=notrunc,fdatasync
 }
 
 eval "PART_START=\${PART_START_${SOC_TYPE}}"
