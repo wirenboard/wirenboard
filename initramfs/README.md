@@ -39,7 +39,7 @@ wirenboard$ rootfs/create_rootfs.sh 2-usbgadget
 
 3) Собираем и доустанавливаем модули ядра в директорию с iniramfs:
 
-`make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=initramfs_newupdate/  modules dtbs modules_install`
+`make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=initramfs/  modules dtbs modules_install`
 
 4) Собираем всё остальное ядро с встроенныой initramfs:
 

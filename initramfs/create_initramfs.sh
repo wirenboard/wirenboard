@@ -3,7 +3,7 @@ set -e
 #set -x
 
 [[ "$#" == "3" ]] || {
-	echo "Usage: $0 <rootfs> <initramfs_dir> wb2|wb6"
+	echo "Usage: $0 <rootfs> <initramfs_dir> wb2|wb6|wb7"
 	exit 1
 }
 
@@ -13,7 +13,7 @@ case $FLAVOUR in
 wb2)
     LIBDIR=/lib/arm-linux-gnueabi
     ;;
-wb6)
+wb6|wb7)
     LIBDIR=/lib/arm-linux-gnueabihf
     ;;
 *)
@@ -63,7 +63,7 @@ install_from_rootfs() {
 	if [[ -x "$ROOTFS/$src" ]]; then
 		chroot "$ROOTFS" ldd "$src" |
 		sed -rn 's#[^/]*(/[^ ]*).*#\1#p' |
-		while read lib; do
+		while read -r lib; do
 			[[ -e "$INITRAMFS/$lib" ]] || install_from_rootfs "$lib"
 		done
 	fi
@@ -91,19 +91,32 @@ install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
 install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
 install_file "$FILES_DIR/libupdate.wb5.sh" "/lib/libupdate.wb5.sh"
 install_file "$FILES_DIR/libupdate.wb6.sh" "/lib/libupdate.wb6.sh"
+install_file "$FILES_DIR/libupdate.wb7.sh" "/lib/libupdate.wb7.sh"
 install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
+install_file "$FILES_DIR/README.ramdisk.txt" "/usr/share/README.ramdisk.txt"
 
 [[ $FLAVOUR == "wb2" ]] && {
-    arm-linux-gnueabi-gcc -o $FILES_DIR/memdump $FILES_DIR/memdump.c -Wall -Wextra -pedantic -std=c99
-    install_file "$FILES_DIR/memdump" "/bin/memdump"
+    arm-linux-gnueabi-gcc -o "${FILES_DIR}/memdump" "${FILES_DIR}/memdump.c" -Wall -Wextra -pedantic -std=c99
+    install_file "${FILES_DIR}/memdump" "/bin/memdump"
 }
+
+case $FLAVOUR in
+wb2)
+    install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.mxs /etc/fw_env.config
+    ;;
+wb6)
+    install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.imx6 /etc/fw_env.config
+    ;;
+wb7)
+    install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.sun8i /etc/fw_env.config
+    ;;
+esac
 
 FROM_ROOTFS=(
 	/bin/busybox
 	/bin/bash
 	/usr/bin/fw_printenv
 	/usr/bin/fw_setenv
-	/etc/fw_env.config
     /etc/profile
 	/usr/bin/fit_info
 	/usr/bin/pv
@@ -112,11 +125,12 @@ FROM_ROOTFS=(
 	/usr/bin/wb-run-update
     /usr/sbin/dropbear
     /usr/bin/dropbearkey
+    /usr/bin/xxd
 
-    $LIBDIR/libnss_files.so.2
-    $LIBDIR/libnss_files-2.24.so
-    $LIBDIR/ld-2.24.so
-    $LIBDIR/ld-linux.so.3
+    "$LIBDIR/libnss_files.so.2"
+    "$LIBDIR/libnss_files-2.24.so"
+    "$LIBDIR/ld-2.24.so"
+    "$LIBDIR/ld-linux.so.3"
 
     /etc/shadow
     /etc/group
@@ -139,4 +153,4 @@ for f in "${FROM_ROOTFS[@]}"; do
 	install_from_rootfs "$f"
 done
 
-echo 'root:x:0:0:root:/:/bin/sh' > $INITRAMFS/etc/passwd
+echo 'root:x:0:0:root:/:/bin/sh' > "$INITRAMFS/etc/passwd"
