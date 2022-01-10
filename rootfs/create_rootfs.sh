@@ -178,10 +178,7 @@ echo "Install dependencies"
 dpkg --add-architecture armel
 dpkg --add-architecture armhf
 apt-get update
-apt-get install -y qemu-user-static binfmt-support libeatmydata1 || true
-
-echo "Try to install libeatmydata for foreign architectures"
-apt-get install -y libeatmydata1:armel libeatmydata1:armhf || true
+apt-get install -y qemu-user-static binfmt-support libeatmydata1 libeatmydata1:armel libeatmydata1:armhf || true
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	echo "Using existing $ROOTFS_BASE_TARBALL"
