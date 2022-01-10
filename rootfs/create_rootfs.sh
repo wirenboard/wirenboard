@@ -383,9 +383,9 @@ board_install
 if chr [ -f /var/run/mosquitto.pid ]; then
 	# trigger saving persistence db to disk
 	echo "saving persistence"
-	chr cat /var/run/mosquitto.pid || true
+    MOSQUITTO_PID=$(chr cat /var/run/mosquitto.pid) || true
 	ps aux | grep mosquitto
-	chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
+	chr kill "$MOSQUITTO_PID"
 fi
 
 echo 'remove additional repo files'
