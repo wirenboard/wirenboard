@@ -45,11 +45,19 @@ prepare_chroot() {
 
 # a few shortcuts
 chr() {
-    chroot ${ROOTFS} "$@"
+    if [[ -e "${ROOTFS}/usr/lib/libeatmydata.so" ]]; then
+        PRELOAD="/usr/lib/libeatmydata.so"
+    fi
+    CMD="$*"
+    chroot ${ROOTFS} bash -c "export LD_PRELOAD=$PRELOAD; $CMD"
 }
 
 chr_nofail() {
-    chroot ${ROOTFS} "$@" || true
+    if [[ -e "${ROOTFS}/usr/lib/libeatmydata.so" ]]; then
+        PRELOAD="/usr/lib/libeatmydata.so"
+    fi
+    CMD="$*"
+    chroot ${ROOTFS} bash -c "export LD_PRELOAD=$PRELOAD; $CMD" || true
 }
 
 chr_apt_install() {

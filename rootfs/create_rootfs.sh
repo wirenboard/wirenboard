@@ -175,7 +175,13 @@ install_contactless_repo() {
 echo "Wirenboard repo: $FULL_REPO_URL, release $WB_RELEASE"
 
 echo "Install dependencies"
-apt-get install -y qemu-user-static binfmt-support || true
+dpkg --add-architecture armel
+dpkg --add-architecture armhf
+apt-get update
+apt-get install -y qemu-user-static binfmt-support libeatmydata1 || true
+
+echo "Try to install libeatmydata for foreign architectures"
+apt-get install -y libeatmydata1:armel libeatmydata1:armhf || true
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	echo "Using existing $ROOTFS_BASE_TARBALL"
@@ -200,7 +206,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
 	#~ exit
-	debootstrap \
+	LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libeatmydata.so debootstrap \
 		--foreign \
 		--verbose \
 		--arch $ARCH \
@@ -210,6 +216,7 @@ else
 	echo "Copy qemu to rootfs"
 	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
 	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+    cp /usr/lib/arm-linux-gnueabihf/libeatmydata.so ${OUTPUT}/usr/lib/
 	modprobe binfmt_misc || true
 
 	# kludge to fix ssmtp configure that breaks when FQDN is unknown
@@ -246,7 +253,7 @@ EOM
 	services_disable
 
 	echo "Set root password"
-	chr /bin/sh -c "echo root:wirenboard | chpasswd"
+	echo "root:wirenboard" | chr chpasswd
 
         echo "Install primary sources.list"
         echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
