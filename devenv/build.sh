@@ -17,6 +17,11 @@ build_sbuild_env() {
 
 	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
 
+    # /proc somehow dies after sbuild-createchroot, let's mount it again
+    if [[ ! -e /proc/mounts ]]; then
+        mount -t proc proc /proc
+    fi
+
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
