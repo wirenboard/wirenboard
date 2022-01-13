@@ -84,7 +84,8 @@ if ! getent passwd "$DEV_USER" >& /dev/null; then
 fi
 
 # fix package installation issues
-chown -R "$DEV_USER.$DEV_GROUP" /usr/local/go
+# FIXME: this command slows down wbdev start on new Docker with overlay2 backend
+#chown -R "$DEV_USER.$DEV_GROUP" /usr/local/go
 
 # setup Go environment (for non-login shell cases)
 . /etc/profile.d/wbdev_profile.sh

@@ -2,7 +2,7 @@
 set -u -e
 cd /root
 
-do_build() {
+build_chroot() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
 	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD
@@ -10,12 +10,12 @@ do_build() {
 	/root/prep.sh
 }
 
-do_build_sbuild_env() {
+build_sbuild_env() {
 	export RELEASE=$1
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 libcroco3 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
+	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
@@ -88,11 +88,12 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build stretch armel 58 wb2
-do_build stretch armhf 6x wb6
+build_chroot stretch armel 58 wb2
+build_chroot stretch armhf 6x wb6
+build_chroot bullseye armhf 6x wb6
 
-do_build_sbuild_env stretch 
-do_build_sbuild_env buster 
+build_sbuild_env stretch
+build_sbuild_env bullseye
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash
