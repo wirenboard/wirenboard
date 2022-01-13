@@ -11,16 +11,17 @@ RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /e
     apt-get install -y --force-yes git curl ca-certificates wget debootstrap \
       build-essential pkg-config debhelper    \
       nodejs npm node-rimraf bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
-      devscripts equivs \
+      devscripts equivs rsync \
       libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
       valgrind libgtest-dev google-mock cmake config-package-dev \
       libusb-dev libusb-1.0-0-dev jq \
-      aptly python-setuptools python3-setuptools liblog4cpp5-dev bc lzop bison flex kmod \
+      aptly python-setuptools python3-setuptools dh-python liblog4cpp5-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support \
       sbuild kpartx zip device-tree-compiler u-boot-tools fit-aligner libssl-dev \
-      golang-1.15-go clang-format \
-      swig libpython2-dev libpython3-dev && \
+      golang-1.15-go golang-go clang-format \
+      swig libpython2-dev libpython3-dev \
+      fdisk && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
