@@ -13,10 +13,10 @@ USE_BUZZER=${USE_BUZZER:-y}
 USE_ECHO=${USE_ECHO:-y}
 
 # Loop tick delay in seconds
-TICK_DELAY=0.2
+TICK_DELAY=0.1
 
 # Tick multiplier is 1/TICK_DELAY
-TICK_MUL=5
+TICK_MUL=10
 
 use_buzzer() {
     [ "x${USE_BUZZER}" == "xy" ]
@@ -100,13 +100,20 @@ if use_buzzer; then
             buzzer_off
         fi
     }
+else 
+    buzzer_wait() {
+        true
+    }
+    buzzer_hold() {
+        true
+    }
 fi
 
 button_init
 
 WAIT_TIME_TICKS=$((WAIT_TIME * TICK_MUL))
 HOLD_TIME_TICKS=$((HOLD_TIME * TICK_MUL))
-HOLD_TIME_CURRENT=$HOLD_TIME_TICKS
+HOLD_TIME_CURRENT=$((HOLD_TIME_TICKS + 1))
 
 # exit code is 1 by default (failed)
 RET=1

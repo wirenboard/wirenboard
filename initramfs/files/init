@@ -13,19 +13,32 @@ mount /dev/pts
 mkdir -p /dev/shm
 mkdir -p /var/lock
 
+EMMC=/dev/mmcblk0
+RAMDISK="/tmp/ramdisk.img"
+ALLOWED_FIT_NAMES="wb_update.fit wb6_update.fit wb_update_FACTORYRESET.fit wb6_update_FACTORYRESET.fit"
+USBDIR="/usb"
+
 BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
 #BOOTMODE="usbupdate,wb6_update.fit"
 echo "Boot mode: $BOOTMODE"
 
+BOARD_FAMILY="wb6"
 DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
 
 for compat in $DT_COMPAT_LIST; do
 	case "$compat" in
 		"contactless,imx6ul-wirenboard60" )
 			echo "Board is WB6, loading ci_hdrc_imx module"
+			BOARD_FAMILY="wb6"
 			modprobe ci_hdrc_imx
 			sleep 1
 			break
+			;;
+		"wirenboard,wirenboard-700" )
+			echo "Board is WB7"
+			BOARD_FAMILY="wb7"
+			break
+			;;
 	esac
 done
 
@@ -35,12 +48,25 @@ led() {
 	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
 }
 
-led red trigger none
-led red brightness 0
+set_led_update_in_progress() {
+	led red trigger none
+	led red brightness 0
 
-led green trigger timer
-led green delay_on 250
-led green delay_off 250
+	led green trigger timer
+	led green delay_on 250
+	led green delay_off 250
+} 
+
+set_led_prompt_user() {
+	led red trigger timer
+	led red delay_on 200
+	led red delay_off 200
+
+	led green trigger timer
+	led green delay_on 200
+	led green delay_off 200
+} 
+
 
 check_fit_end_signature() {
 	local UPDATE_FIT_END_SIGNATURE="__WB_UPDATE_FIT_END__"
@@ -50,55 +76,198 @@ check_fit_end_signature() {
 	[[ "$sig" == "$UPDATE_FIT_END_SIGNATURE" ]]
 }
 
-case "$BOOTMODE" in
-	usbupdate*)
-		echo "Load modules for USB to work"
-		modprobe ci-hdrc-imx
-		modprobe usb-storage
-		modprobe sd_mod
+search_for_usb_drive() {
+	echo "Load modules for USB to work"
+	modprobe ci-hdrc-imx
+	modprobe usb-storage
+	modprobe sd_mod
 
-		echo "Starting USB update"
-		USBDIR="/usb"
-		USB_SETTLE_TIME=10
-		COUNT=0
-		while [[ ! -e /dev/sda && $COUNT -lt $USB_SETTLE_TIME ]]; do
-			echo "Waiting for USB to settle ($COUNT/$USB_SETTLE_TIME)"
+	local USB_SETTLE_TIME=10
+	local COUNT=0
+	while [[ ! -e /dev/sda1 && $COUNT -lt $USB_SETTLE_TIME ]]; do
+		echo -ne "Waiting for USB to settle ($((COUNT+1))/$USB_SETTLE_TIME)\\r"
+		sleep 1
+		let COUNT++
+	done
+	echo
+
+	# Look for any usb storage devices
+	ls /dev/sd* >/dev/null 2>&1
+}
+
+# Search for .fit files in a given directory and run update
+#
+# @param $1 directory to look for .fit files
+# @param $2 list of allowable .fit file names
+# @param $3 human-readable source name
+update_from_fs() {
+	local DIR="$1"
+	local FIT_NAMES="$2"
+	local SOURCE="$3"
+
+	local FOUND_FIT_NAME=""
+	for FNAME in ${FIT_NAMES}; do
+		local FIT="$DIR/$FNAME"
+		if [[ -e "${FIT}" ]]; then
+			if [[ ! -z "${FOUND_FIT_NAME}" ]]; then
+				echo "ERROR: multiple .fit found on ${SOURCE} (${DIR}): ${FOUND_FIT_NAME} and ${FNAME}. Leave just one from a list: ${FIT_NAMES}"
+				exit 1
+			fi
+
+			FOUND_FIT_NAME="$FNAME"
+		fi
+	done
+
+	if [[ ! -z "$FOUND_FIT_NAME" ]]; then
+		local FIT="$DIR/$FOUND_FIT_NAME"
+
+		echo "Will use ${FOUND_FIT_NAME} from ${SOURCE} (${DIR})"
+		if [[ "x${CONFIRM}" == "xy" ]]; then
+			set_led_prompt_user
+			echo "Press FW button to confirm updating from ${SOURCE} (${DIR})"
+			USE_BUZZER=n USE_ECHO=y WAIT_TIME=10 HOLD_TIME=0 wait_for_button 1>&2
+			local result=$?
+			if [[ $result != 0 ]]; then
+				echo "ERROR: update is not confirmed, exiting"
+				exit 1
+			fi
+		fi
+
+		check_fit_end_signature "$FIT" &&
+			set_led_update_in_progress &&
+			wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" &&
+			break
+	fi
+	
+}
+
+# @param $1 .fit filename. If blank, look for all possible file names
+update_from_usb_drive() {
+	local FIT_NAME="$1"
+	if [[ -z "${FIT_NAME}" ]]; then
+		local FIT_NAMES="${ALLOWED_FIT_NAMES}"
+	else
+		local FIT_NAMES="${FIT_NAME}"
+	fi
+
+	mkdir -p "$USBDIR"
+
+	for USBDEV in /dev/sd*; do
+		echo "Looking for update .fit on ${USBDEV}..."
+
+		umount "$USBDIR" >/dev/null 2>&1 || true
+		mount -t auto "$USBDEV" "$USBDIR" >/dev/null 2>&1 || continue
+		cleanup() {
+			umount "$USBDIR"
+		}
+		trap cleanup EXIT
+
+		update_from_fs "${USBDIR}" "${FIT_NAMES}" "USB drive"
+	done
+}
+
+wait_for_emmc() {
+	# wait for mmc stack to load
+	echo "Wait for eMMC to become available..."
+	while [ ! -b $EMMC ]; do
+		sleep 1
+		echo -n "."
+	done
+	echo
+}
+
+update_from_emmc() {
+	local DATA_PART="${EMMC}p6"
+	local FIT="/mnt/data/.wb-restore/factoryreset.fit"
+
+	wait_for_emmc
+
+	echo "Will use $FIT"
+
+	mkdir -p /mnt/
+	mkdir -p /mnt/data
+	mount -t auto "${DATA_PART}" /mnt/data &&
+		[[ -e "$FIT" ]] &&
+		check_fit_end_signature "$FIT" &&
+		wb-run-update  --from-initramfs --no-mqtt --no-remove "$FIT"
+}
+
+update_from_gadget() {
+	mount -t vfat ${RAMDISK} /usb
+	echo "Will look for update in USB gadget ramdisk"
+	update_from_fs /usb "${ALLOWED_FIT_NAMES}" "USB gadget"
+}
+
+check_usb_gadget_connected() {
+	#TODO
+	true
+}
+
+wait_usb_gadget_connected() {
+	[[ "${BOARD_FAMILY}" == "wb7" ]] && {
+		local WAIT_GADGET_TIME=3
+		local COUNT=0
+		while ! check_usb_gadget_connected && [[ $COUNT -lt $WAIT_GADGET_TIME ]]; do
+			echo -ne "Waiting for USB gadget to connect to host PC ($(($COUNT+1))/$WAIT_GADGET_TIME)\\r"
 			sleep 1
 			let COUNT++
 		done
-	
-		mkdir -p "$USBDIR"
-		umount "$USBDIR"
+		echo
+		check_usb_gadget_connected
+	}
+}
 
+wait_for_gadget_disconnect() {
+	#TODO
+	sleep 10
+	true
+}
+
+setup_usb_ram_mass_storage() {
+		# create usb_mass_storage first
+		dd if=/dev/zero of=${RAMDISK} bs=1M count=300
+		mkfs.vfat ${RAMDISK}
+		mount -t vfat ${RAMDISK} /usb
+		cp /usr/share/README.ramdisk.txt /usb/README.txt
+		umount /usb
+
+		echo "Activate Mass Storage device"
+		modprobe g_mass_storage file=${RAMDISK} iManufacturer="Wiren Board" iProduct="Wiren Board RAM disk"
+}
+
+setup_usb_ssh() {
+	echo "Activate USB Ethernet device..."
+	usb_net up
+	echo "Now you can access device by ssh: ssh root@192.168.41.1"
+	dropbear -F -E
+}
+
+case "$BOOTMODE" in
+	update_auto)
+		if search_for_usb_drive; then
+			CONFIRM=y update_from_usb_drive
+		elif wait_usb_gadget_connected; then
+			setup_usb_ram_mass_storage &
+			wait_for_gadget_disconnect
+			CONFIRM=y update_from_gadget
+		else
+			update_from_emmc
+		fi
+		;;
+	usbupdate*)
 		FIT_NAME="${BOOTMODE#*,}"
 		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="update.fit"
 
-		for USBDEV in /dev/sd*; do
-			echo "Looking for $FIT_NAME on $USBDEV"
-
-			umount "$USBDIR" 2>&1 >/dev/null || true
-			mount -t vfat "$USBDEV" "$USBDIR" || continue
-			cleanup() {
-				umount "$USBDIR"
-			}
-			trap cleanup EXIT
-
-			FIT="$USBDIR/$FIT_NAME"
-			[[ -e "$FIT" ]] &&
-				check_fit_end_signature "$FIT" &&
-				wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" &
-		done
+		search_for_usb_drive &&
+			update_from_usb_drive ${FIT_NAME}
 		;;
 	usbgadget|*)
 		FLAG=/flag
-		EMMC=/dev/mmcblk0
 
 		# create usb_mass_storage first
 		dd if=/dev/zero of=$FLAG bs=1K count=1
 
-		# wait for mmc stack to load
-		echo "Wait for eMMC to become available..."
-		while [ ! -b $EMMC ]; do sleep 1; done
+		wait_for_emmc
 
 		echo "Activate Mass Storage device"
 		led red trigger mmc0
@@ -111,10 +280,7 @@ case "$BOOTMODE" in
 		blockdev --rereadpt $EMMC
 		sleep 1
 
-		echo "Activate USB Ethernet device..."
-		usb_net up
-		echo "Now you can access device by ssh: ssh root@192.168.41.1"
-		dropbear -F -E
+		setup_usb_ssh &
 		;;
 esac
 
