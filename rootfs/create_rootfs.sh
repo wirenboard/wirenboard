@@ -163,13 +163,6 @@ install_contactless_repo() {
 
 	echo "Install initial repos"
     echo "deb $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
-
-    if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
-		echo "Install gnupg"
-		chr apt-get update
-		chr apt-get install -y gnupg1
-	fi
-	
 }
 
 echo "Wirenboard repo: $FULL_REPO_URL, release $WB_RELEASE"
@@ -205,6 +198,7 @@ else
 		--verbose \
 		--arch $ARCH \
 		--variant=minbase \
+		--include=gnupg2 \
 		${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
 	echo "Copy qemu to rootfs"
