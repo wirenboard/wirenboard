@@ -38,11 +38,11 @@ chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc
 chr bash -c "dpkg -i /dh-virtualenv_*.deb"
 
 # build and install google test and google mock
-chr bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
+#chr bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
 
-cp /usr/src/gmock/CMakeLists.txt $ROOTFS/usr/src/gmock
-chr bash -c "ln -s /usr/src/gtest /usr/src/gmock/gtest"
-chr bash -c "cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/"
+#cp /usr/src/gmock/CMakeLists.txt $ROOTFS/usr/src/gmock
+#chr bash -c "ln -s /usr/src/gtest /usr/src/gmock/gtest"
+#chr bash -c "cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/"
 
 
 cp /etc/profile.d/wbdev_profile.sh $ROOTFS/etc/profile.d/
