@@ -108,6 +108,7 @@ FROM_ROOTFS=(
 	/usr/bin/fit_info
 	/usr/bin/pv
     /sbin/mkfs.ext4
+    /sbin/mkfs.vfat
 	/usr/bin/wb-run-update
     /usr/sbin/dropbear
     /usr/bin/dropbearkey
@@ -125,8 +126,8 @@ FROM_ROOTFS=(
     /usr/bin/unshare
 
     /sbin/sfdisk
-    /usr/lib/wb-prepare/vars.sh
-    /usr/lib/wb-prepare/partitions.sh
+    /usr/lib/wb-utils/prepare/vars.sh
+    /usr/lib/wb-utils/prepare/partitions.sh
     /usr/bin/rsync
     /usr/bin/mmc
     /bin/dd
