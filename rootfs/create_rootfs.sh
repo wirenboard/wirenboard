@@ -198,7 +198,7 @@ else
 		--verbose \
 		--arch $ARCH \
 		--variant=minbase \
-		--include=gnupg2 \
+		--include=gnupg2,dirmngr \
 		${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
 	echo "Copy qemu to rootfs"
