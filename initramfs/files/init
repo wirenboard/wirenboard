@@ -187,7 +187,7 @@ update_from_emmc() {
 	mkdir -p /mnt/
 	mkdir -p /mnt/data
 	mount -t auto "${DATA_PART}" /mnt/data &&
-		[[ -e "$FIT"]] &&
+		[[ -e "$FIT" ]] &&
 		check_fit_end_signature "$FIT" &&
 		wb-run-update  --from-initramfs --no-mqtt --no-remove "$FIT"
 }
