@@ -2,8 +2,8 @@
 
 PWM_BUZZER=3
 
-# 3 kHz, 2% volume
-DUTY_CYCLE=3333
+# 3 kHz, 10% volume
+DUTY_CYCLE=33333
 PERIOD=333333
 
 buzzer_init() {
