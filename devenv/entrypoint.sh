@@ -29,6 +29,7 @@ DEB_BUILD_OPTIONS="${DEB_BUILD_OPTIONS:-}"
 
 WBDEV_BUILD_METHOD=${WBDEV_BUILD_METHOD:-}
 WBDEV_USE_UNSTABLE_DEPS=${WBDEV_USE_UNSTABLE_DEPS:-""}
+WBDEV_TARGET_REPO_PREFIX=${WBDEV_TARGET_REPO_PREFIX:-""}
 
 WBDEV_TARGET_BOARD=${WBDEV_TARGET_BOARD:-wb5}
 WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armel}
@@ -200,6 +201,9 @@ sbuild_buildpackage() {
     shift
 
     local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
+    if [[ -n "$WBDEV_TARGET_REPO_PREFIX" ]]; then
+        WB_REPO_PLATFORM="$WBDEV_TARGET_REPO_PREFIX/$WB_REPO_PLATFORM"
+    fi
     STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} ${WBDEV_TARGET_REPO_RELEASE} main"
 
     local UNSTABLE_REPO_SPEC=""
@@ -221,7 +225,10 @@ sbuild_buildpackage() {
 
 print_target_info() {
     echo "Build target: ${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH} (board ${WBDEV_TARGET_BOARD})"
-    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'stretch-armhf'/'stretch-armel' or 'wb6'/'wb5')"
+    if [[ -n "$WBDEV_TARGET_REPO_PREFIX" ]]; then
+        echo "Repo prefix: $WBDEV_TARGET_REPO_PREFIX"
+    fi
+    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'wb6'/'wb5' or 'wb6/stretch')"
 }
 
 case "$cmd" in
