@@ -3,7 +3,7 @@ set -e
 #set -x
 
 [[ "$#" == "3" ]] || {
-	echo "Usage: $0 <rootfs> <initramfs_dir> wb2|wb6"
+	echo "Usage: $0 <rootfs> <initramfs_dir> wb2|wb6|wb7"
 	exit 1
 }
 
@@ -91,6 +91,7 @@ install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
 install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
 install_file "$FILES_DIR/libupdate.wb5.sh" "/lib/libupdate.wb5.sh"
 install_file "$FILES_DIR/libupdate.wb6.sh" "/lib/libupdate.wb6.sh"
+install_file "$FILES_DIR/libupdate.wb7.sh" "/lib/libupdate.wb7.sh"
 install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
 
 [[ $FLAVOUR == "wb2" ]] && {
