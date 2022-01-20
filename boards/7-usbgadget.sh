@@ -5,7 +5,7 @@ export DTB=/boot/dtbs/sun8i-r40-wirenboard720.dtb
 board_include soc_sun8i_r40.sh
 
 board_install() {
-    chr_apt dropbear mmc-utils rsync
+    chr_apt dropbear mmc-utils rsync dosfstools
 
 	set_fdt sun8i-r40-wirenboard720
 }
