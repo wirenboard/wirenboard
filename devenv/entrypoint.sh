@@ -58,6 +58,18 @@ stretch-armel|wb5)
     WBDEV_TARGET_ARCH="armel"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
+*/*)
+    WBDEV_TARGET_BOARD="$(cut -f1 -d'/' <<< "$WBDEV_TARGET")"
+    WBDEV_TARGET_RELEASE="$(cut -f2 -d'/' <<< "$WBDEV_TARGET")"
+
+    case "$WBDEV_TARGET_BOARD" in
+    wb6|wb7)
+        WBDEV_TARGET_ARCH="armhf"
+        ;;
+    *)
+        WBDEV_TARGET_ARCH="armel"
+        ;;
+    esac
 esac
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
