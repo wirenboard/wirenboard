@@ -93,8 +93,8 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-build_chroot stretch armel 58 wb2
-build_chroot stretch armhf 6x wb6
+#build_chroot stretch armel 58 wb2
+#build_chroot stretch armhf 6x wb6
 
 build_sbuild_env stretch
 build_sbuild_env bullseye
