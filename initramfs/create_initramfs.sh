@@ -93,6 +93,7 @@ install_file "$FILES_DIR/libupdate.wb5.sh" "/lib/libupdate.wb5.sh"
 install_file "$FILES_DIR/libupdate.wb6.sh" "/lib/libupdate.wb6.sh"
 install_file "$FILES_DIR/libupdate.wb7.sh" "/lib/libupdate.wb7.sh"
 install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
+install_file "$FILES_DIR/README.ramdisk.txt" "/usr/share/README.ramdisk.txt"
 
 [[ $FLAVOUR == "wb2" ]] && {
     arm-linux-gnueabi-gcc -o "${FILES_DIR}/memdump" "${FILES_DIR}/memdump.c" -Wall -Wextra -pedantic -std=c99

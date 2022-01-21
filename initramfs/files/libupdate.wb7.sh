@@ -3,8 +3,8 @@
 POWER_BUTTON_GPIO=110
 PWM_BUZZER=1
 
-# 3 kHz, 2% volume
-DUTY_CYCLE=3333
+# 3 kHz, 50% volume
+DUTY_CYCLE=166666
 PERIOD=333333
 
 buzzer_init() {
@@ -38,9 +38,9 @@ button_read() {
 }
 
 button_up() {
-    [ `button_read` == 0 ]
+    [ `button_read` == 1 ]
 }
 
 button_down() {
-    [ `button_read` == 1 ]
+    [ `button_read` == 0 ]
 }

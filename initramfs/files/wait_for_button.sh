@@ -51,7 +51,7 @@ for compat in $DT_COMPAT_LIST; do
             LIB=wb6
             break
             ;;
-        "wirenboard,sun8i-r40-wirenboard720" )
+        "wirenboard,wirenboard-700" )
             LIB=wb7
             break
             ;;
@@ -62,8 +62,6 @@ source ${LIBS_PATH}/libupdate.${LIB}.sh || {
     echo "Unknown platform"
     exit 1
 }
-
-exit 0  # FIXME
 
 if [ "x${USE_ECHO}" == "xy" ]; then
     _ECHO_COUNTER=0

@@ -193,43 +193,52 @@ update_from_emmc() {
 }
 
 update_from_gadget() {
-	mount -t vfat ${RAMDISK} /usb
+	mkdir -p "$USBDIR"
+	mount -t vfat ${RAMDISK} "$USBDIR"
 	echo "Will look for update in USB gadget ramdisk"
-	update_from_fs /usb "${ALLOWED_FIT_NAMES}" "USB gadget"
+	update_from_fs "$USBDIR" "${ALLOWED_FIT_NAMES}" "USB gadget"
 }
 
 check_usb_gadget_connected() {
-	#TODO
-	true
-}
-
-wait_usb_gadget_connected() {
-	[[ "${BOARD_FAMILY}" == "wb7" ]] && {
-		local WAIT_GADGET_TIME=3
-		local COUNT=0
-		while ! check_usb_gadget_connected && [[ $COUNT -lt $WAIT_GADGET_TIME ]]; do
-			echo -ne "Waiting for USB gadget to connect to host PC ($(($COUNT+1))/$WAIT_GADGET_TIME)\\r"
-			sleep 1
-			let COUNT++
-		done
-		echo
-		check_usb_gadget_connected
-	}
+	[[ "x$(cat /sys/class/udc/*/current_speed)" != "xUNKNOWN" ]]
 }
 
 wait_for_gadget_disconnect() {
-	#TODO
-	sleep 10
-	true
+	local COUNT=0
+	while check_usb_gadget_connected; do
+		echo -ne "Copy .fit file to virtual USB driver and unplug the cable ($(($COUNT+1)))\\r"
+		sleep 1
+		let COUNT++
+	done
+	echo
+	! check_usb_gadget_connected
+}
+
+
+wait_usb_gadget_connected() {
+	local WAIT_GADGET_TIME=7
+	local COUNT=0
+	while ! check_usb_gadget_connected && [[ $COUNT -lt $WAIT_GADGET_TIME ]]; do
+		echo -ne "Waiting for USB gadget to connect to host PC ($(($COUNT+1))/$WAIT_GADGET_TIME)\\r"
+		sleep 1
+		let COUNT++
+	done
+	echo
+	check_usb_gadget_connected
+}
+
+is_usb_gadget_supported() {
+	[[ "${BOARD_FAMILY}" == "wb7" ]]
 }
 
 setup_usb_ram_mass_storage() {
 		# create usb_mass_storage first
 		dd if=/dev/zero of=${RAMDISK} bs=1M count=300
 		mkfs.vfat ${RAMDISK}
-		mount -t vfat ${RAMDISK} /usb
-		cp /usr/share/README.ramdisk.txt /usb/README.txt
-		umount /usb
+		mkdir -p "$USBDIR"
+		mount -t vfat ${RAMDISK} "$USBDIR"
+		cp /usr/share/README.ramdisk.txt "${USBDIR}/README.txt"
+		umount "$USBDIR"
 
 		echo "Activate Mass Storage device"
 		modprobe g_mass_storage file=${RAMDISK} iManufacturer="Wiren Board" iProduct="Wiren Board RAM disk"
@@ -242,14 +251,22 @@ setup_usb_ssh() {
 	dropbear -F -E
 }
 
+start_debug_console() {
+	TTY=/dev/console
+	exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
+}
+
+trap 'start_debug_console' EXIT
+
 case "$BOOTMODE" in
 	update_auto)
-		if search_for_usb_drive; then
-			CONFIRM=y update_from_usb_drive
-		elif wait_usb_gadget_connected; then
-			setup_usb_ram_mass_storage &
+		is_usb_gadget_supported && setup_usb_ram_mass_storage
+
+		if is_usb_gadget_supported && wait_usb_gadget_connected; then
 			wait_for_gadget_disconnect
-			CONFIRM=y update_from_gadget
+			update_from_gadget
+		elif search_for_usb_drive; then
+			CONFIRM=y update_from_usb_drive
 		else
 			update_from_emmc
 		fi
@@ -284,6 +301,6 @@ case "$BOOTMODE" in
 		;;
 esac
 
-# for debugging
-TTY=$(sed -rn 's#.*console=(tty[a-zA-Z0-9]*).*#/dev/\1#p' /proc/cmdline)
-exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
+
+sleep 1
+start_debug_console
