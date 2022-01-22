@@ -1,6 +1,14 @@
 #!/bin/busybox sh
 /bin/busybox --install -s
 
+
+start_debug_console() {
+	TTY=/dev/console
+	exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
+}
+
+trap 'start_debug_console' EXIT
+
 /bin/mknod /dev/null c 1 3
 /bin/mknod /dev/tty c 5 0
 
@@ -14,6 +22,7 @@ mkdir -p /dev/shm
 mkdir -p /var/lock
 
 EMMC=/dev/mmcblk0
+MICROSD=/dev/mmcblk1
 RAMDISK="/tmp/ramdisk.img"
 ALLOWED_FIT_NAMES="wb_update.fit wb6_update.fit wb_update_FACTORYRESET.fit wb6_update_FACTORYRESET.fit"
 USBDIR="/usb"
@@ -24,6 +33,7 @@ echo "Boot mode: $BOOTMODE"
 
 BOARD_FAMILY="wb6"
 DT_COMPAT_LIST=`tr < /proc/device-tree/compatible  '\000' '\n'`
+
 
 for compat in $DT_COMPAT_LIST; do
 	case "$compat" in
@@ -95,6 +105,21 @@ search_for_usb_drive() {
 	ls /dev/sd* >/dev/null 2>&1
 }
 
+search_for_sd() {
+	local SD_SETTLE_TIME=3
+	local COUNT=0
+	while [[ ! -e ${MICROSD}p1 && $COUNT -lt $SD_SETTLE_TIME ]]; do
+		echo -ne "Waiting for microSD to settle ($((COUNT+1))/$SD_SETTLE_TIME)2r"
+		sleep 1
+		let COUNT++
+	done
+	echo
+
+	# Look for any partitions on sd card
+	ls ${MICROSD}p* >/dev/null 2>&1
+}
+
+
 # Search for .fit files in a given directory and run update
 #
 # @param $1 directory to look for .fit files
@@ -141,29 +166,37 @@ update_from_fs() {
 	
 }
 
-# @param $1 .fit filename. If blank, look for all possible file names
-update_from_usb_drive() {
-	local FIT_NAME="$1"
+
+
+# @param $1 block device path spec
+# @param $2 .fit filename. If blank, look for all possible file names
+# @param $3 human-readable source name 
+update_from_block_device() {
+	local PATHSPEC="$1"
+	local FIT_NAME="$2"
+	local SOURCE_NAME="$3"
+	local BLOCKDIR=/disk
 	if [[ -z "${FIT_NAME}" ]]; then
 		local FIT_NAMES="${ALLOWED_FIT_NAMES}"
 	else
 		local FIT_NAMES="${FIT_NAME}"
 	fi
 
-	mkdir -p "$USBDIR"
+	mkdir -p "$BLOCKDIR"
 
-	for USBDEV in /dev/sd*; do
-		echo "Looking for update .fit on ${USBDEV}..."
+	for BLOCKDEV in ${PATHSPEC}; do
+		echo "Looking for update .fit on ${BLOCKDEV}..."
 
-		umount "$USBDIR" >/dev/null 2>&1 || true
-		mount -t auto "$USBDEV" "$USBDIR" >/dev/null 2>&1 || continue
+		umount "$BLOCKDIR" >/dev/null 2>&1 || true
+		mount -t auto "$BLOCKDEV" "$BLOCKDIR" >/dev/null 2>&1 || continue
 		cleanup() {
-			umount "$USBDIR"
+			umount "$BLOCKDIR"
 		}
 		trap cleanup EXIT
 
-		update_from_fs "${USBDIR}" "${FIT_NAMES}" "USB drive"
+		update_from_fs "${BLOCKDIR}" "${FIT_NAMES}" "${SOURCE_NAME}"
 	done
+	return 1
 }
 
 wait_for_emmc() {
@@ -196,7 +229,8 @@ update_from_gadget() {
 	mkdir -p "$USBDIR"
 	mount -t vfat ${RAMDISK} "$USBDIR"
 	echo "Will look for update in USB gadget ramdisk"
-	update_from_fs "$USBDIR" "${ALLOWED_FIT_NAMES}" "USB gadget"
+	update_from_fs "$USBDIR" "${ALLOWED_FIT_NAMES}" "USB gadget" ||
+		echo "ERROR: No update .fit uploaded to virtual USB drive!!"
 }
 
 check_usb_gadget_connected() {
@@ -251,13 +285,6 @@ setup_usb_ssh() {
 	dropbear -F -E
 }
 
-start_debug_console() {
-	TTY=/dev/console
-	exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
-}
-
-trap 'start_debug_console' EXIT
-
 case "$BOOTMODE" in
 	update_auto)
 		is_usb_gadget_supported && setup_usb_ram_mass_storage
@@ -266,17 +293,26 @@ case "$BOOTMODE" in
 			wait_for_gadget_disconnect
 			update_from_gadget
 		elif search_for_usb_drive; then
-			CONFIRM=y update_from_usb_drive
+			CONFIRM=y update_from_block_device "/dev/sd*" "" "USB Flash Drive"
+		elif search_for_sd; then
+			CONFIRM=y update_from_block_device "${MICROSD}p*" "" "microSD card"
 		else
 			update_from_emmc
 		fi
 		;;
 	usbupdate*)
 		FIT_NAME="${BOOTMODE#*,}"
-		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="update.fit"
+		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="wb_update.fit"
 
 		search_for_usb_drive &&
 			update_from_usb_drive ${FIT_NAME}
+		;;
+	sdupdate*)
+		FIT_NAME="${BOOTMODE#*,}"
+		[[ "${FIT_NAME}" == "sdupdate" ]] && FIT_NAME="wb_update.fit"
+
+		search_for_sd &&
+			update_from_block_device "${MICROSD}p*" " ${FIT_NAME}" "microSD card"
 		;;
 	usbgadget|*)
 		FLAG=/flag
