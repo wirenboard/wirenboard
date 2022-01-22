@@ -31,6 +31,7 @@ buzzer_off() {
 
 button_init() {
     echo $POWER_BUTTON_GPIO > /sys/class/gpio/export 2>/dev/null || true
+    echo in > /sys/class/gpio/gpio${POWER_BUTTON_GPIO}/direction 2>/dev/null || true
 }
 
 button_read() {
