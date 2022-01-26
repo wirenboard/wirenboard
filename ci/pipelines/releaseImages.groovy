@@ -13,7 +13,7 @@ pipeline {
         label "devenv"
     }
     parameters {
-        string(name: 'BOARDS', defaultValue: '6x 67', description: 'space-separated list')
+        string(name: 'BOARDS', defaultValue: '6x 67 69', description: 'space-separated list')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
