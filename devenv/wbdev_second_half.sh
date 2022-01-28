@@ -12,7 +12,7 @@ fi
 
 ssh_port_forwarding=
 if [ -n "WBDEV_SSH_PORT_FORWARDING" ]; then
-   ssh_port_forward="-p $WBDEV_SSH_PORT_FORWARDING:22"
+   ssh_port_forwarding="-p $WBDEV_SSH_PORT_FORWARDING:22"
 fi
 
 if [[ $OSTYPE == darwin* ]]
