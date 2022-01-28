@@ -1,8 +1,20 @@
 #!/bin/busybox sh
 /bin/busybox --install -s
 
+led() {
+	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
+}
+
 
 start_debug_console() {
+	umount /disk >/dev/null 2>&1 || true
+	umount /usb >/dev/null 2>&1 || true
+
+	led red trigger none
+	led red brightness 255
+	led green trigger none
+	led green brightness 0
+
 	TTY=/dev/console
 	exec setsid sh -c "exec sh <$TTY >$TTY 2>&1"
 }
@@ -55,10 +67,6 @@ done
 
 depmod
 
-led() {
-	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
-}
-
 set_led_update_in_progress() {
 	led red trigger none
 	led red brightness 0
@@ -109,7 +117,7 @@ search_for_sd() {
 	local SD_SETTLE_TIME=3
 	local COUNT=0
 	while [[ ! -e ${MICROSD}p1 && $COUNT -lt $SD_SETTLE_TIME ]]; do
-		echo -ne "Waiting for microSD to settle ($((COUNT+1))/$SD_SETTLE_TIME)2r"
+		echo -ne "Waiting for microSD to settle ($((COUNT+1))/$SD_SETTLE_TIME)\\r"
 		sleep 1
 		let COUNT++
 	done
@@ -136,7 +144,7 @@ update_from_fs() {
 		if [[ -e "${FIT}" ]]; then
 			if [[ ! -z "${FOUND_FIT_NAME}" ]]; then
 				echo "ERROR: multiple .fit found on ${SOURCE} (${DIR}): ${FOUND_FIT_NAME} and ${FNAME}. Leave just one from a list: ${FIT_NAMES}"
-				exit 1
+				exit
 			fi
 
 			FOUND_FIT_NAME="$FNAME"
@@ -154,7 +162,7 @@ update_from_fs() {
 			local result=$?
 			if [[ $result != 0 ]]; then
 				echo "ERROR: update is not confirmed, exiting"
-				exit 1
+				exit
 			fi
 		fi
 
@@ -189,11 +197,6 @@ update_from_block_device() {
 
 		umount "$BLOCKDIR" >/dev/null 2>&1 || true
 		mount -t auto "$BLOCKDEV" "$BLOCKDIR" >/dev/null 2>&1 || continue
-		cleanup() {
-			umount "$BLOCKDIR"
-		}
-		trap cleanup EXIT
-
 		update_from_fs "${BLOCKDIR}" "${FIT_NAMES}" "${SOURCE_NAME}"
 	done
 	return 1
@@ -226,6 +229,7 @@ update_from_emmc() {
 }
 
 update_from_gadget() {
+	modprobe -r g_mass_storage
 	mkdir -p "$USBDIR"
 	mount -t vfat ${RAMDISK} "$USBDIR"
 	echo "Will look for update in USB gadget ramdisk"
@@ -248,6 +252,21 @@ wait_for_gadget_disconnect() {
 	! check_usb_gadget_connected
 }
 
+check_usb_gadget_cable_present() {
+	[[ "x$(cat /sys/class/usb_role/*/role)" == "xdevice" ]]
+}
+
+force_enable_usb_host() {
+	# on Wiren Board 7 there is a mux between usb-c peripheral connector and usb-a host connector
+	# the mux is automatically switched to peripheral connector if there is a cable there
+	# but we can force the mux to USB-A instead
+
+	for switch in /sys/class/usb_role/*/role ; do
+		echo "host" > $switch
+	done
+
+	return 0
+}
 
 wait_usb_gadget_connected() {
 	local WAIT_GADGET_TIME=7
@@ -267,7 +286,7 @@ is_usb_gadget_supported() {
 
 setup_usb_ram_mass_storage() {
 		# create usb_mass_storage first
-		dd if=/dev/zero of=${RAMDISK} bs=1M count=300
+		dd if=/dev/zero of=${RAMDISK} bs=1M count=300  >/dev/null 2>&1
 		mkfs.vfat ${RAMDISK}
 		mkdir -p "$USBDIR"
 		mount -t vfat ${RAMDISK} "$USBDIR"
@@ -287,18 +306,30 @@ setup_usb_ssh() {
 
 case "$BOOTMODE" in
 	update_auto)
+		local enable_emmc_update="y"
+
 		is_usb_gadget_supported && setup_usb_ram_mass_storage
 
-		if is_usb_gadget_supported && wait_usb_gadget_connected; then
+		if is_usb_gadget_supported && check_usb_gadget_cable_present && wait_usb_gadget_connected; then
+			enable_emmc_update="n"
 			wait_for_gadget_disconnect
 			update_from_gadget
-		elif search_for_usb_drive; then
+		fi
+
+		if force_enable_usb_host && search_for_usb_drive; then
+			enable_emmc_update="n"
 			CONFIRM=y update_from_block_device "/dev/sd*" "" "USB Flash Drive"
-		elif search_for_sd; then
+		fi
+
+		if search_for_sd; then
+			enable_emmc_update="n"
 			CONFIRM=y update_from_block_device "${MICROSD}p*" "" "microSD card"
-		else
+		fi
+
+		if [[ "x${enable_emmc_update}" == "xy" ]]; then
 			update_from_emmc
 		fi
+
 		;;
 	usbupdate*)
 		FIT_NAME="${BOOTMODE#*,}"
