@@ -11,7 +11,7 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
 fi
 
 ssh_port_forwarding=
-if [ -n "WBDEV_SSH_PORT_FORWARDING" ]; then
+if [ -n "$WBDEV_SSH_PORT_FORWARDING" ]; then
    ssh_port_forwarding="-p $WBDEV_SSH_PORT_FORWARDING:22"
 fi
 
