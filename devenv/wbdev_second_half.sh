@@ -10,6 +10,10 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
     ssh_opts="-e SSH_AUTH_SOCK=/ssh-agent -v $SSH_AUTH_SOCK:/ssh-agent"
 fi
 
+ssh_port_forwarding=
+if [ -n "WBDEV_SSH_PORT_FORWARDING" ]; then
+   ssh_port_forward="-p $WBDEV_SSH_PORT_FORWARDING:22"
+fi
 
 if [[ $OSTYPE == darwin* ]]
 then
@@ -34,6 +38,7 @@ docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEB_BUILD_OPTIONS \
        -v $HOME:$VM_HOME \
        -v ${PWD%/*}:$PREFIX \
+       $ssh_port_forwarding \
        $ssh_opts \
        -h wbdevenv \
        $WBDEV_IMAGE \

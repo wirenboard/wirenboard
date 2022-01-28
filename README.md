@@ -119,6 +119,9 @@ Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
 Set nonzero value to `WBDEV_USE_EXPERIMENTAL_DEPS` or `WBDEV_USE_UNSTABLE_DEPS` to
 add experimental or unstable Wiren Board Debian repositories respectively.
 
+To forward the ssh port to the container, set `WBDEV_SSH_PORT_FORWARDING` variable
+to the value of the host's local port.
+
 If required, another Docker image could be set via
 environment variable WBDEV_IMAGE.
 
