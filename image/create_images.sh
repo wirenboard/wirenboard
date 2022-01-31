@@ -62,7 +62,16 @@ WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_webupd_wb${BOARD}.fit"
 if  [ -n "$MAKE_IMG" ]; then
     echo "Create IMG"
     rm -f ${IMG_NAME}
-    $TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${TOP_DIR}/${U_BOOT} ${IMG_NAME}
+
+    if [[ -n "$U_BOOT_ROOTFS" ]] && [[ -e "${ROOTFS}/${U_BOOT_ROOTFS}" ]]; then
+        echo "Use u-boot from rootfs"
+        U_BOOT_PATH="${ROOTFS}/${U_BOOT_ROOTFS}"
+    else
+        echo "Use default u-boot"
+        U_BOOT_PATH="${TOP_DIR}/${U_BOOT}"
+    fi
+
+    $TOP_DIR/image/create_image.sh ${IMAGE_TYPE} ${ROOTFS} ${U_BOOT_PATH} ${IMG_NAME}
     zip -j ${IMG_NAME}.zip ${IMG_NAME}
 fi
 
