@@ -32,7 +32,12 @@ VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || {
 	exit 4
 }
 
-DTB_NAME=$(sed -n 's/^fdt_file=\/boot\/dtbs\///p' "$ROOTFS/boot/uEnv.txt")
+if [[ -n "${FIT_IMAGE_DTB}" ]] ; then
+    echo "Use special board-defined DTB for FIT image: ${FIT_IMAGE_DTB}"
+    DTB_NAME="${FIT_IMAGE_DTB}"
+else
+    DTB_NAME=$(sed -n 's/^fdt_file=\/boot\/dtbs\///p' "$ROOTFS/boot/uEnv.txt")
+fi
 
 echo "Board:       $BOARD"
 echo "RootFS:      $ROOTFS"
