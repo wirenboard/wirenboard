@@ -98,12 +98,23 @@ install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
     install_file "$FILES_DIR/memdump" "/bin/memdump"
 }
 
+case $FLAVOUR in
+wb2)
+    install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.mxs /etc/fw_env.config
+    ;;
+wb6)
+    install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.imx6 /etc/fw_env.config
+    ;;
+wb7)
+    install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.sun8i /etc/fw_env.config
+    ;;
+esac
+
 FROM_ROOTFS=(
 	/bin/busybox
 	/bin/bash
 	/usr/bin/fw_printenv
 	/usr/bin/fw_setenv
-	/etc/fw_env.config
     /etc/profile
 	/usr/bin/fit_info
 	/usr/bin/pv
