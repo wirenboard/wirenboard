@@ -16,7 +16,7 @@ pipeline {
         label "devenv"
     }
     parameters {
-        string(name: 'BOARDS', defaultValue: '67 6x', description: 'boards to build images for')
+        string(name: 'BOARDS', defaultValue: '67 7x', description: 'boards to build images for')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
         booleanParam(name: 'FORCE_OVERWRITE', defaultValue: false, description: 'use only if you know what you are doing')
