@@ -102,22 +102,24 @@ fi
 
 # try to load DTB from contribs
 get_dtb() {
-    local DTB_NAME=$1
-    DTB_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
-    mkdir -p "$(dirname "$DTB_DEFAULT_PATH")"
+    {
+        local DTB_NAME=$1
+        DTB_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
+        mkdir -p "$(dirname "$DTB_DEFAULT_PATH")"
 
-    DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
-    if [[ ! -e "$DTB" ]]; then
-        echo "Local DTB not found, downloading one to $DTB_DEFAULT_PATH"
-        DTB_URL="http://fw-releases.wirenboard.com/utils/build-image/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
-        wget -O "$DTB_DEFAULT_PATH" "$DTB_URL"
         DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
-    fi
+        if [[ ! -e "$DTB" ]]; then
+            echo "Local DTB not found, downloading one to $DTB_DEFAULT_PATH"
+            DTB_URL="http://fw-releases.wirenboard.com/utils/build-image/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
+            wget -O "$DTB_DEFAULT_PATH" "$DTB_URL"
+            DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
+        fi
 
-    if [[ ! -e "$DTB" ]]; then
-        echo "Failed to find DTB even after downloading, something went wrong"
-        exit 1
-    fi
+        if [[ ! -e "$DTB" ]]; then
+            echo "Failed to find DTB even after downloading, something went wrong"
+            exit 1
+        fi
+    } >&2
 
     echo "$DTB"
 }
