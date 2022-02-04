@@ -25,12 +25,13 @@ info() {
 	>&2 echo ">>> $@"
 }
 
-[[ $# != 4 ]] && usage
+[[ $# != 5 ]] && usage
 
 ROOTFS=$(readlink -f $1)
 ZIMAGE=$(readlink -f $2)
-DTB=$(readlink -f $3)
-OUTPUT=$(readlink -f $4)
+BOOT_DTB=$(readlink -f $3)
+TARGET_DTB=$(readlink -f $4)
+OUTPUT=$(readlink -f $5)
 
 [[ -e "$ROOTFS" ]] || die "$ROOTFS not found"
 
@@ -75,7 +76,7 @@ elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
 fi
 
-COMPATIBLE=`dtb_get_compatible < "$DTB"`
+COMPATIBLE=`dtb_get_compatible < "$TARGET_DTB"`
 [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
 
 VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
@@ -100,7 +101,7 @@ cat <<EOF
 	images {
 EOF
 	include kernel $ZIMAGE "Update kernel" "type = \"kernel\"; os = \"linux\"; arch = \"arm\";"
-	include dtb $DTB "Update DTB" "type = \"flat_dt\"; arch = \"arm\";"
+	include dtb $BOOT_DTB "Update DTB" "type = \"flat_dt\"; arch = \"arm\";"
 	include install $INSTALL_SCRIPT "Installation script (bash)"
 	include rootfs $ROOTFS_TARBALL "Root filesystem tarball"
 cat <<EOF

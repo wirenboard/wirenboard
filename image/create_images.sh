@@ -32,16 +32,19 @@ VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || {
 	exit 4
 }
 
+TARGET_DTB_NAME=$(sed -n 's/^fdt_file=\/boot\/dtbs\///p' "$ROOTFS/boot/uEnv.txt")
+
 if [[ -n "${FIT_IMAGE_DTB}" ]] ; then
     echo "Use special board-defined DTB for FIT image: ${FIT_IMAGE_DTB}"
-    DTB_NAME="${FIT_IMAGE_DTB}"
+    BOOT_DTB_NAME="${FIT_IMAGE_DTB}"
 else
-    DTB_NAME=$(sed -n 's/^fdt_file=\/boot\/dtbs\///p' "$ROOTFS/boot/uEnv.txt")
+    BOOT_DTB_NAME="${TARGET_DTB_NAME}"
 fi
 
 echo "Board:       $BOARD"
 echo "RootFS:      $ROOTFS"
-echo "DTB name:    $DTB_NAME"
+echo "DTB name:    $TARGET_DTB_NAME"
+echo "Boot DTB:    $BOOT_DTB_NAME"
 echo "FW version:  $VERSION"
 echo "Debian:      $VERSION_CODENAME"
 echo "Release:     $RELEASE_NAME"
@@ -98,24 +101,32 @@ if [[ ! -f "$ZIMAGE" ]]; then
 fi
 
 # try to load DTB from contribs
-DTB_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
-mkdir -p "$(dirname "$DTB_DEFAULT_PATH")"
+get_dtb() {
+    local DTB_NAME=$1
+    DTB_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
+    mkdir -p "$(dirname "$DTB_DEFAULT_PATH")"
 
-DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
-if [[ ! -e "$DTB" ]]; then
-    echo "Local DTB not found, downloading one to $DTB_DEFAULT_PATH"
-    DTB_URL="http://fw-releases.wirenboard.com/utils/build-image/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
-    wget -O "$DTB_DEFAULT_PATH" "$DTB_URL"
     DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
-fi
+    if [[ ! -e "$DTB" ]]; then
+        echo "Local DTB not found, downloading one to $DTB_DEFAULT_PATH"
+        DTB_URL="http://fw-releases.wirenboard.com/utils/build-image/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
+        wget -O "$DTB_DEFAULT_PATH" "$DTB_URL"
+        DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
+    fi
 
-if [[ ! -e "$DTB" ]]; then
-    echo "Failed to find DTB even after downloading, something went wrong"
-    exit 1
-fi
+    if [[ ! -e "$DTB" ]]; then
+        echo "Failed to find DTB even after downloading, something went wrong"
+        exit 1
+    fi
+
+    echo "$DTB"
+}
+
+TARGET_DTB=$(get_dtb "$TARGET_DTB_NAME")
+BOOT_DTB=$(get_dtb "$BOOT_DTB_NAME")
 
 echo "Using zImage from $ZIMAGE"
-"$TOP_DIR/image/create_update.sh" "$ROOTFS" "$ZIMAGE" "$DTB" "$WEBUPD_NAME"
+"$TOP_DIR/image/create_update.sh" "$ROOTFS" "$ZIMAGE" "$BOOT_DTB" "$TARGET_DTB" "$WEBUPD_NAME"
 
 echo "Done"
 echo  ${OUT_DIR}
