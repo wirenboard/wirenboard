@@ -138,7 +138,9 @@ FROM_ROOTFS=(
     /bin/login
     /bin/openvt
     /usr/bin/scp
+    /usr/bin/sftp
     /usr/bin/unshare
+    /usr/lib/sftp-server
 
     /sbin/sfdisk
     /usr/lib/wb-utils/prepare/vars.sh

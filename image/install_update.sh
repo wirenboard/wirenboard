@@ -51,7 +51,7 @@ if [[ -e "/dev/root" ]]; then
 	PART=${PART##*${ROOT_DEV}p}
 else
 	info "Getting mmcpart from U-Boot environment"
-	PART=$(fw_printenv mmcpart | sed 's/.*=//')
+	PART=$(fw_printenv mmcpart | sed 's/.*=//') || PART=""
 fi
 
 case "$PART" in
@@ -115,44 +115,48 @@ blob_size=`fit_blob_size rootfs`
 ) 2>&1 | mqtt_progress "$x"
 popd
 
-info "Recovering device certificates"
-HIDDENFS_MNT=$TMPDIR/hiddenfs
-mkdir -p $HIDDENFS_MNT
+if ! flag_set no-certificates; then
+    info "Recovering device certificates"
+    HIDDENFS_MNT=$TMPDIR/hiddenfs
+    mkdir -p $HIDDENFS_MNT
 
-# make loop device
-LO_DEVICE=`losetup -f`
-losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART || 
-    die "Failed to add loopback device"
+    # make loop device
+    LO_DEVICE=`losetup -f`
+    losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART || 
+        die "Failed to add loopback device"
 
-if mount $LO_DEVICE $HIDDENFS_MNT 2>&1 >/dev/null; then
-    cat $HIDDENFS_MNT/$INTERM_NAME $HIDDENFS_MNT/$DEVCERT_NAME > $MNT/$ROOTFS_CERT_PATH ||
-        info "WARNING: Failed to copy device certificate bundle into new rootfs. Please report it to info@contactless.ru"
-    umount $HIDDENFS_MNT
-    sync
-else
-    info "WARNING: Failed to find certificates of device. Please report it to info@contactless.ru"
+    if mount $LO_DEVICE $HIDDENFS_MNT 2>&1 >/dev/null; then
+        cat $HIDDENFS_MNT/$INTERM_NAME $HIDDENFS_MNT/$DEVCERT_NAME > $MNT/$ROOTFS_CERT_PATH ||
+            info "WARNING: Failed to copy device certificate bundle into new rootfs. Please report it to info@contactless.ru"
+        umount $HIDDENFS_MNT
+        sync
+    else
+        info "WARNING: Failed to find certificates of device. Please report it to info@contactless.ru"
+    fi
 fi
 
-info "Mount /dev, /proc and /sys to rootfs"
-mount -o bind /dev "$MNT/dev"
-mount -o bind /proc "$MNT/proc"
-mount -o bind /sys "$MNT/sys"
+if ! flag_set no-postinst; then
+    info "Mount /dev, /proc and /sys to rootfs"
+    mount -o bind /dev "$MNT/dev"
+    mount -o bind /proc "$MNT/proc"
+    mount -o bind /sys "$MNT/sys"
 
-POSTINST_DIR="$MNT/usr/lib/wb-image-update/postinst/"
-if [[ -d "$POSTINST_DIR" ]]; then
-    info "Running post-install scripts"
+    POSTINST_DIR="$MNT/usr/lib/wb-image-update/postinst/"
+    if [[ -d "$POSTINST_DIR" ]]; then
+        info "Running post-install scripts"
 
-    POSTINST_FILES="$(find "$POSTINST_DIR" -maxdepth 1 -type f | sort)"
-    for file in $POSTINST_FILES; do
-        info "> Processing $file"
-        "$file" "$MNT" "$FLAGS" || true
-    done
+        POSTINST_FILES="$(find "$POSTINST_DIR" -maxdepth 1 -type f | sort)"
+        for file in $POSTINST_FILES; do
+            info "> Processing $file"
+            "$file" "$MNT" "$FLAGS" || true
+        done
+    fi
+
+    info "Unmounting /dev, /proc and /sys from rootfs"
+    umount "$MNT/dev"
+    umount "$MNT/proc"
+    umount "$MNT/sys"
 fi
-
-info "Unmounting /dev, /proc and /sys from rootfs"
-umount "$MNT/dev"
-umount "$MNT/proc"
-umount "$MNT/sys"
 
 info "Unmounting new rootfs"
 umount $MNT
@@ -162,13 +166,17 @@ info "Switching to new rootfs"
 fw_setenv mmcpart $PART
 fw_setenv upgrade_available 1
 
-info "Done, removing firmware image and rebooting"
+info "Done!"
 rm_fit
 led_success || true
-mqtt_status REBOOT
-trap EXIT
-flag_set "from-initramfs" && {
-	sync
-	reboot -f
-} || reboot
+
+if ! flag_set no-reboot; then
+    info "Reboot system"
+    mqtt_status REBOOT
+    trap EXIT
+    flag_set "from-initramfs" && {
+        sync
+        reboot -f
+    } || reboot
+fi
 exit 0
