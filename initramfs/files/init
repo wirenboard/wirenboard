@@ -5,7 +5,6 @@ led() {
 	echo "$3" > "/sys/class/leds/$1/$2" 2>/dev/null || true
 }
 
-
 start_debug_console() {
 	umount /disk >/dev/null 2>&1 || true
 	umount /usb >/dev/null 2>&1 || true
@@ -32,6 +31,8 @@ mount /dev/pts
 
 mkdir -p /dev/shm
 mkdir -p /var/lock
+
+source /lib/libupdate.sh
 
 EMMC=/dev/mmcblk0
 MICROSD=/dev/mmcblk1
@@ -127,6 +128,19 @@ search_for_sd() {
 	ls ${MICROSD}p* >/dev/null 2>&1
 }
 
+# two beeps to indicate the update
+buzzer_update_beep() {
+	buzzer_init
+	buzzer_on
+	sleep 0.1
+	buzzer_off
+
+	sleep 0.1
+
+	buzzer_on
+	sleep 0.1
+	buzzer_off
+}
 
 # Search for .fit files in a given directory and run update
 #
@@ -168,10 +182,10 @@ update_from_fs() {
 
 		check_fit_end_signature "$FIT" &&
 			set_led_update_in_progress &&
+			buzzer_update_beep &&
 			wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" &&
 			break
 	fi
-	
 }
 
 
@@ -225,6 +239,7 @@ update_from_emmc() {
 	mount -t auto "${DATA_PART}" /mnt/data &&
 		[[ -e "$FIT" ]] &&
 		check_fit_end_signature "$FIT" &&
+		buzzer_update_beep &&
 		wb-run-update  --from-initramfs --no-mqtt --no-remove "$FIT"
 }
 
@@ -321,12 +336,12 @@ case "$BOOTMODE" in
 
 		if force_enable_usb_host && search_for_usb_drive; then
 			enable_emmc_update="n"
-			CONFIRM=y update_from_block_device "/dev/sd*" "" "USB Flash Drive"
+			update_from_block_device "/dev/sd*" "" "USB Flash Drive"
 		fi
 
 		if search_for_sd; then
 			enable_emmc_update="n"
-			CONFIRM=y update_from_block_device "${MICROSD}p*" "" "microSD card"
+			update_from_block_device "${MICROSD}p*" "" "microSD card"
 		fi
 
 		if [[ "x${enable_emmc_update}" == "xy" ]]; then
