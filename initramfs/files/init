@@ -140,6 +140,8 @@ buzzer_update_beep() {
 	buzzer_on
 	sleep 0.1
 	buzzer_off
+	
+	sleep 0.3
 }
 
 # Search for .fit files in a given directory and run update
