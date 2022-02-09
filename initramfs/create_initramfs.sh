@@ -89,6 +89,7 @@ install_file "$FILES_DIR/dropbear_rsa_host_key" "/etc/dropbear/dropbear_rsa_host
 install_file "$FILES_DIR/dropbear_dss_host_key" "/etc/dropbear/dropbear_dss_host_key"
 install_file "$FILES_DIR/udhcpd.conf" "/etc/udhcpd.conf"
 install_file "$FILES_DIR/usb_net.sh" "/bin/usb_net"
+install_file "$FILES_DIR/libupdate.sh" "/lib/libupdate.sh"
 install_file "$FILES_DIR/libupdate.wb5.sh" "/lib/libupdate.wb5.sh"
 install_file "$FILES_DIR/libupdate.wb6.sh" "/lib/libupdate.wb6.sh"
 install_file "$FILES_DIR/libupdate.wb7.sh" "/lib/libupdate.wb7.sh"
