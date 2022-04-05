@@ -58,6 +58,11 @@ stretch-armel|wb5)
     WBDEV_TARGET_ARCH="armel"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
+host)
+    WBDEV_TARGET_BOARD="host"
+    WBDEV_TARGET_ARCH="amd64"
+    WBDEV_TARGET_RELEASE="stretch"
+    ;;
 esac
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
@@ -186,16 +191,22 @@ sbuild_buildpackage() {
     local ARCH=$1
     shift
 
-    local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
-    STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} ${WBDEV_TARGET_REPO_RELEASE} main"
+    if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
+        echo "host target selected, using dev-tools repo as stable"
+        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
+        UNSTABLE_REPO_SPEC=""
+    else
+        local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
+        STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} ${WBDEV_TARGET_REPO_RELEASE} main"
 
-    local UNSTABLE_REPO_SPEC=""
-    if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        if platform_has_suite unstable; then
-            echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
-            UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} unstable main"
-        else
-            echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
+        local UNSTABLE_REPO_SPEC=""
+        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+            if platform_has_suite unstable; then
+                echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
+                UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WB_REPO_PLATFORM} unstable main"
+            else
+                echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
+            fi
         fi
     fi
 

@@ -27,7 +27,8 @@ RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /e
       aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
       qemu-user-static binfmt-support node-rimraf \
       sbuild kpartx zip device-tree-compiler u-boot-tools=2016.11+dfsg1-4 fit-aligner libssl-dev \
-      golang-go clang-format && \
+      golang-go clang-format \
+      debian-archive-keyring && \
     apt-get install -y --force-yes proot
 # FIXME: we should not install anything with --force-yes
  
