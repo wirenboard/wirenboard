@@ -123,9 +123,10 @@ advanced:
                             --config-files mnt/data/root/zigbee2mqtt/data/configuration.yaml \\
                             --deb-no-default-config-files \\
                             --deb-systemd zigbee2mqtt.service \\
+                            --deb-recommends wb-zigbee2mqtt \\
                             -m 'Wiren Board Robot <info@wirenboard.com>' \\
                             --description 'Zigbee to MQTT bridge (package by Wiren Board team)' \\
-                            --url 'https://github.com/Koenkk/zigbee2mqtt' \\
+                            --url '${params.REPO}' \\
                             --vendor 'Wiren Board' \\
                             -d 'nodejs (>= 12.18.4)' \\
                             --before-upgrade before-upgrade.sh \\
