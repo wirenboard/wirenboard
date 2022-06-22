@@ -54,7 +54,7 @@ EOF
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install multi-arch common build dependencies 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go node-rimraf
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go node-rimraf python3-jinja2
 
 	#virtualization support packages
 	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
