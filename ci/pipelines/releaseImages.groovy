@@ -58,7 +58,7 @@ pipeline {
                                       parameters: [
                                         string(name: 'IMAGE_BUILDNUMBER', value: currentImageJob.getId()),
                                         booleanParam(name: 'SET_LATEST', value: true),
-                                        booleanParam(name: 'PUBLISH_IMG', value: true)
+                                        booleanParam(name: 'PUBLISH_IMG', value: false)
                                       ])
                             }
                         }
