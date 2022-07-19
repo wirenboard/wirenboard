@@ -3,7 +3,12 @@ set -e
 #set -x
 
 ROOTFS_DIR=$ROOTFS
-DEBIAN_RELEASE=${DEBIAN_RELEASE:-stretch}
+DEBIAN_RELEASE=${DEBIAN_RELEASE:-bullseye}
+
+# FIXME: remove this when bullseye becomes stable
+if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
+    WB_RELEASE=testing
+fi
 
 WB_REPO=${WB_REPO:-'http://deb.wirenboard.com/'}
 WB_REPO_PREFIX=${WB_REPO_PREFIX:-''}
@@ -161,15 +166,14 @@ setup_additional_repos() {
 install_contactless_repo() {
     rm -f ${APT_LIST_TMP_FNAME}
 
-	echo "Install initial repos"
-    echo "deb $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
-
-    if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
 		echo "Install gnupg"
 		chr apt-get update
 		chr apt-get install -y gnupg1
 	fi
 	
+	echo "Install initial repos"
+    echo "deb $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
 }
 
 echo "Wirenboard repo: $FULL_REPO_URL, release $WB_RELEASE"
@@ -251,7 +255,10 @@ EOM
         echo "Install primary sources.list"
         echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
-		if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+        if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
+			echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+			echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
+		elif [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
 			echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
 			echo "deb http://security.debian.org ${DEBIAN_RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 		fi
@@ -289,15 +296,15 @@ EOM
 
     echo "Install additional packages"
     chr_apt_install netbase ifupdown \
-        iproute openssh-server \
+        iproute2 openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
         tzdata mc wireless-tools usbutils \
-        i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq gammu \
-        python-serial memtester apt-utils dialog locales \
+        i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq \
+        memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        python-smbus ssmtp moreutils liblog4cpp5-dev firmware-realtek
+        ssmtp moreutils firmware-realtek
 
-	if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
         chr_apt_install --force-yes liblog4cpp5v5 logrotate
         fi
 
@@ -323,15 +330,15 @@ chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
 
 echo "Install packages from contactless repo"
 pkgs=(
-    cmux hubpower python-wb-io modbus-utils serial-tool busybox
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients python-mosquitto
+    cmux hubpower python-wb-io modbus-utils busybox
+    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
     openssl ca-certificates avahi-daemon pps-tools device-tree-compiler
 )
 
 chr_apt_update
     
-if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
-    chr_apt_install libssl1.0-dev systemd-sysv
+if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
+    chr_apt_install systemd-sysv
 fi
 
 chr_apt_install "${pkgs[@]}"
@@ -363,7 +370,7 @@ install_wb5_packages() {
 		cron bluez-hcidump
     )
 
-    if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
 	chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools
     fi
     chr_apt_install "${pkgs[@]}"
@@ -386,7 +393,7 @@ rm -rf $ADD_REPO_FILE
 rm -rf $ADD_REPO_PIN_FILE
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
-if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
 	rm -f ${OUTPUT}/etc/apt/sources.list
 fi
 
