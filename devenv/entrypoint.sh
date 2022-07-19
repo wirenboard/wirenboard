@@ -36,9 +36,6 @@ WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
 WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"stretch"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
 
-WBDEV_TARGET_REPO_RELEASE=${WBDEV_TARGET_REPO_RELEASE:-"stable"}
-WBDEV_TARGET_REPO_PREFIX=${WBDEV_TARGET_REPO_PREFIX:-""}
-
 # Parse parameters supplied via env variables
 case "$WBDEV_BUILD_METHOD" in
 sbuild|qemuchroot)
@@ -70,8 +67,7 @@ bullseye-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="bullseye"
-    WBDEV_TARGET_REPO_RELEASE="wb-2204"
-    WBDEV_TARGET_REPO_PREFIX="git/feature/49818-bullseye"
+    WBDEV_TARGET_REPO_RELEASE="testing"
     ;;
 bullseye-host|bullseye-amd64)
     WBDEV_TARGET_BOARD="host"
@@ -79,6 +75,9 @@ bullseye-host|bullseye-amd64)
     WBDEV_TARGET_RELEASE="bullseye"
     ;;
 esac
+
+WBDEV_TARGET_REPO_RELEASE=${WBDEV_TARGET_REPO_RELEASE:-"stable"}
+WBDEV_TARGET_REPO_PREFIX=${WBDEV_TARGET_REPO_PREFIX:-""}
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 
@@ -176,9 +175,22 @@ die() {
     exit 1
 }
 
+wb_repo_path() {
+    PLATFORM=$1
+    PREFIX=${2:-$WBDEV_TARGET_REPO_PREFIX}
+
+    if [[ -n "${PREFIX}" ]]; then
+        echo "${PREFIX}/${PLATFORM}"
+    else
+        echo "${PLATFORM}"
+    fi
+}
+
 platform_has_suite() {
     local SUITE=$1
-    local URL="http://deb.wirenboard.com/${WBDEV_TARGET_REPO_PREFIX}/${WB_REPO_PLATFORM}/dists/${SUITE}/Release"
+    local PLATFORM=$2
+
+    local URL="http://deb.wirenboard.com/$(wb_repo_path $PLATFORM)/dists/${SUITE}/Release"
     local HTTP_CODE
     echo "Checking $URL..."
     HTTP_CODE=`curl --silent --head --output /dev/null --write-out '%{http_code}\n' $URL`
@@ -212,13 +224,13 @@ sbuild_buildpackage() {
         UNSTABLE_REPO_SPEC=""
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
-        STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WBDEV_TARGET_REPO_PREFIX}/${WB_REPO_PLATFORM} ${WBDEV_TARGET_REPO_RELEASE} main"
+        STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
 
         local UNSTABLE_REPO_SPEC=""
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            if platform_has_suite unstable; then
+            if platform_has_suite unstable $WB_REPO_PLATFORM; then
                 echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
-                UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/${WBDEV_TARGET_REPO_PREFIX}/${WB_REPO_PLATFORM} unstable main"
+                UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
             else
                 echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
             fi

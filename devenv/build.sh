@@ -41,14 +41,21 @@ Package: *:any
 Pin: release o=wirenboard
 Pin-Priority: 991
 EOF
-    cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
+
+	if [[ "$RELEASE" = "stretch" ]]; then
+		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
+        cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
 Package: node*:any npm:any libuv1*:any
 Pin: release a=stretch-backports
 Pin-Priority: 510
 EOF
-
-	if [[ "$RELEASE" = "stretch" ]]; then
-		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
+	elif [[ "$RELEASE" = "bullseye" ]]; then
+		echo "deb http://deb.debian.org/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
+        cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
+Package: *
+Pin: release a=stretch-backports
+Pin-Priority: 510
+EOF
 	fi
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
