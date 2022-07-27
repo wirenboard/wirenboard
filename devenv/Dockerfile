@@ -2,7 +2,13 @@ FROM debian:stretch
 MAINTAINER ivan4th <ivan4th@gmail.com>
  
 ENV DEBIAN_FRONTEND noninteractive
- 
+
+# clang-format was previously installed from LLVM nighly repository,
+# but we switched to fixed version 15.0.0-++20220704093357+5f0a054f8954-1~exp1~20220704093409.365
+# to avoid unexpected changes in our source code because of new bugs/fixes in llvm.
+#
+# It would be nice to update llvm from time to time though.
+
 RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     echo "deb [arch=amd64] http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -12,8 +18,6 @@ RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /e
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
-    echo 'deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch main' >> /etc/apt/sources.list.d/clang.list && \
-    curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     apt-get update && \
     apt-get install -y --force-yes git mercurial curl wget debootstrap \
       build-essential pkg-config debhelper    \
