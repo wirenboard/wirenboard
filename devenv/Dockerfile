@@ -7,6 +7,10 @@ ENV DEBIAN_FRONTEND noninteractive
 # but we switched to fixed version 15.0.0-++20220704093357+5f0a054f8954-1~exp1~20220704093409.365
 # to avoid unexpected changes in our source code because of new bugs/fixes in llvm.
 #
+# In order to make it work with wbci scripts (which treat ~exp substring in version
+# as a branch version and does not add it to the staging) ~exp was repaced with ~llvmexp
+# (manually using dpkg-dev and sed :) ) before uploading to WB dev-tools repo.
+#
 # It would be nice to update llvm from time to time though.
 
 RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
