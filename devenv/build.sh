@@ -52,8 +52,8 @@ EOF
 	elif [[ "$RELEASE" = "bullseye" ]]; then
 		echo "deb http://deb.debian.org/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
         cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
-Package: *
-Pin: release a=stretch-backports
+Package: libnm0 libmbim-*:any libqmi-*:any gir1.2-mbim-1.0 git1.2-qmi-1.0
+Pin: release a=bullseye-backports
 Pin-Priority: 510
 EOF
 	fi
