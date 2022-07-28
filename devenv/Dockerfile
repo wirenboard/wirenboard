@@ -46,16 +46,9 @@ ENV GOLANG_VERSION 1.13.1
 ENV GOLANG_DOWNLOAD_URL   https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_SHA1  e9275a46508483242feb6200733b6382f127cb43
  
-ENV GLIDE_VERSION v0.13.1
-ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
-ENV GLIDE_DOWNLOAD_SHA1 6de1d6931108ed94bf0f722dbd158487d8f75b20 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
   && tar -C /usr/local -xzf golang.tar.gz \
   && rm golang.tar.gz
- 
-RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
-  && tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
-  && rm glide.tar.gz
  
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
