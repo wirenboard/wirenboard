@@ -2,7 +2,17 @@ FROM debian:stretch
 MAINTAINER ivan4th <ivan4th@gmail.com>
  
 ENV DEBIAN_FRONTEND noninteractive
- 
+
+# clang-format was previously installed from LLVM nighly repository,
+# but we switched to fixed version 15.0.0-++20220704093357+5f0a054f8954-1~exp1~20220704093409.365
+# to avoid unexpected changes in our source code because of new bugs/fixes in llvm.
+#
+# In order to make it work with wbci scripts (which treat ~exp substring in version
+# as a branch version and does not add it to the staging) ~exp was repaced with ~llvmexp
+# (manually using dpkg-dev and sed :) ) before uploading to WB dev-tools repo.
+#
+# It would be nice to update llvm from time to time though.
+
 RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     echo "deb [arch=amd64] http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list && \
@@ -12,8 +22,6 @@ RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /e
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
     echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
     curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
-    echo 'deb http://apt.llvm.org/stretch/ llvm-toolchain-stretch main' >> /etc/apt/sources.list.d/clang.list && \
-    curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     apt-get update && \
     apt-get install -y --force-yes git mercurial curl wget debootstrap \
       build-essential pkg-config debhelper    \
@@ -38,16 +46,9 @@ ENV GOLANG_VERSION 1.13.1
 ENV GOLANG_DOWNLOAD_URL   https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_SHA1  e9275a46508483242feb6200733b6382f127cb43
  
-ENV GLIDE_VERSION v0.13.1
-ENV GLIDE_DOWNLOAD_URL https://github.com/Masterminds/glide/releases/download/$GLIDE_VERSION/glide-$GLIDE_VERSION-linux-amd64.tar.gz
-ENV GLIDE_DOWNLOAD_SHA1 6de1d6931108ed94bf0f722dbd158487d8f75b20 
 RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
   && tar -C /usr/local -xzf golang.tar.gz \
   && rm golang.tar.gz
- 
-RUN curl -fsSL "$GLIDE_DOWNLOAD_URL" -o glide.tar.gz \
-  && tar -C /usr/local/bin --strip-components=1 -xzf glide.tar.gz linux-amd64/glide \
-  && rm glide.tar.gz
  
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
