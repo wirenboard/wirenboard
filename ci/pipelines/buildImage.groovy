@@ -68,7 +68,7 @@ pipeline {
                 sh """
                     wbdev root bash -c 'rm -rf ./output/rootfs_wb$BOARD;
                     WB_REPO_PREFIX=$REPO_PREFIX WB_TARGET=$WB_TARGET WB_RELEASE=$WB_RELEASE \\
-                    WB_DEBIAN_RELEASE=$WB_DEBIAN_RELEASE \\
+                    DEBIAN_RELEASE=$DEBIAN_RELEASE \\
                     bash -x ./rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS'
                 """
             }
