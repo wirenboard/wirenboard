@@ -10,7 +10,7 @@ pipeline {
     }
     parameters {
         choice(name: 'BOARD', choices: wb.boards, description: 'Board version to build image for')
-        choice(name: 'DEB_RELEASE', choices: wb.debianReleases, description: 'Debian release')
+        choice(name: 'DEBIAN_RELEASE', choices: wb.debianReleases, description: 'Debian release')
         string(name: 'REPO_PREFIX', defaultValue: '', description: 'APT repository prefix (after deb.wirenboard.com)')
         string(name: 'ADDITIONAL_REPOS', defaultValue: '',
                description: 'space-separated for multiple repos, example: http://example.com/path/to@stable:main')
@@ -68,6 +68,7 @@ pipeline {
                 sh """
                     wbdev root bash -c 'rm -rf ./output/rootfs_wb$BOARD;
                     WB_REPO_PREFIX=$REPO_PREFIX WB_TARGET=$WB_TARGET WB_RELEASE=$WB_RELEASE \\
+                    WB_DEBIAN_RELEASE=$WB_DEBIAN_RELEASE \\
                     bash -x ./rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS'
                 """
             }
