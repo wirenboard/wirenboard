@@ -131,7 +131,7 @@ ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/00-wb-additional-tmp
 APT_LIST_TMP_FNAME=${OUTPUT}/etc/apt/sources.list.d/wb-install-tmp.list
 APT_PIN_TMP_FNAME=${OUTPUT}/etc/apt/preferences.d/01wb-install-tmp
 
-REPO="http://mirror.yandex.ru/debian/"
+REPO="http://deb.debian.org/debian/"
 
 setup_additional_repos() {
     # setup additional repos

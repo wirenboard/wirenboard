@@ -14,7 +14,6 @@ ENV DEBIAN_FRONTEND noninteractive
 # It would be nice to update llvm from time to time though.
 
 RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
-    sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
     echo "deb [arch=amd64] http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list && \
     echo -n "Package: node* npm libuv1*\nPin: release a=stretch-backports\nPin-Priority: 510" > /etc/apt/preferences.d/01nodejs && \
     apt-get update && \
