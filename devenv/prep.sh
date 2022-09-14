@@ -13,12 +13,11 @@ services_disable
 chr apt-get update
 
 pkgs=(devscripts equivs build-essential \
-    libmosquittopp-dev libmosquitto-dev pkg-config libmodbus-dev \
-    libwbmqtt-dev libsqlite3-dev bash-completion \
-    libgtest-dev google-mock cmake liblircclient-dev \
+    pkg-config bash-completion \
+    libgtest-dev google-mock cmake \
     cdbs autoconf automake libtool \
-    libusb-1.0-0-dev knxd-dev knxd-tools knxd \
-    git git-man gcc g++ libpng-dev linux-headers-${PLATFORM}
+    knxd-dev knxd-tools knxd \
+    git git-man gcc g++ linux-headers-${PLATFORM}
 )
 
 
