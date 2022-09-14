@@ -16,9 +16,9 @@ pkgs=(devscripts equivs build-essential \
     libmosquittopp-dev libmosquitto-dev pkg-config libmodbus-dev \
     libwbmqtt-dev libsqlite3-dev bash-completion \
     libgtest-dev google-mock cmake liblircclient-dev \
-    cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
+    cdbs autoconf automake libtool \
     libusb-1.0-0-dev knxd-dev knxd-tools knxd \
-    cdbs libqt4-dev git git-man gcc g++ libpng-dev linux-headers-${PLATFORM}
+    git git-man gcc g++ libpng-dev linux-headers-${PLATFORM}
 )
 
 
