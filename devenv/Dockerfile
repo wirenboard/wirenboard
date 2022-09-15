@@ -73,11 +73,6 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# build and install google test
-RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
-RUN (ln -s /usr/src/gtest /usr/src/gmock/gtest)
-RUN (cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/)
-
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
 RUN npm install -g bower grunt-cli
