@@ -34,11 +34,12 @@ if [ ! -e /usr/lib/x86_64-linux-gnu/libeibclient.so ]; then
 fi
 
 # build and install google test and google mock
-chr bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
+# FIXME: maybe not used anymore
+chr bash -c "cd /usr/src/gtest && cmake . && make && (mv libg* /usr/lib/ || mv lib/libg* /usr/lib/)"
 
 cp /usr/src/gmock/CMakeLists.txt $ROOTFS/usr/src/gmock
 chr bash -c "ln -s /usr/src/gtest /usr/src/gmock/gtest"
-chr bash -c "cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/"
+chr bash -c "cd /usr/src/gmock && cmake . && make && (mv libg* /usr/lib/ || mv lib/libg* /usr/lib/)"
 
 
 cp /etc/profile.d/wbdev_profile.sh $ROOTFS/etc/profile.d/
