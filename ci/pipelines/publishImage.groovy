@@ -13,7 +13,7 @@ pipeline {
         string(name: 'IMAGE_BUILDNUMBER', defaultValue: '', description: 'from pipelines/build-image')
         booleanParam(name: 'SET_LATEST', defaultValue: false, description: 'remove saved rootfs images before build')
         booleanParam(name: 'PUBLISH_IMG', defaultValue: true, description: 'works with SET_LATEST=true')
-        string(name: 'LATEST_NAME', defaultValue: 'latest_stretch', description: 'used to publish "latest_*.fit, .md5 and .img files')
+        string(name: 'LATEST_NAME', defaultValue: 'latest', description: 'used to publish "latest_*.fit, .md5 and .img files')
     }
     environment {
         S3CMD_CONFIG = credentials('s3cmd-fw-releases-config')
@@ -77,7 +77,6 @@ pipeline {
             environment {
                 FIT_MD5_NAME = "${params.LATEST_NAME}.fit.md5"
                 FIT_PUB_NAME = "${params.LATEST_NAME}.fit"
-                FIT_FRESET_PUB_NAME = "${params.LATEST_NAME}_FACTORYRESET.fit"
             }
             steps {
                 dir(env.TARGET_DIR) {
@@ -85,12 +84,10 @@ pipeline {
                     sh 's3cmd -c $S3CMD_CONFIG put $FIT_MD5_NAME ${S3_PREFIX}/${FIT_MD5_NAME}'
                     sh '''s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_PUB_NAME} \
                         --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
-                    sh '''s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_FRESET_PUB_NAME} \
-                        --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
                 }
             }
         }
-        // FIXME: this step is weird, better to use FITs in the future
+
         stage('Publish latest IMG') {
             when { expression {
                 params.PUBLISH_IMG && params.SET_LATEST
