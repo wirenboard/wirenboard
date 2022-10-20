@@ -163,6 +163,17 @@ setup_additional_repos() {
 
 }
 
+run_additional_script() {
+
+    if [ ${ADDITIONAL_SCRIPT} ]; then
+	echo "Additional script $ADDITIONAL_SCRIPT detected, running"
+	cp $ADDITIONAL_SCRIPT $OUTPUT/additional
+	chr /additional
+	rm $OUTPUT/additional
+    fi
+
+}
+
 install_contactless_repo() {
     rm -f ${APT_LIST_TMP_FNAME}
 
@@ -413,6 +424,8 @@ if ! $WB_TEMP_REPO; then
     echo "regenerate default apt lists for consistency"
     chr wb-release -r
 fi
+
+run_additional_script
 
 echo "cleanup apt caches"
 chr apt-get clean
