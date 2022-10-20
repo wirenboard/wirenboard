@@ -163,6 +163,17 @@ setup_additional_repos() {
 
 }
 
+run_additional_script() {
+
+    if [ ${ADDITIONAL_SCRIPT} ]; then
+	echo "Additional script $ADDITIONAL_SCRIPT detected, running"
+	cp $ADDITIONAL_SCRIPT $OUTPUT/additional
+	chr /additional
+	rm $OUTPUT/additional
+    fi
+
+}
+
 install_contactless_repo() {
     rm -f ${APT_LIST_TMP_FNAME}
 
@@ -200,6 +211,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	chr apt-get update
 
 	chr apt-get -y upgrade
+	run_additional_script
 
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
@@ -307,6 +319,8 @@ EOM
 	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
         chr_apt_install --force-yes liblog4cpp5v5 logrotate
         fi
+
+	run_additional_script
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
