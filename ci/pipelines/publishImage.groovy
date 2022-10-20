@@ -35,22 +35,28 @@ pipeline {
             steps {
                 dir(env.TARGET_DIR) {
                     script {
-                        def parserRegex = '[0-9]*_(.*)_webupd_wb(.*)\\.fit'
+                        def parserRegex = '[0-9]*_(.*)_(.*)_wb(.*)\\.fit'
                         def sectionRegex = '\\1'
-                        def boardRegex = '\\2'
+                        def debianVersionRegex = '\\2'
+                        def boardRegex = '\\3'
 
                         def fitName = sh(returnStdout: true, script: 'ls *.fit').trim()
-                        def remoteSection = sh(returnStdout: true, script: """
+                        def releaseName = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${sectionRegex}#'""").trim()
                         def boardVersion = sh(returnStdout: true, script: """
                             echo ${fitName} | sed -E 's#${parserRegex}#${boardRegex}#'""").trim()
 
-                        if (remoteSection == fitName) {
+                        if (releaseName == fitName) {
                             error('FIT filename parsing failed')
                         }
 
+                        // if release name is wb-XXXX, make image stable
+                        def remoteSection = releaseName;
+                        if (remoteSection ==~ /^wb\-\d+/) {
+                            remoteSection = 'stable';
+                        }
+
                         if (params.PUBLISH_IMG) {
-                            // FIXME: switch to *.img.zip usage in production scripts and remove *.img publish
                             sh 'unzip *.img.zip'
                             env.IMG_NAME = sh(returnStdout: true, script: 'ls *.img').trim()
                             env.IMG_ZIP_NAME = sh(returnStdout: true, script: 'ls *.img.zip').trim()

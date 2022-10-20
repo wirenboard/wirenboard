@@ -57,7 +57,14 @@ if [ ! -z "$2" ]; then
     echo "FW version overriden: $VERSION"
 fi
 
-FULL_VERSION="${VERSION}_${SUITE}"
+# for stable, add release name to fit filename (e.g. wb-2207).
+# for testing/unstable there may be no proper release name, so keep suite name
+FIT_RELEASE_NAME=${SUITE}
+if [ "$FIT_RELEASE_NAME" = "stable" ]; then
+    FIT_RELEASE_NAME=${RELEASE_NAME}
+fi
+
+FULL_VERSION="${VERSION}_${FIT_RELEASE_NAME}_${VERSION_CODENAME}"
 if [[ -n "$REPO_PREFIX" ]]; then
     FULL_VERSION="${FULL_VERSION}_$(echo $REPO_PREFIX | sed -e 's/\W/+/g' -e 's/_/+/g')"
 fi
@@ -65,7 +72,7 @@ fi
 OUT_DIR=${OUT_DIR:-"${IMAGES_DIR}/${VERSION}"}
 mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${FULL_VERSION}_emmc_wb${BOARD}.img"
-WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_webupd_wb${BOARD}.fit"
+WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_wb${BOARD}.fit"
 
 if  [ -n "$MAKE_IMG" ]; then
     echo "Create IMG"
