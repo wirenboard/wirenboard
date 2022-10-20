@@ -211,7 +211,6 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
 	chr apt-get update
 
 	chr apt-get -y upgrade
-	run_additional_script
 
 else
 	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
@@ -320,8 +319,6 @@ EOM
         chr_apt_install --force-yes liblog4cpp5v5 logrotate
         fi
 
-	run_additional_script
-
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
 	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
@@ -427,6 +424,8 @@ if ! $WB_TEMP_REPO; then
     echo "regenerate default apt lists for consistency"
     chr wb-release -r
 fi
+
+run_additional_script
 
 echo "cleanup apt caches"
 chr apt-get clean
