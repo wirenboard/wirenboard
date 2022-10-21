@@ -41,16 +41,18 @@ else
     BOOT_DTB_NAME="${TARGET_DTB_NAME}"
 fi
 
-echo "Board:       $BOARD"
-echo "RootFS:      $ROOTFS"
-echo "DTB name:    $TARGET_DTB_NAME"
-echo "Boot DTB:    $BOOT_DTB_NAME"
-echo "FW version:  $VERSION"
-echo "Debian:      $VERSION_CODENAME"
-echo "Release:     $RELEASE_NAME"
-echo "Suite:       $SUITE"
-echo "Target:      $TARGET"
-echo "Repo prefix: $REPO_PREFIX"
+echo "Board:             $BOARD"
+echo "RootFS:            $ROOTFS"
+echo "DTB name:          $TARGET_DTB_NAME"
+echo "Boot DTB:          $BOOT_DTB_NAME"
+echo "FW version:        $VERSION"
+echo "Debian:            $VERSION_CODENAME"
+echo "Release:           $RELEASE_NAME"
+echo "Suite:             $SUITE"
+echo "Target:            $TARGET"
+echo "Repo prefix:       $REPO_PREFIX"
+echo "FIT custom prefix: $FIT_CUSTOM_PREFIX"
+
 
 if [ ! -z "$2" ]; then
     VERSION=$2
@@ -66,6 +68,10 @@ OUT_DIR=${OUT_DIR:-"${IMAGES_DIR}/${VERSION}"}
 mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${FULL_VERSION}_emmc_wb${BOARD}.img"
 WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_webupd_wb${BOARD}.fit"
+
+if [ "$FIT_CUSTOM_PREFIX" ]; then
+    WEBUPD_NAME="${OUT_DIR}/${FIT_CUSTOM_PREFIX}_${FULL_VERSION}_webupd_wb${BOARD}.fit"
+fi
 
 if  [ -n "$MAKE_IMG" ]; then
     echo "Create IMG"
