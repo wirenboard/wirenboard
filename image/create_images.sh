@@ -63,15 +63,14 @@ FULL_VERSION="${VERSION}_${SUITE}"
 if [[ -n "$REPO_PREFIX" ]]; then
     FULL_VERSION="${FULL_VERSION}_$(echo $REPO_PREFIX | sed -e 's/\W/+/g' -e 's/_/+/g')"
 fi
+if [ "$FIT_CUSTOM_PREFIX" ]; then
+    FULL_VERSION="${FIT_CUSTOM_PREFIX}_${FULL_VERSION}"
+fi
 
 OUT_DIR=${OUT_DIR:-"${IMAGES_DIR}/${VERSION}"}
 mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${FULL_VERSION}_emmc_wb${BOARD}.img"
 WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_webupd_wb${BOARD}.fit"
-
-if [ "$FIT_CUSTOM_PREFIX" ]; then
-    WEBUPD_NAME="${OUT_DIR}/${FIT_CUSTOM_PREFIX}_${FULL_VERSION}_webupd_wb${BOARD}.fit"
-fi
 
 if  [ -n "$MAKE_IMG" ]; then
     echo "Create IMG"
