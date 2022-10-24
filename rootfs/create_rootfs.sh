@@ -5,11 +5,6 @@ set -e
 ROOTFS_DIR=$ROOTFS
 DEBIAN_RELEASE=${DEBIAN_RELEASE:-bullseye}
 
-# FIXME: remove this when bullseye becomes stable
-if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
-    WB_RELEASE=testing
-fi
-
 WB_REPO=${WB_REPO:-'http://deb.wirenboard.com/'}
 WB_REPO_PREFIX=${WB_REPO_PREFIX:-''}
 WB_TEMP_REPO=${WB_TEMP_REPO:-false}
@@ -120,7 +115,7 @@ FULL_REPO_URL=`echo "$WB_REPO/$WB_REPO_PREFIX/$WB_TARGET" | sed 's#//\+#/#g' | s
 WB_TARGET_FOR_FILENAME=`echo $WB_TARGET | sed 's#/#_#'`
 
 WB_REPO_HASH=`echo "$FULL_REPO_URL $ADD_REPOS" | sha256sum - | head -c 8`
-ROOTFS_BASE_SUFFIX="${WB_RELEASE}_${WB_TARGET_FOR_FILENAME}_r${WB_REPO_HASH}"
+ROOTFS_BASE_SUFFIX="${WB_RELEASE}_${WB_TARGET_FOR_FILENAME}_${DEBIAN_RELEASE}_r${WB_REPO_HASH}"
 ROOTFS_BASE_TARBALL="${WORK_DIR}/rootfs_base_${ROOTFS_BASE_SUFFIX}.tar.gz"
 
 ROOTFS_DIR=$OUTPUT
@@ -131,7 +126,7 @@ ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/00-wb-additional-tmp
 APT_LIST_TMP_FNAME=${OUTPUT}/etc/apt/sources.list.d/wb-install-tmp.list
 APT_PIN_TMP_FNAME=${OUTPUT}/etc/apt/preferences.d/01wb-install-tmp
 
-REPO="http://mirror.yandex.ru/debian/"
+REPO="http://deb.debian.org/debian/"
 
 setup_additional_repos() {
     # setup additional repos

@@ -16,9 +16,11 @@ pipeline {
         label "devenv"
     }
     parameters {
+        string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'debian release')
         string(name: 'BOARDS', defaultValue: '67 7x', description: 'boards to build images for')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
+        booleanParam(name: 'ADVANCE_UNSTABLE', defaultValue: true, description: 'disable if you want just to check')
         booleanParam(name: 'FORCE_OVERWRITE', defaultValue: false, description: 'use only if you know what you are doing')
     }
     stages {
@@ -50,29 +52,26 @@ pipeline {
             steps {
                 script {
                     def targets = params.BOARDS.split(' ')
-                    def jobs = [:]
 
                     for (target in targets) {
                         def currentTarget = target
-                        jobs["build ${currentTarget}"] = {
-                            stage("Build image for ${currentTarget}") {
-                                build job: 'pipelines/build-image', wait: true, parameters: [
-                                    string(name: 'BOARD', value: currentTarget),
-                                    string(name: 'WB_TARGET', value: 'all'),
-                                    string(name: 'WB_RELEASE', value: 'staging'),
-                                    booleanParam(name: 'SAVE_ARTIFACTS', value: false)
-                                ]
-                            }
+                        stage("Build image for ${currentTarget}") {
+                            build job: 'pipelines/build-image', wait: true, parameters: [
+                                string(name: 'DEBIAN_RELEASE', value: params.DEBIAN_RELEASE),
+                                string(name: 'BOARD', value: currentTarget),
+                                string(name: 'WB_TARGET', value: 'all'),
+                                string(name: 'WB_RELEASE', value: 'staging'),
+                                string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
+                                booleanParam(name: 'SAVE_ARTIFACTS', value: false)
+                            ]
                         }
                     }
-
-                    parallel jobs
                 }
             }
         }
         stage('Advance unstable') {
             when { expression {
-                changesDetected
+                changesDetected && params.ADVANCE_UNSTABLE
             }}
             environment {
                 APTLY_CONFIG = credentials('release-aptly-config')
@@ -86,7 +85,7 @@ pipeline {
         }
         stage('Upload via wb-releases') {
             when { expression {
-                changesDetected
+                changesDetected && params.ADVANCE_UNSTABLE
             }}
             steps {
                 build job: 'wirenboard/wb-releases/master', wait: true, parameters: [
