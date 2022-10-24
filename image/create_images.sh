@@ -41,16 +41,18 @@ else
     BOOT_DTB_NAME="${TARGET_DTB_NAME}"
 fi
 
-echo "Board:       $BOARD"
-echo "RootFS:      $ROOTFS"
-echo "DTB name:    $TARGET_DTB_NAME"
-echo "Boot DTB:    $BOOT_DTB_NAME"
-echo "FW version:  $VERSION"
-echo "Debian:      $VERSION_CODENAME"
-echo "Release:     $RELEASE_NAME"
-echo "Suite:       $SUITE"
-echo "Target:      $TARGET"
-echo "Repo prefix: $REPO_PREFIX"
+echo "Board:             $BOARD"
+echo "RootFS:            $ROOTFS"
+echo "DTB name:          $TARGET_DTB_NAME"
+echo "Boot DTB:          $BOOT_DTB_NAME"
+echo "FW version:        $VERSION"
+echo "Debian:            $VERSION_CODENAME"
+echo "Release:           $RELEASE_NAME"
+echo "Suite:             $SUITE"
+echo "Target:            $TARGET"
+echo "Repo prefix:       $REPO_PREFIX"
+echo "FIT custom prefix: $FIT_CUSTOM_PREFIX"
+
 
 if [ ! -z "$2" ]; then
     VERSION=$2
@@ -67,6 +69,9 @@ fi
 FULL_VERSION="${VERSION}_${FIT_RELEASE_NAME}_${VERSION_CODENAME}"
 if [[ -n "$REPO_PREFIX" ]]; then
     FULL_VERSION="${FULL_VERSION}_$(echo $REPO_PREFIX | sed -e 's/\W/+/g' -e 's/_/+/g')"
+fi
+if [ "$FIT_CUSTOM_PREFIX" ]; then
+    FULL_VERSION="${FIT_CUSTOM_PREFIX}_${FULL_VERSION}"
 fi
 
 OUT_DIR=${OUT_DIR:-"${IMAGES_DIR}/${VERSION}"}
