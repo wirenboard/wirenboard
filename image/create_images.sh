@@ -72,6 +72,10 @@ mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${FULL_VERSION}_emmc_wb${BOARD}.img"
 WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_webupd_wb${BOARD}.fit"
 
+if [ "$FIT_CUSTOM_PREFIX" ]; then
+    WEBUPD_NAME="${OUT_DIR}/${FIT_CUSTOM_PREFIX}_${FULL_VERSION}_webupd_wb${BOARD}.fit"
+fi
+
 if  [ -n "$MAKE_IMG" ]; then
     echo "Create IMG"
     rm -f ${IMG_NAME}
