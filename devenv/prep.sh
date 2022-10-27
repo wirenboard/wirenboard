@@ -12,13 +12,12 @@ services_disable
 /bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >$ROOTFS/etc/apt/apt.conf.d/90forceyes
 chr apt-get update
 
-pkgs=(devscripts python-virtualenv equivs build-essential \
-    libmosquittopp-dev libmosquitto-dev pkg-config libmodbus-dev \
-    libwbmqtt-dev libsqlite3-dev bash-completion \
-    libgtest-dev google-mock cmake liblircclient-dev python-setuptools \
-    cdbs libqt4-dev autoconf automake libtool libpthsem-dev libpthsem20 \
-    libusb-1.0-0-dev knxd-dev knxd-tools knxd \
-    cdbs libqt4-dev git git-man gcc g++ libpng-dev linux-headers-${PLATFORM}
+pkgs=(devscripts equivs build-essential \
+    pkg-config bash-completion \
+    libgtest-dev google-mock cmake \
+    cdbs autoconf automake libtool \
+    knxd-dev knxd-tools knxd \
+    git git-man gcc g++ linux-headers-${PLATFORM}
 )
 
 
@@ -33,17 +32,6 @@ if [ ! -e /usr/lib/x86_64-linux-gnu/libeibclient.so ]; then
 #FIX ME
 	ln -s /usr/lib/x86_64-linux-gnu/libeibclient.so.0 /usr/lib/x86_64-linux-gnu/libeibclient.so | true 
 fi
-(rm -rf $ROOTFS/dh-virtualenv && cd $ROOTFS && git clone https://github.com/spotify/dh-virtualenv.git && cd dh-virtualenv && git checkout 0.10)
-chr bash -c "cd /dh-virtualenv && mk-build-deps -ri && dpkg-buildpackage -us -uc -b"
-chr bash -c "dpkg -i /dh-virtualenv_*.deb"
-
-# build and install google test and google mock
-chr bash -c "cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/"
-
-cp /usr/src/gmock/CMakeLists.txt $ROOTFS/usr/src/gmock
-chr bash -c "ln -s /usr/src/gtest /usr/src/gmock/gtest"
-chr bash -c "cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/"
-
 
 cp /etc/profile.d/wbdev_profile.sh $ROOTFS/etc/profile.d/
 

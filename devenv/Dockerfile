@@ -1,7 +1,38 @@
-FROM debian:stretch
+FROM debian:bullseye
 MAINTAINER ivan4th <ivan4th@gmail.com>
- 
+
 ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt update && apt install -y wget gnupg && \
+    wget -qO - https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg \
+       | apt-key add - && \
+    wget  https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg \
+       --output-document=/usr/share/keyrings/contactless-keyring.gpg && \
+    echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > \
+       /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
+    apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
+    # TODO: add llvm dependencies to our own repository \
+    curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
+    echo "deb [arch=amd64] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
+       /etc/apt/sources.list.d/llvm-bullseye-15.list && \
+    apt update &&\
+    apt install -y --force-yes git debootstrap proot build-essential pkg-config debhelper \
+       nodejs npm bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
+       devscripts python3-virtualenv git equivs qemu-user-static binfmt-support node-rimraf \
+       libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
+       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
+       valgrind libgtest-dev google-mock cmake config-package-dev fit-aligner libssl-dev bc lzop \
+       python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
+       python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
+       clang-format \
+    # legacy requirement for kernel building \
+    rsync  \
+    # legacy requirement for go-required packages \
+    golang-go 
+
+
+# FIXME: we should not install anything with --force-yes
 
 # clang-format was previously installed from LLVM nighly repository,
 # but we switched to fixed version 15.0.0-++20220704093357+5f0a054f8954-1~exp1~20220704093409.365
@@ -12,33 +43,6 @@ ENV DEBIAN_FRONTEND noninteractive
 # (manually using dpkg-dev and sed :) ) before uploading to WB dev-tools repo.
 #
 # It would be nice to update llvm from time to time though.
-
-RUN echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
-    sed -e "s/httpredir.debian.org/mirror.yandex.ru/g" -i /etc/apt/sources.list && \
-    echo "deb [arch=amd64] http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list && \
-    echo -n "Package: node* npm libuv1*\nPin: release a=stretch-backports\nPin-Priority: 510" > /etc/apt/preferences.d/01nodejs && \
-    apt-get update && \
-    apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https contactless-keyring && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
-    echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
-    curl https://www.aptly.info/pubkey.txt | apt-key add - && \ 
-    apt-get update && \
-    apt-get install -y --force-yes git mercurial curl wget debootstrap \
-      build-essential pkg-config debhelper    \
-      nodejs npm bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
-      devscripts python-virtualenv git equivs \
-      libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev \
-      libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev \
-      valgrind libgtest-dev google-mock cmake config-package-dev \
-      python-netaddr python-pyparsing liblircclient-dev \
-      libusb-dev libusb-1.0-0-dev jq python-dev python-smbus \
-      aptly python-setuptools python3-setuptools liblog4cpp5-dev libpng-dev libqt4-dev bc lzop bison flex kmod \
-      qemu-user-static binfmt-support node-rimraf \
-      sbuild kpartx zip device-tree-compiler u-boot-tools=2016.11+dfsg1-4 fit-aligner libssl-dev \
-      golang-go clang-format \
-      debian-archive-keyring && \
-    apt-get install -y --force-yes proot
-# FIXME: we should not install anything with --force-yes
  
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
@@ -63,7 +67,12 @@ COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
 COPY projects.list /
 COPY chr /usr/local/bin/
+COPY debootstrap-functions.diff /usr/share/debootstrap/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
+
+# patch a bug in debootstrap/functions, preventing schroot from working inside Docker 
+# see https://bugs.launchpad.net/ubuntu/+source/debootstrap/+bug/1948713
+RUN patch /usr/share/debootstrap/functions < /usr/share/debootstrap/debootstrap-functions.diff
 
 RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
@@ -73,11 +82,6 @@ RUN locale-gen && update-locale
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-
-# build and install google test
-RUN (cd /usr/src/gtest && cmake . && make && mv libg* /usr/lib/)
-RUN (ln -s /usr/src/gtest /usr/src/gmock/gtest)
-RUN (cd /usr/src/gmock && cmake . && make && mv libg* /usr/lib/)
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
