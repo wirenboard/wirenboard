@@ -4,13 +4,18 @@ MAINTAINER ivan4th <ivan4th@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update && apt install -y wget gnupg && \
-    wget -qO - https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg | apt-key add - && \
-    wget  https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg --output-document=/usr/share/keyrings/contactless-keyring.gpg && \
-    echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
+    wget -qO - https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg \
+       | apt-key add - && \
+    wget  https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg \
+       --output-document=/usr/share/keyrings/contactless-keyring.gpg && \
+    echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > \
+       /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
-    echo 'deb [arch=amd64] http://repo.aptly.info/ squeeze main' >/etc/apt/sources.list.d/aptly.list && \
-    curl https://www.aptly.info/pubkey.txt | apt-key add - && \
+    # TODO: add llvm dependencies to our own repository \
+    curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
+    echo "deb [arch=amd64] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
+       /etc/apt/sources.list.d/llvm-bullseye-15.list && \
     apt update &&\
     apt install -y --force-yes git debootstrap proot build-essential pkg-config debhelper \
        nodejs npm bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
@@ -19,8 +24,14 @@ RUN apt update && apt install -y wget gnupg && \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
        valgrind libgtest-dev google-mock cmake config-package-dev fit-aligner libssl-dev bc lzop \
        python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
-       python-dev python3-smbus aptly python-setuptools python3-setuptools liblog4cpp5-dev \
-       libpng-dev bison flex kmod 
+       python-dev python3-smbus python-setuptools python3-setuptools liblog4cpp5-dev \
+       libpng-dev bison flex kmod \
+    # legacy requirement for kernel building \
+    rsync  \
+    # legacy requirement for go-required packages \
+    golang-go && \
+    # dh-python should be installed in separate apt install session due to conflicts \
+    apt install -y dh-python clang-format
 
 # FIXME: we should not install anything with --force-yes
 
