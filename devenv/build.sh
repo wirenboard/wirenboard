@@ -5,7 +5,14 @@ cd /root
 do_build() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
-	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD
+
+	# FIXME: remove this when bullseye becomes stable
+	if [[ ${RELEASE} == "bullseye" ]]; then
+	    time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH WB_RELEASE=testing /root/rootfs/create_rootfs.sh $BOARD
+	else
+	    time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD
+	fi
+
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
 }
