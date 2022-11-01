@@ -32,7 +32,7 @@ Package: pylint python3-astroid python3-typing-extensions\nPin: release a=testin
        valgrind libgtest-dev google-mock cmake config-package-dev fit-aligner libssl-dev bc lzop \
        python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
-       clang-format \
+       clang-format fdisk \
     # legacy requirement for kernel building \
     rsync  \
     # legacy requirement for go-required packages \
