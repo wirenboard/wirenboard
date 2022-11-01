@@ -62,6 +62,7 @@ pipeline {
                                 string(name: 'WB_TARGET', value: 'all'),
                                 string(name: 'WB_RELEASE', value: 'staging'),
                                 string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
+                                string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
                                 booleanParam(name: 'SAVE_ARTIFACTS', value: false)
                             ]
                         }
