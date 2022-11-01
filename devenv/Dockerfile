@@ -16,6 +16,15 @@ RUN apt update && apt install -y wget gnupg && \
     curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
     echo "deb [arch=amd64] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
+    \
+    # Low-priority testing repo for pinning pylint \
+    echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list && \
+    echo 'Package: *\nPin: release a=stable\nPin-Priority: 700\n\n\
+Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
+Package: python3-astroid\nPin: release a=testing\nPin-Priority: 900\n\n\
+Package: python3-typing-extensions\nPin: release a=testing\nPin-Priority: 900\n\n\
+Package: pylint\nPin: release a=testing\nPin-Priority: 900' >  /etc/apt/preferences && \
+    \
     apt update &&\
     apt install -y --force-yes git debootstrap proot build-essential pkg-config debhelper \
        nodejs npm bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
@@ -29,7 +38,9 @@ RUN apt update && apt install -y wget gnupg && \
     # legacy requirement for kernel building \
     rsync  \
     # legacy requirement for go-required packages \
-    golang-go 
+    golang-go \
+    # for Jenkins python checks
+    pylint black python3-isort
 
 
 # FIXME: we should not install anything with --force-yes
