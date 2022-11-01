@@ -29,10 +29,12 @@ Package: pylint python3-astroid python3-typing-extensions\nPin: release a=testin
        devscripts python3-virtualenv git equivs qemu-user-static binfmt-support node-rimraf \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
-       valgrind libgtest-dev google-mock cmake config-package-dev fit-aligner libssl-dev bc lzop \
+       valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzop \
        python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
-       clang-format fdisk \
+       clang-format \
+    # for image building \
+    fdisk u-boot-tools fit-aligner \
     # legacy requirement for kernel building \
     rsync  \
     # legacy requirement for go-required packages \
