@@ -19,11 +19,9 @@ RUN apt update && apt install -y wget gnupg && \
     \
     # Low-priority testing repo for pinning pylint \
     echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list && \
-    echo 'Package: *\nPin: release a=stable\nPin-Priority: 700\n\n\
-Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
-Package: python3-astroid\nPin: release a=testing\nPin-Priority: 900\n\n\
-Package: python3-typing-extensions\nPin: release a=testing\nPin-Priority: 900\n\n\
-Package: pylint\nPin: release a=testing\nPin-Priority: 900' >  /etc/apt/preferences && \
+    echo 'Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
+Package: pylint python3-astroid python3-typing-extensions\nPin: release a=testing\nPin-Priority: 900' > \
+ /etc/apt/preferences.d/pylint-from-testing.pref && \
     \
     apt update &&\
     apt install -y --force-yes git debootstrap proot build-essential pkg-config debhelper \
