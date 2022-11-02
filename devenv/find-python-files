@@ -1,0 +1,15 @@
+#!/bin/bash
+
+files1=`find . -name "*.py"`
+files2=`for file in \`find . -type f ! -name "*.*"\`; do mime=\`file -b --mime-type $file\`; if [ $mime == 'text/x-python' ]; then echo $file; fi; done `
+
+if [ "$WB_PYTHON_FILES_EXCLUDE" ]; then
+    for file in `echo "$files2 $files1" | grep -v "$WB_PYTHON_FILES_EXCLUDE"` ; do
+	echo $file;
+    done
+else
+    for file in `echo "$files2 $files1"`; do
+	echo $file;
+    done
+fi
+

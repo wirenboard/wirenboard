@@ -80,6 +80,8 @@ COPY projects.list /
 COPY chr /usr/local/bin/
 COPY debootstrap-functions.diff /usr/share/debootstrap/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
+# for CI tests 
+COPY find-python-files /usr/bin/find-python-files
 
 # patch a bug in debootstrap/functions, preventing schroot from working inside Docker 
 # see https://bugs.launchpad.net/ubuntu/+source/debootstrap/+bug/1948713
