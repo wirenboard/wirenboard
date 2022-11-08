@@ -32,6 +32,7 @@ docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_TERM="$TERM" \
        $ENV_CMDLINE \
        -e DEB_BUILD_OPTIONS \
+       -e DEB_BUILD_PROFILES \
        -v $HOME:$VM_HOME \
        -v ${PWD%/*}:$PREFIX \
        $ssh_opts \
