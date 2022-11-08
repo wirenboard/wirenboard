@@ -119,4 +119,12 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            echo "Cleaning up"
+            cleanWs cleanWhenNotBuilt: false,
+                    deleteDirs: true,
+                    notFailBuild: true
+        }
+    }
 }
