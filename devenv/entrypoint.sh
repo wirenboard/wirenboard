@@ -214,6 +214,14 @@ platform_has_suite() {
     fi
 }
 
+has_arch_all() {
+    grep -q '^Architecture: all$' debian/control
+}
+
+has_arch_any() {
+    grep '^Architecture:' debian/control | grep -vq '^Architecture: all$'
+}
+
 sbuild_buildpackage() {
     local ARCH=$1
     shift
@@ -238,10 +246,23 @@ sbuild_buildpackage() {
     fi
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
-    sbuild -c ${WBDEV_TARGET_RELEASE}-amd64-sbuild --bd-uninstallable-explainer="apt" \
-           --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$STABLE_REPO_SPEC" \
-           --arch-all --no-apt-upgrade --no-apt-distupgrade --host=${ARCH} \
-           -d ${WBDEV_TARGET_RELEASE} "$@"
+    SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild" --bd-uninstallable-explainer="apt" \
+                 --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$STABLE_REPO_SPEC" \
+                 --no-apt-upgrade --no-apt-distupgrade -d "${WBDEV_TARGET_RELEASE}" "$@")
+
+    if has_arch_all; then
+        echo "Build packages for Architecture: all"
+        sbuild --arch-all --no-arch-any "${SBUILD_ARGS[@]}"
+    else
+        echo "No Architecture: all packages in this source"
+    fi
+
+    if has_arch_any; then
+        echo "Build packages for binary architectures"
+        sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
+    else
+        echo "No binary architecture packages in this source"
+    fi
 }
 
 print_target_info() {
@@ -259,6 +280,11 @@ case "$cmd" in
         ;;
     ndeb)
         if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
+            echo "WARNING: wbdev ndeb with sbuild is deprecated."
+            echo "  To build arch-all package for Wiren Board, use wbdev cdeb instead."
+            echo "  To build for dev machine, use wbdev cdeb with WBDEV_TARGET=bullseye-host."
+            echo ""
+
             sbuild_buildpackage amd64 "$@"
         else
             if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
