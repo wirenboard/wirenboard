@@ -372,12 +372,16 @@ EOF
 
 install_wb5_packages() {
     pkgs=(
-        wb-suite netplug hostapd bluez can-utils u-boot-tools-wb \
-		cron bluez-hcidump
+        wb-suite bluez can-utils cron bluez-hcidump
     )
 
+    if [[ ${DEBIAN_RELEASE} == "wheezy" ]] || [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+        pkgs+=(netplug hostapd)
+    fi
+
     if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-	chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools
+        pkgs+=("libateccssl1.1" knxd knxd-tools)
+        chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools
     fi
     chr_apt_install "${pkgs[@]}"
 }
