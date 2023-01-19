@@ -7,5 +7,5 @@ board_include soc_sun8i_r40.sh
 board_install() {
     chr_apt dropbear mmc-utils rsync dosfstools
 
-	set_fdt sun8i-r40-wirenboard720
+	set_fdt sun8i-r40-wirenboard72x-initram
 }
