@@ -6,7 +6,7 @@ up)
 
     # Set explicit MAC addresses in order to have a consistent interface name.
     # Without explicit addresses g_ether generates random ones.
-    modprobe g_ether dev_addr=12:34:56:78:9a:bc host_addr=12:34:56:78:9a:bd
+    modprobe g_ether dev_addr=12:34:56:78:9a:bc host_addr=12:34:56:78:9a:bd use_eem=0
 
     ifconfig usb0 192.168.41.1 netmask 255.255.255.0 up
     udhcpd
