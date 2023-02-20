@@ -148,7 +148,7 @@ if ! flag_set no-postinst; then
         POSTINST_FILES="$(find "$POSTINST_DIR" -maxdepth 1 -type f | sort)"
         for file in $POSTINST_FILES; do
             info "> Processing $file"
-            "$file" "$MNT" "$FLAGS" || true
+            FIT="$FIT" "$file" "$MNT" "$FLAGS" || true
         done
     fi
 
