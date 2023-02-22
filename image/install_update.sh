@@ -158,10 +158,6 @@ if ! flag_set no-postinst; then
     umount "$MNT/sys"
 fi
 
-info "Unmounting new rootfs"
-umount $MNT
-sync; sync
-
 info "Switching to new rootfs"
 fw_setenv mmcpart $PART
 fw_setenv upgrade_available 1
@@ -171,6 +167,10 @@ rm_fit
 led_success || true
 
 if ! flag_set no-reboot; then
+    info "Unmounting new rootfs"
+    umount $MNT
+    sync; sync
+
     info "Reboot system"
     mqtt_status REBOOT
     trap EXIT
