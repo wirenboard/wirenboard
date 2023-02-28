@@ -95,6 +95,16 @@ umount -f $ROOT_PART 2>&1 >/dev/null || true # just for sure
 
 info "Mounting $ROOT_PART at $MNT"
 mount -t ext4 "$ROOT_PART" "$MNT" 2>&1 >/dev/null|| die "Unable to mount root filesystem"
+sync
+
+actual_deb_release="$(grep -o 'TARGET=\w*/\w*' "$MNT"/usr/lib/wb-release | sed 's/TARGET=wb[[:digit:]]\+\///')"
+upcoming_deb_release="$(fit_prop_string / release-target | sed 's/wb[[:digit:]]\+\///')"
+info "Debian: $actual_deb_release -> $upcoming_deb_release"
+if [ "$actual_deb_release" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
+    if ! flag_set factoryreset; then
+        die "Upgrade from $actual_deb_release to $upcoming_deb_release is possible only via factoryreset"
+    fi
+fi
 
 info "Cleaning up $ROOT_PART"
 rm -rf /tmp/empty && mkdir /tmp/empty
@@ -122,7 +132,7 @@ if ! flag_set no-certificates; then
 
     # make loop device
     LO_DEVICE=`losetup -f`
-    losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART || 
+    losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART ||
         die "Failed to add loopback device"
 
     if mount $LO_DEVICE $HIDDENFS_MNT 2>&1 >/dev/null; then
