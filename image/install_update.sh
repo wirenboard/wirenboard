@@ -44,6 +44,7 @@ fit_blob_verify_hash rootfs
 info "Installing firmware update"
 
 MNT="$TMPDIR/rootfs"
+ACTUAL_DEB_RELEASE=""
 
 ROOT_DEV='mmcblk0'
 if [[ -e "/dev/root" ]]; then
@@ -57,16 +58,19 @@ fi
 case "$PART" in
 	2)
 		PART=3
+		PART_NOW=2
 		PARTLABEL=rootfs1
 		;;
 	3)
 		PART=2
+		PART_NOW=3
 		PARTLABEL=rootfs0
 		;;
 	*)
 		flag_set from-initramfs && {
 			info "Update is started from initramfs and unable to determine active rootfs partition, will overwrite rootfs0"
 			PART=2
+		PART_NOW=3
 			PARTLABEL=rootfs0
 		} || {
 			die "Unable to determine second rootfs partition (current is $PART)"
@@ -76,14 +80,20 @@ esac
 ROOT_PART=/dev/${ROOT_DEV}p${PART}
 info "Will install to $ROOT_PART"
 
+rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
+
 flag_set "from-initramfs" && {
+    actual_rootfs=/dev/${ROOT_DEV}p${PART_NOW}
     info "Check if partition table is correct"
-    [[ -e $ROOT_PART ]] || {
+    [[ -e $ROOT_PART ]] && [[ -e $actual_rootfs ]] || {
         die "rootfs partition doesn't exist, looks like partitions table is broken. Give up."
     }
+    info "Temporarily mount actual rootfs $actual_rootfs to check wb-release"
+    mount -t ext4 $actual_rootfs $MNT 2>&1 >/dev/null || true
+    sync
+    ACTUAL_DEB_RELEASE="$(grep -o 'TARGET=\w*/\w*' "$MNT"/usr/lib/wb-release | sed 's/TARGET=wb[[:digit:]]\+\///')"
+    umount -f $actual_rootfs 2>&1 >/dev/null || true
 }
-
-rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
 
 # determine if new partition is unformatted
 mount -t ext4 $ROOT_PART $MNT 2>&1 >/dev/null || {
@@ -95,14 +105,13 @@ umount -f $ROOT_PART 2>&1 >/dev/null || true # just for sure
 
 info "Mounting $ROOT_PART at $MNT"
 mount -t ext4 "$ROOT_PART" "$MNT" 2>&1 >/dev/null|| die "Unable to mount root filesystem"
-sync
 
-actual_deb_release="$(grep -o 'TARGET=\w*/\w*' "$MNT"/usr/lib/wb-release | sed 's/TARGET=wb[[:digit:]]\+\///')"
+[[ -z "$ACTUAL_DEB_RELEASE" ]] && ACTUAL_DEB_RELEASE="$(grep -o 'TARGET=\w*/\w*' /usr/lib/wb-release | sed 's/TARGET=wb[[:digit:]]\+\///')"
 upcoming_deb_release="$(fit_prop_string / release-target | sed 's/wb[[:digit:]]\+\///')"
-info "Debian: $actual_deb_release -> $upcoming_deb_release"
-if [ "$actual_deb_release" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
+info "Debian: $ACTUAL_DEB_RELEASE -> $upcoming_deb_release"
+if [ "$ACTUAL_DEB_RELEASE" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
     if ! flag_set factoryreset; then
-        die "Upgrade from $actual_deb_release to $upcoming_deb_release is possible only via factoryreset"
+        die "Upgrade from $ACTUAL_DEB_RELEASE to $upcoming_deb_release is possible only via factoryreset"
     fi
 fi
 
