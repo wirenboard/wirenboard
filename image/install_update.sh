@@ -70,7 +70,7 @@ case "$PART" in
 		flag_set from-initramfs && {
 			info "Update is started from initramfs and unable to determine active rootfs partition, will overwrite rootfs0"
 			PART=2
-		PART_NOW=3
+			PART_NOW=3
 			PARTLABEL=rootfs0
 		} || {
 			die "Unable to determine second rootfs partition (current is $PART)"
@@ -111,7 +111,16 @@ upcoming_deb_release="$(fit_prop_string / release-target | sed 's/wb[[:digit:]]\
 info "Debian: $ACTUAL_DEB_RELEASE -> $upcoming_deb_release"
 if [ "$ACTUAL_DEB_RELEASE" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
     if ! flag_set factoryreset; then
-        die "Upgrade from $ACTUAL_DEB_RELEASE to $upcoming_deb_release is possible only via factoryreset"
+        errmsg="Upgrade from $ACTUAL_DEB_RELEASE to $upcoming_deb_release is possible only via factoryreset!"
+        if flag_set from-initramfs; then
+            info "$errmsg"
+            led_failure
+            bash -c 'source /lib/libupdate.sh; buzzer_init; buzzer_on; sleep 1; buzzer_off'
+            info "Rebooting..."
+            reboot -f
+        else
+            die "$errmsg"
+        fi
     fi
 fi
 
