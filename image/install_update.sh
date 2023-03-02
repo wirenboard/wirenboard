@@ -148,7 +148,7 @@ if ! flag_set no-postinst; then
         POSTINST_FILES="$(find "$POSTINST_DIR" -maxdepth 1 -type f | sort)"
         for file in $POSTINST_FILES; do
             info "> Processing $file"
-            "$file" "$MNT" "$FLAGS" || true
+            FIT="$FIT" "$file" "$MNT" "$FLAGS" || true
         done
     fi
 
@@ -157,10 +157,6 @@ if ! flag_set no-postinst; then
     umount "$MNT/proc"
     umount "$MNT/sys"
 fi
-
-info "Unmounting new rootfs"
-umount $MNT
-sync; sync
 
 info "Switching to new rootfs"
 fw_setenv mmcpart $PART
@@ -171,6 +167,10 @@ rm_fit
 led_success || true
 
 if ! flag_set no-reboot; then
+    info "Unmounting new rootfs"
+    umount $MNT
+    sync; sync
+
     info "Reboot system"
     mqtt_status REBOOT
     trap EXIT
