@@ -89,10 +89,11 @@ flag_set "from-initramfs" && {
         die "rootfs partition doesn't exist, looks like partitions table is broken. Give up."
     }
     info "Temporarily mount actual rootfs $actual_rootfs to check wb-release"
-    mount -t ext4 $actual_rootfs $MNT 2>&1 >/dev/null || true
-    sync
-    ACTUAL_DEB_RELEASE="$(grep -o 'TARGET=\w*/\w*' "$MNT"/usr/lib/wb-release | sed 's/TARGET=wb[[:digit:]]\+\///')"
-    umount -f $actual_rootfs 2>&1 >/dev/null || true
+    mount -t ext4 $actual_rootfs $MNT 2>&1 >/dev/null && {
+        sync
+        ACTUAL_DEB_RELEASE="$(bash -c 'source "$MNT"/etc/os-release"; echo $VERSION_CODENAME')"
+        umount -f $actual_rootfs 2>&1 >/dev/null || true
+    } || true
 }
 
 # determine if new partition is unformatted
@@ -106,20 +107,37 @@ umount -f $ROOT_PART 2>&1 >/dev/null || true # just for sure
 info "Mounting $ROOT_PART at $MNT"
 mount -t ext4 "$ROOT_PART" "$MNT" 2>&1 >/dev/null|| die "Unable to mount root filesystem"
 
-[[ -z "$ACTUAL_DEB_RELEASE" ]] && ACTUAL_DEB_RELEASE="$(grep -o 'TARGET=\w*/\w*' /usr/lib/wb-release | sed 's/TARGET=wb[[:digit:]]\+\///')"
+[[ -z "$ACTUAL_DEB_RELEASE" ]] && ACTUAL_DEB_RELEASE="$(bash -c 'source "$MNT"/etc/os-release"; echo $VERSION_CODENAME')"
 upcoming_deb_release="$(fit_prop_string / release-target | sed 's/wb[[:digit:]]\+\///')"
 info "Debian: $ACTUAL_DEB_RELEASE -> $upcoming_deb_release"
 if [ "$ACTUAL_DEB_RELEASE" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
     if ! flag_set factoryreset; then
-        errmsg="Upgrade from $ACTUAL_DEB_RELEASE to $upcoming_deb_release is possible only via factoryreset!"
+        >&2 cat <<EOF
+##############################################################################
+
+    UPGRADE FROM $ACTUAL_DEB_RELEASE TO $upcoming_deb_release REQUESTED
+
+                    Due to major Debian release changes,
+                this operation is allowed only via FACTORYRESET.
+
+           This WILL destroy ALL YOUR DATA: configuration, scripts,
+                           files in home directory!
+
+    Rename .fit file to "wbX_update_FACTORYRESET.fit" ->
+    put renamed file to usb-drive ->
+    ensure, there is only one .fit file on usb-drive ->
+    insert usb-drive to controller and reboot ->
+    follow further factoryreset instructions.
+
+##############################################################################
+EOF
         if flag_set from-initramfs; then
-            info "$errmsg"
             led_failure
             bash -c 'source /lib/libupdate.sh; buzzer_init; buzzer_on; sleep 1; buzzer_off'
             info "Rebooting..."
             reboot -f
         else
-            die "$errmsg"
+            die "Aborting..."
         fi
     fi
 fi
