@@ -88,10 +88,10 @@ flag_set "from-initramfs" && {
     [[ -e $ROOT_PART ]] && [[ -e $actual_rootfs ]] || {
         die "rootfs partition doesn't exist, looks like partitions table is broken. Give up."
     }
-    info "Temporarily mount actual rootfs $actual_rootfs to check wb-release"
+    info "Temporarily mount actual rootfs $actual_rootfs to check os-release"
     mount -t ext4 $actual_rootfs $MNT 2>&1 >/dev/null && {
         sync
-        ACTUAL_DEB_RELEASE="$(bash -c 'source "$MNT"/etc/os-release"; echo $VERSION_CODENAME')"
+        ACTUAL_DEB_RELEASE="$(bash -c 'source "$MNT/etc/os-release"; echo $VERSION_CODENAME')"
         umount -f $actual_rootfs 2>&1 >/dev/null || true
     } || true
 }
@@ -107,7 +107,7 @@ umount -f $ROOT_PART 2>&1 >/dev/null || true # just for sure
 info "Mounting $ROOT_PART at $MNT"
 mount -t ext4 "$ROOT_PART" "$MNT" 2>&1 >/dev/null|| die "Unable to mount root filesystem"
 
-[[ -z "$ACTUAL_DEB_RELEASE" ]] && ACTUAL_DEB_RELEASE="$(bash -c 'source "$MNT"/etc/os-release"; echo $VERSION_CODENAME')"
+[[ -z "$ACTUAL_DEB_RELEASE" ]] && ACTUAL_DEB_RELEASE="$(bash -c 'source "$MNT/etc/os-release"; echo $VERSION_CODENAME')"
 upcoming_deb_release="$(fit_prop_string / release-target | sed 's/wb[[:digit:]]\+\///')"
 info "Debian: $ACTUAL_DEB_RELEASE -> $upcoming_deb_release"
 if [ "$ACTUAL_DEB_RELEASE" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
