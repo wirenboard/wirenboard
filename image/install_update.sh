@@ -94,6 +94,7 @@ flag_set "from-initramfs" && {
         ACTUAL_DEB_RELEASE="$(MNT="$MNT" bash -c 'source "$MNT/etc/os-release"; echo $VERSION_CODENAME')"
         umount -f $actual_rootfs 2>&1 >/dev/null || true
     } || true
+}
 
 # determine if new partition is unformatted
 mount -t ext4 $ROOT_PART $MNT 2>&1 >/dev/null || {
