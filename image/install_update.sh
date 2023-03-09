@@ -115,13 +115,10 @@ if [ "$ACTUAL_DEB_RELEASE" = "bullseye" ] && [ "$upcoming_deb_release" = "stretc
         >&2 cat <<EOF
 ##############################################################################
 
-    UPGRADE FROM $ACTUAL_DEB_RELEASE TO $upcoming_deb_release REQUESTED
+    ROLLBACK FROM $ACTUAL_DEB_RELEASE TO $upcoming_deb_release REQUESTED
 
                     Due to major Debian release changes,
                 this operation is allowed only via FACTORYRESET.
-
-           This WILL destroy ALL YOUR DATA: configuration, scripts,
-                           files in home directory!
 
     Rename .fit file to "wbX_update_FACTORYRESET.fit" ->
     put renamed file to usb-drive ->
