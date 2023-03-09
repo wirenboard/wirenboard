@@ -44,6 +44,7 @@ fit_blob_verify_hash rootfs
 info "Installing firmware update"
 
 MNT="$TMPDIR/rootfs"
+ACTUAL_DEB_RELEASE=""
 
 ROOT_DEV='mmcblk0'
 if [[ -e "/dev/root" ]]; then
@@ -57,16 +58,19 @@ fi
 case "$PART" in
 	2)
 		PART=3
+		PART_NOW=2
 		PARTLABEL=rootfs1
 		;;
 	3)
 		PART=2
+		PART_NOW=3
 		PARTLABEL=rootfs0
 		;;
 	*)
 		flag_set from-initramfs && {
 			info "Update is started from initramfs and unable to determine active rootfs partition, will overwrite rootfs0"
 			PART=2
+			PART_NOW=3
 			PARTLABEL=rootfs0
 		} || {
 			die "Unable to determine second rootfs partition (current is $PART)"
@@ -76,14 +80,21 @@ esac
 ROOT_PART=/dev/${ROOT_DEV}p${PART}
 info "Will install to $ROOT_PART"
 
+rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
+
 flag_set "from-initramfs" && {
+    actual_rootfs=/dev/${ROOT_DEV}p${PART_NOW}
     info "Check if partition table is correct"
-    [[ -e $ROOT_PART ]] || {
+    [[ -e $ROOT_PART ]] && [[ -e $actual_rootfs ]] || {
         die "rootfs partition doesn't exist, looks like partitions table is broken. Give up."
     }
+    info "Temporarily mount actual rootfs $actual_rootfs to check os-release"
+    mount -t ext4 $actual_rootfs $MNT 2>&1 >/dev/null && {
+        sync
+        ACTUAL_DEB_RELEASE="$(MNT="$MNT" bash -c 'source "$MNT/etc/os-release"; echo $VERSION_CODENAME')"
+        umount -f $actual_rootfs 2>&1 >/dev/null || true
+    } || true
 }
-
-rm -rf "$MNT" && mkdir "$MNT" || die "Unable to create mountpoint $MNT"
 
 # determine if new partition is unformatted
 mount -t ext4 $ROOT_PART $MNT 2>&1 >/dev/null || {
@@ -95,6 +106,38 @@ umount -f $ROOT_PART 2>&1 >/dev/null || true # just for sure
 
 info "Mounting $ROOT_PART at $MNT"
 mount -t ext4 "$ROOT_PART" "$MNT" 2>&1 >/dev/null|| die "Unable to mount root filesystem"
+
+[[ -z "$ACTUAL_DEB_RELEASE" ]] && ACTUAL_DEB_RELEASE="$(bash -c 'source "/etc/os-release"; echo $VERSION_CODENAME')"
+upcoming_deb_release="$(fit_prop_string / release-target | sed 's/wb[[:digit:]]\+\///')"
+info "Debian: $ACTUAL_DEB_RELEASE -> $upcoming_deb_release"
+if [ "$ACTUAL_DEB_RELEASE" = "bullseye" ] && [ "$upcoming_deb_release" = "stretch" ]; then
+    if ! flag_set factoryreset; then
+        >&2 cat <<EOF
+##############################################################################
+
+    ROLLBACK FROM $ACTUAL_DEB_RELEASE TO $upcoming_deb_release REQUESTED
+
+                    Due to major Debian release changes,
+                this operation is allowed only via FACTORYRESET.
+
+    Rename .fit file to "wbX_update_FACTORYRESET.fit" ->
+    put renamed file to usb-drive ->
+    ensure, there is only one .fit file on usb-drive ->
+    insert usb-drive to controller and reboot ->
+    follow further factoryreset instructions.
+
+##############################################################################
+EOF
+        if flag_set from-initramfs; then
+            led_failure
+            bash -c 'source /lib/libupdate.sh; buzzer_init; buzzer_on; sleep 1; buzzer_off'
+            info "Rebooting..."
+            reboot -f
+        else
+            die "Aborting..."
+        fi
+    fi
+fi
 
 info "Cleaning up $ROOT_PART"
 rm -rf /tmp/empty && mkdir /tmp/empty
@@ -122,7 +165,7 @@ if ! flag_set no-certificates; then
 
     # make loop device
     LO_DEVICE=`losetup -f`
-    losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART || 
+    losetup -r -o $HIDDENFS_OFFSET $LO_DEVICE $HIDDENFS_PART ||
         die "Failed to add loopback device"
 
     if mount $LO_DEVICE $HIDDENFS_MNT 2>&1 >/dev/null; then
