@@ -20,6 +20,11 @@ pipeline {
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
     }
+    triggers {
+        parameterizedCron('''
+            @weekly %DEBIAN_RELEASE=bullseye;WB_RELEASE=testing
+        ''')
+    }
     stages {
         stage('Build images') {
             steps {
