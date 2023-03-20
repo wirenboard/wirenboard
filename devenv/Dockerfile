@@ -1,27 +1,25 @@
 FROM debian:bullseye
-MAINTAINER ivan4th <ivan4th@gmail.com>
+LABEL org.opencontainers.image.authors="info@wirenboard.com"
+LABEL org.opencontainers.image.vendor="Wiren Board team"
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt update && apt install -y wget gnupg && \
-    wget -qO - https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg \
-       | apt-key add - && \
-    wget  https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg \
-       --output-document=/usr/share/keyrings/contactless-keyring.gpg && \
-    echo "deb [arch=amd64] http://deb.wirenboard.com/dev-tools stable main" > \
+RUN apt update && apt install -y curl wget gnupg && \
+    curl -fsSL https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg > \
+       /usr/share/keyrings/contactless-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
        /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
-    apt-get install -y --allow-unauthenticated gnupg1 curl ca-certificates apt-transport-https && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869 && \
+    apt-get install -y --allow-unauthenticated gnupg1 ca-certificates apt-transport-https && \
     # TODO: add llvm dependencies to our own repository \
-    curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - && \
-    echo "deb [arch=amd64] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
+    curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
     \
     # Low-priority testing repo for pinning pylint \
     echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list && \
     echo 'Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
 Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: release a=testing\nPin-Priority: 900' > \
- /etc/apt/preferences.d/pylint-from-testing.pref && \
+       /etc/apt/preferences.d/pylint-from-testing.pref && \
     \
     apt update &&\
     apt install -y --force-yes git debootstrap proot build-essential pkg-config debhelper \
