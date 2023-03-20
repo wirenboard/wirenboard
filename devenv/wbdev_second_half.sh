@@ -21,7 +21,7 @@ fi
 PREFIX="$VM_HOME/wbdev/go/src/github.com/contactless"
 
 ENV_CMDLINE=""
-for var in `env | grep -oP "WBDEV_[^=]*"`; do
+for var in $(env | grep -o "WBDEV_[^=]*"); do
     ENV_CMDLINE="$ENV_CMDLINE -e $var"
 done
 
