@@ -102,9 +102,6 @@ if ! getent passwd "$DEV_USER" >& /dev/null; then
     adduser --uid "$DEV_UID" --gecos "" --gid "$DEV_GID" --disabled-password --no-create-home "$DEV_USER" >& /dev/null
 fi
 
-# fix package installation issues
-chown -R "$DEV_USER.$DEV_GROUP" /usr/local/go
-
 # setup Go environment (for non-login shell cases)
 . /etc/profile.d/wbdev_profile.sh
 
