@@ -134,6 +134,7 @@ EOF
             info "Rebooting..."
             reboot -f
         else
+            umount -f $ROOT_PART 2>&1 >/dev/null || true
             die "Aborting..."
         fi
     fi
