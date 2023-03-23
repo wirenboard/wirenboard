@@ -13,7 +13,7 @@ def changesDetected = false
 
 pipeline {
     agent {
-        label "devenv"
+        label "rootfs-builder"
     }
     parameters {
         string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'debian release')

@@ -7,7 +7,7 @@
 
 pipeline {
     agent {
-        label "devenv"
+        label "rootfs-builder"
     }
     parameters {
         string(name: 'IMAGE_BUILDNUMBER', defaultValue: '', description: 'from pipelines/build-image')
