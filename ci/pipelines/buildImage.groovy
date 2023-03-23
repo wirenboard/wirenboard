@@ -6,7 +6,7 @@
 
 pipeline {
     agent {
-        label "devenv"
+        label "devenv-alpine"
     }
     parameters {
         choice(name: 'BOARD', choices: wb.boards, description: 'Board version to build image for')
@@ -28,9 +28,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                sshagent (credentials: ["jenkins-github-public-ssh"]) {
-                    git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
-                }
+                git branch: "$WIRENBOARD_BRANCH",
+                    url: 'git@github.com:wirenboard/wirenboard',
+                    credentialsId: "jenkins-github-public-ssh"
             }
         }
         stage('Get u-boot and zImage') {

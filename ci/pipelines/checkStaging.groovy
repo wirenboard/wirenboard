@@ -13,7 +13,7 @@ def changesDetected = false
 
 pipeline {
     agent {
-        label "devenv"
+        label "devenv-alpine"
     }
     parameters {
         string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'debian release')
@@ -26,9 +26,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                sshagent (credentials: ["jenkins-github-public-ssh"]) {
-                    git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
-                }
+                git branch: "$WIRENBOARD_BRANCH",
+                    url: 'git@github.com:wirenboard/wirenboard',
+                    credentialsId: "jenkins-github-public-ssh"
             }
         }
         stage('Check difference') {
@@ -37,13 +37,13 @@ pipeline {
             }
             steps {
                 lock('release-aptly-config-db') {
-                    script {
+                    script { node("aptly-builder") {
                         def currentStaging = sh(returnStdout: true,
                           script: 'wbci-repo -c $APTLY_CONFIG deref staging.latest')
                         def currentUnstable = sh(returnStdout: true,
                           script: 'wbci-repo -c $APTLY_CONFIG deref unstable.latest')
                         changesDetected = (currentUnstable != currentStaging)
-                    }
+                    }}
                 }
             }
         }
@@ -81,8 +81,10 @@ pipeline {
             }
             steps {
                 lock('release-aptly-config-db') {
-                    sh '''wbci-repo -c $APTLY_CONFIG make-ref -u -d "ci job:$JOB_NAME build:$BUILD_ID" \\
-                          unstable.latest $(wbci-repo -c $APTLY_CONFIG deref staging.latest)'''
+                    script { node("aptly-builder") {
+                        sh '''wbci-repo -c $APTLY_CONFIG make-ref -u -d "ci job:$JOB_NAME build:$BUILD_ID" \\
+                              unstable.latest $(wbci-repo -c $APTLY_CONFIG deref staging.latest)'''
+                    }}
                 }
             }
         }
@@ -91,7 +93,7 @@ pipeline {
                 changesDetected && params.ADVANCE_UNSTABLE
             }}
             steps {
-                build job: 'wirenboard/wb-releases/master', wait: true, parameters: [
+                build job: 'wirenboard/wb-releases/master', wait: false, parameters: [
                     booleanParam(name: 'FORCE_OVERWRITE', value: params.FORCE_OVERWRITE)
                 ]
             }
