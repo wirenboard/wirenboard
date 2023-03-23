@@ -26,7 +26,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
+                sshagent (credentials: ["jenkins-github-public-ssh"]) {
+                    git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
+                }
             }
         }
         stage('Check difference') {
