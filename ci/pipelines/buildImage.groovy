@@ -6,7 +6,7 @@
 
 pipeline {
     agent {
-        label "devenv"
+        label "rootfs-builder"
     }
     parameters {
         choice(name: 'BOARD', choices: wb.boards, description: 'Board version to build image for')
