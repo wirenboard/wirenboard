@@ -13,7 +13,7 @@ pipeline {
         label "rootfs-builder"
     }
     parameters {
-        string(name: 'DEBIAN_RELEASE', defaultValue: 'stretch', description: 'Debian release')
+        string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'Debian release')
         string(name: 'BOARDS', defaultValue: '6x 67 7x', description: 'space-separated list')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
