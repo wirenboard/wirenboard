@@ -37,8 +37,10 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     rsync  \
     # legacy requirement for go-required packages \
     golang-go \
-    # for Jenkins python checks
-    pylint black python3-isort
+    # for Jenkins python checks \
+    pylint black python3-isort \
+    # for Jenkins deployments \
+    python3-wbci
 
 
 # FIXME: we should not install anything with --force-yes
