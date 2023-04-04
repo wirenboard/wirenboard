@@ -10,6 +10,13 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
     ssh_opts="-e SSH_AUTH_SOCK=/ssh-agent -v $SSH_AUTH_SOCK:/ssh-agent"
 fi
 
+if [[ -z "$UID" ]]; then
+    UID="$(id -u)"
+fi
+
+if [[ -z "$USER" ]]; then
+    USER="$(id -n -u)"
+fi
 
 if [[ $OSTYPE == darwin* ]]
 then
