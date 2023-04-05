@@ -1,4 +1,5 @@
 #!/bin/busybox sh
+# vim: set noexpandtab:
 /bin/busybox --install -s
 
 led() {
@@ -41,6 +42,12 @@ ALLOWED_FIT_NAMES="wb_update.fit wb6_update.fit wb_update_FACTORYRESET.fit wb6_u
 USBDIR="/usb"
 
 BOOTMODE="$(sed -n 's/.*bootmode=\([^ ]*\).*/\1/p' /proc/cmdline)"
+if grep "debug" /proc/cmdline; then
+	DEBUG=true
+else
+	DEBUG=
+fi
+
 #BOOTMODE="usbupdate,wb6_update.fit"
 echo "Boot mode: $BOOTMODE"
 
@@ -230,7 +237,8 @@ wait_for_emmc() {
 
 update_from_emmc() {
 	local DATA_PART="${EMMC}p6"
-	local FIT="/mnt/data/.wb-restore/factoryreset.fit"
+	local FIT="/mnt/data/$1"
+	shift
 
 	wait_for_emmc
 
@@ -242,7 +250,7 @@ update_from_emmc() {
 		[[ -e "$FIT" ]] &&
 		check_fit_end_signature "$FIT" &&
 		buzzer_update_beep &&
-		wb-run-update  --from-initramfs --no-mqtt --no-remove "$FIT"
+		wb-run-update  --from-initramfs --no-mqtt "$@" "$FIT"
 }
 
 update_from_gadget() {
@@ -347,7 +355,7 @@ case "$BOOTMODE" in
 		fi
 
 		if [[ "x${enable_emmc_update}" == "xy" ]]; then
-			update_from_emmc
+			update_from_emmc ".wb-restore/factoryreset.fit" --no-remove --from-emmc-factoryreset
 		fi
 
 		;;
@@ -364,6 +372,15 @@ case "$BOOTMODE" in
 
 		search_for_sd &&
 			update_from_block_device "${MICROSD}p*" " ${FIT_NAME}" "microSD card"
+		;;
+	webupdate*)
+		FIT_NAME="${BOOTMODE#*,}"
+		update_from_emmc "$FIT_NAME" --from-webupdate || {
+			echo "Web UI-triggered update failed"
+			if [ -n "$DEBUG" ] ; then
+				reboot -f
+			fi
+		}
 		;;
 	usbgadget|*)
 		FLAG=/flag
