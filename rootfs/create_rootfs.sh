@@ -141,12 +141,17 @@ setup_additional_repos() {
         echo "deb [trusted=yes] $repo_url $repo_release $repo_component" >> $ADD_REPO_FILE
 
 		echo "Setup pinning"
+		decode_release_item() {
+			wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "^$1: \K.*$"
+		}
 
-		local o=`wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "Origin: \K[\w\_\-]+"`
-		local l=`wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "Label: \K[\w\_\-]+"`
+		local o="$(decode_release_item Origin)"
+		local l="$(decode_release_item Label)"
+		local n="$(decode_release_item Codename)"
+		local a="$(decode_release_item Suite)"
 
 		echo "Package: *" >> ${ADD_REPO_PIN_FILE}
-		echo "Pin: release o=$o, l=$l" >> ${ADD_REPO_PIN_FILE}
+		echo "Pin: release o=$o,l=$l,a=$a,n=$n" >> ${ADD_REPO_PIN_FILE}
 		echo "Pin-Priority: 1001" >> ${ADD_REPO_PIN_FILE}  # allow downgrade to these versions
 		echo >> ${ADD_REPO_PIN_FILE} # mandatory newline
     done

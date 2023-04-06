@@ -4,13 +4,11 @@ set -x
 
 this=`readlink -f "$0"`
 
-INSTALL_SCRIPT="`dirname $this`/install_update.sh"
-
 usage() {
 	cat <<EOF
 USAGE: $0 <path to rootfs> <path to zImage> <path to DTB> <update file>"
 rootfs can be either a directory (which will be packed to .tar.xz) 
-or just anything suitable for $(dirname $0)/install_update.sh.sh
+or just anything suitable for $(dirname $0)/install_update.sh
 EOF
 	exit 1
 }
@@ -82,6 +80,15 @@ COMPATIBLE=`dtb_get_compatible < "$TARGET_DTB"`
 VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
 source $ROOTFS/usr/lib/wb-release || die "Unable to get release information"
 
+ROOTFS_INSTALL_SCRIPT_PATH="$ROOTFS/var/lib/wb-image-update/install_update.sh"
+if [[ -e "$ROOTFS_INSTALL_SCRIPT_PATH" ]]; then
+	echo "Using install script from rootfs ($ROOTFS_INSTALL_SCRIPT_PATH)"
+	INSTALL_SCRIPT="$ROOTFS_INSTALL_SCRIPT_PATH"
+else
+	echo "No install script in rootfs, using default one"
+	INSTALL_SCRIPT="$(dirname "$this")/install_update.sh"
+fi
+
 ITS=$TMPDIR/update.its
 
 {
@@ -100,10 +107,10 @@ cat <<EOF
 	#address-cells = <1>;
 	images {
 EOF
-	include kernel $ZIMAGE "Update kernel" "type = \"kernel\"; os = \"linux\"; arch = \"arm\";"
-	include dtb $BOOT_DTB "Update DTB" "type = \"flat_dt\"; arch = \"arm\";"
-	include install $INSTALL_SCRIPT "Installation script (bash)"
-	include rootfs $ROOTFS_TARBALL "Root filesystem tarball"
+	include kernel "$ZIMAGE" "Update kernel" "type = \"kernel\"; os = \"linux\"; arch = \"arm\";"
+	include dtb "$BOOT_DTB" "Update DTB" "type = \"flat_dt\"; arch = \"arm\";"
+	include install "$INSTALL_SCRIPT" "Installation script (bash)"
+	include rootfs "$ROOTFS_TARBALL" "Root filesystem tarball"
 cat <<EOF
 	};
 	configurations {
