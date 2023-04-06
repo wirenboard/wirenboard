@@ -28,7 +28,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
+                git branch: "$WIRENBOARD_BRANCH",
+                    url: 'git@github.com:wirenboard/wirenboard',
+                    credentialsId: 'jenkins-github-public-ssh'
             }
         }
         stage('Get u-boot and zImage') {
