@@ -18,32 +18,29 @@ pipeline {
     parameters {
         string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'debian release')
         string(name: 'BOARDS', defaultValue: '67 7x', description: 'boards to build images for')
-        string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
+        string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch, passed to build-image')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
         booleanParam(name: 'ADVANCE_UNSTABLE', defaultValue: true, description: 'disable if you want just to check')
         booleanParam(name: 'FORCE_OVERWRITE', defaultValue: false, description: 'use only if you know what you are doing')
     }
+    options {
+        disableConcurrentBuilds()
+    }
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: "$WIRENBOARD_BRANCH", url: 'git@github.com:wirenboard/wirenboard'
-            }
-        }
         stage('Check difference') {
-            environment {
-                APTLY_CONFIG = credentials('release-aptly-config')
-            }
-            steps {
-                lock('release-aptly-config-db') {
-                    script {
-                        def currentStaging = sh(returnStdout: true,
-                          script: 'wbci-repo -c $APTLY_CONFIG deref staging.latest')
-                        def currentUnstable = sh(returnStdout: true,
-                          script: 'wbci-repo -c $APTLY_CONFIG deref unstable.latest')
-                        changesDetected = (currentUnstable != currentStaging)
+            steps { node('aptly-builder') {
+                withCredentials([file(credentialsId: 'release-aptly-config', variable: 'APTLY_CONFIG')]) {
+                    lock('release-aptly-config-db') {
+                        script {
+                            def currentStaging = sh(returnStdout: true,
+                              script: 'wbci-repo -c $APTLY_CONFIG deref staging.latest')
+                            def currentUnstable = sh(returnStdout: true,
+                              script: 'wbci-repo -c $APTLY_CONFIG deref unstable.latest')
+                            changesDetected = (currentUnstable != currentStaging)
+                        }
                     }
                 }
-            }
+            }}
         }
         stage('Build staging images') {
             when { expression {
@@ -74,22 +71,21 @@ pipeline {
             when { expression {
                 changesDetected && params.ADVANCE_UNSTABLE
             }}
-            environment {
-                APTLY_CONFIG = credentials('release-aptly-config')
-            }
-            steps {
-                lock('release-aptly-config-db') {
-                    sh '''wbci-repo -c $APTLY_CONFIG make-ref -u -d "ci job:$JOB_NAME build:$BUILD_ID" \\
-                          unstable.latest $(wbci-repo -c $APTLY_CONFIG deref staging.latest)'''
+            steps { node('aptly-builder') {
+                withCredentials([file(credentialsId: 'release-aptly-config', variable: 'APTLY_CONFIG')]) {
+                    lock('release-aptly-config-db') {
+                        sh '''wbci-repo -c $APTLY_CONFIG make-ref -f \\
+                              unstable.latest $(wbci-repo -c $APTLY_CONFIG deref staging.latest)'''
+                    }
                 }
-            }
+            }}
         }
         stage('Upload via wb-releases') {
             when { expression {
                 changesDetected && params.ADVANCE_UNSTABLE
             }}
             steps {
-                build job: 'wirenboard/wb-releases/master', wait: true, parameters: [
+                build job: 'wirenboard/wb-releases/master', wait: false, parameters: [
                     booleanParam(name: 'FORCE_OVERWRITE', value: params.FORCE_OVERWRITE)
                 ]
             }
