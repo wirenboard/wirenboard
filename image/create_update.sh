@@ -89,6 +89,15 @@ else
 	INSTALL_SCRIPT="$(dirname "$this")/install_update.sh"
 fi
 
+ROOTFS_FIRMWARE_COMPATIBLE_PATH="$ROOTFS/var/lib/wb-image-update/firmware-compatible"
+if [[ -e "$ROOTFS_FIRMWARE_COMPATIBLE_PATH" ]]; then
+    echo "Using firmware-compatible from rootfs ($ROOTFS_FIRMWARE_COMPATIBLE_PATH)"
+    FIRMWARE_COMPATIBLE=$(cat "$ROOTFS_FIRMWARE_COMPATIBLE_PATH")
+else
+    echo "No firmware-compatible in rootfs, using default one"
+    FIRMWARE_COMPATIBLE="unknown"
+fi
+
 ITS=$TMPDIR/update.its
 
 {
@@ -99,7 +108,7 @@ cat <<EOF
 	description = "WirenBoard firmware update";
 	compatible = "$COMPATIBLE";
 	firmware-version = "$VERSION";
-	firmware-compatible = "unknown";
+	firmware-compatible = "$FIRMWARE_COMPATIBLE";
 	release-name = "$RELEASE_NAME";
 	release-suite = "$SUITE";
 	release-target = "$TARGET";
