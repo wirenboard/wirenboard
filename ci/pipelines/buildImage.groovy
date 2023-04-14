@@ -18,8 +18,9 @@ pipeline {
         string(name: 'WB_TARGET', defaultValue: '', description: 'leave empty for auto detection. Examples: wb6/stretch, all')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
+        booleanParam(name: 'USE_LEGACY_UBOOT_AND_BOOTLET', defaultValue: false, description: 'use bootlet and u-boot from legacy builds instead of from S3')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
-        string(name: 'U_BOOT_BRANCH', defaultValue: 'wb_v2017.03', description: 'from build-u-boot project')
+        string(name: 'U_BOOT_BRANCH', defaultValue: 'wb_v2017.03', description: 'from build-u-boot project, works if USE_LEGACY_UBOOT_AND_BOOTLET is set')
         booleanParam(name: 'SAVE_ARTIFACTS', defaultValue: true, description: 'save image after build (may be disabled for staging checks)')
     }
     environment {
@@ -34,6 +35,9 @@ pipeline {
             }
         }
         stage('Get u-boot and zImage') {
+            when { expression {
+                params.USE_LEGACY_UBOOT_AND_BOOTLET
+            }}
             // FIXME: use published binaries instead of fixed jobs and remove this step (#34164)
             // Currently this step is copied from old build-single-image-all
             steps {
@@ -54,6 +58,15 @@ pipeline {
                     sh 'mv u-boot_*.wb6.imx u-boot.wb6.imx'
                     sh 'mv u-boot_*.wb5.sd u-boot.wb5.sd'
                 }
+            }
+        }
+        stage('Cleanup old u-boot and zImage') {
+            when { expression {
+                !params.USE_LEGACY_UBOOT_AND_BOOTLET
+            }}
+
+            steps {
+                sh 'wbdev root rm ./contrib/usbupdate/zImage.* ./contrib/u-boot/u-boot.* -rf'
             }
         }
         stage('Cleanup old rootfs') {
