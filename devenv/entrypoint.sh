@@ -48,7 +48,7 @@ esac
 # current-<arch> targets are (or should be) used by CI (jenkins)
 
 case "$WBDEV_TARGET" in
-stretch-armhf|wb6|current-armhf)
+stretch-armhf|wb6)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="stretch"
@@ -58,18 +58,18 @@ stretch-armel|wb5|current-armel)
     WBDEV_TARGET_ARCH="armel"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
-stretch-host|host|stretch-amd64|current-amd64)
+stretch-host|host|stretch-amd64)
     WBDEV_TARGET_BOARD="host"
     WBDEV_TARGET_ARCH="amd64"
     WBDEV_TARGET_RELEASE="stretch"
     ;;
-bullseye-armhf)
+bullseye-armhf|current-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="bullseye"
     WBDEV_TARGET_REPO_RELEASE="testing"
     ;;
-bullseye-host|bullseye-amd64)
+bullseye-host|bullseye-amd64|current-amd64)
     WBDEV_TARGET_BOARD="host"
     WBDEV_TARGET_ARCH="amd64"
     WBDEV_TARGET_RELEASE="bullseye"
