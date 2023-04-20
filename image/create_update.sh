@@ -26,8 +26,8 @@ info() {
 [[ $# != 5 ]] && usage
 
 ROOTFS=$(readlink -f $1)
-ZIMAGE=$(readlink -f $2)
-BOOT_DTB=$(readlink -f $3)
+DEFAULT_ZIMAGE=$(readlink -f $2)
+DEFAULT_BOOT_DTB=$(readlink -f $3)
 TARGET_DTB=$(readlink -f $4)
 OUTPUT=$(readlink -f $5)
 
@@ -96,6 +96,24 @@ if [[ -e "$ROOTFS_FIRMWARE_COMPATIBLE_PATH" ]]; then
 else
     echo "No firmware-compatible in rootfs, using default one"
     FIRMWARE_COMPATIBLE="unknown"
+fi
+
+ROOTFS_BOOTLET_ZIMAGE_PATH="$ROOTFS/var/lib/wb-image-update/zImage"
+if [[ -e "$ROOTFS_BOOTLET_ZIMAGE_PATH" ]]; then
+    echo "Using bootlet zImage from rootfs ($ROOTFS_BOOTLET_ZIMAGE_PATH)"
+    ZIMAGE="$ROOTFS_BOOTLET_ZIMAGE_PATH"
+else
+    echo "No bootlet zImage in rootfs, using default one"
+    ZIMAGE="$DEFAULT_ZIMAGE"
+fi
+
+ROOTFS_BOOT_DTB_PATH="$ROOTFS/var/lib/wb-image-update/boot.dtb"
+if [[ -e "$ROOTFS_BOOT_DTB_PATH" ]]; then
+    echo "Using bootlet DTB from rootfs ($ROOTFS_BOOT_DTB_PATH)"
+    BOOT_DTB="$ROOTFS_BOOT_DTB_PATH"
+else
+    echo "No bootlet DTB in rootfs, using default one"
+    BOOT_DTB="$DEFAULT_BOOT_DTB"
 fi
 
 ITS=$TMPDIR/update.its
