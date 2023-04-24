@@ -262,6 +262,9 @@ EOM
 
 	echo "Set root password"
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
+        if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+            REPO="http://archive.debian.org/debian"
+        fi
 
         echo "Install primary sources.list"
         echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
