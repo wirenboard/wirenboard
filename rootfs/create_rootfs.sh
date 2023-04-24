@@ -127,6 +127,10 @@ APT_LIST_TMP_FNAME=${OUTPUT}/etc/apt/sources.list.d/wb-install-tmp.list
 APT_PIN_TMP_FNAME=${OUTPUT}/etc/apt/preferences.d/01wb-install-tmp
 
 REPO="http://deb.debian.org/debian/"
+if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+    REPO="http://archive.debian.org/debian"
+fi
+
 
 setup_additional_repos() {
     # setup additional repos
@@ -262,10 +266,6 @@ EOM
 
 	echo "Set root password"
 	chr /bin/sh -c "echo root:wirenboard | chpasswd"
-        if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
-            REPO="http://archive.debian.org/debian"
-        fi
-
         echo "Install primary sources.list"
         echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
