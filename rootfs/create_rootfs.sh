@@ -272,9 +272,6 @@ EOM
         if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
 			echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
 			echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
-		elif [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
-			echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-			echo "deb http://security.debian.org ${DEBIAN_RELEASE}/updates main" >>${OUTPUT}/etc/apt/sources.list
 		fi
 
 
