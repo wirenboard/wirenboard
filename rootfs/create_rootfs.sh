@@ -339,6 +339,12 @@ chr_apt_install libnss-mdns kmod
 echo "Install wb-essential (with wb-configs)"
 chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
 
+echo "Replacing obsolete stretch repos with archive.debian.org"
+if [[ ${DEBIAN_RELEASE} == "stretch" ]]; then
+    echo "deb http://archive.debian.org/debian/ stretch main" >${OUTPUT}/etc/apt/sources.list.d/debian-upstream.list
+    echo "deb http://archive.debian.org/debian/ stretch-backports main" >>${OUTPUT}/etc/apt/sources.list.d/stretch-backports.list
+fi
+
 echo "Install packages from contactless repo"
 pkgs=(
     cmux hubpower python-wb-io modbus-utils busybox
