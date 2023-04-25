@@ -50,7 +50,7 @@ Pin-Priority: 991
 EOF
 
 	if [[ "$RELEASE" = "stretch" ]]; then
-		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
+		echo "deb http://archive.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
         cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
 Package: node*:any npm:any libuv1*:any
 Pin: release a=stretch-backports
