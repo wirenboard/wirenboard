@@ -17,7 +17,12 @@ do_build_sbuild_env() {
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} http://deb.debian.org/debian
+	REPO="http://deb.debian.org/debian"
+	if [[ "$RELEASE" = "stretch" ]]; then
+		REPO="http://archive.debian.org/debian"
+	fi
+
+	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} ${REPO}
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
@@ -45,7 +50,7 @@ Pin-Priority: 991
 EOF
 
 	if [[ "$RELEASE" = "stretch" ]]; then
-		echo "deb http://deb.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
+		echo "deb http://archive.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
         cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
 Package: node*:any npm:any libuv1*:any
 Pin: release a=stretch-backports
