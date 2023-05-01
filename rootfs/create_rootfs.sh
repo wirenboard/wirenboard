@@ -179,6 +179,7 @@ run_additional_script() {
 }
 
 install_contactless_repo() {
+    local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
     if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
@@ -188,7 +189,15 @@ install_contactless_repo() {
 	fi
 
 	echo "Install initial repos"
-    echo "deb $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
+    mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
+    wget -O "${OUTPUT}${KEYRING_TMP}" https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg
+    echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
+	
+    chr_apt_update
+    chr_apt_install contactless-keyring
+
+    echo "deb $FULL_REPO_URL $WB_RELEASE main" > ${APT_LIST_TMP_FNAME}
+    rm -f "${OUTPUT}${KEYRING_TMP}"
 }
 
 echo "Wirenboard repo: $FULL_REPO_URL, release $WB_RELEASE"
@@ -282,9 +291,6 @@ EOM
     echo "Pin: release o=wirenboard, a=$WB_RELEASE" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-
-	echo "Install public key for contactless repo"
-	chr apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AEE07869
 	board_override_repos
 
     # setup additional repositories
@@ -292,8 +298,6 @@ EOM
     setup_additional_repos ${@:2}
 
 	echo "Update&upgrade apt"
-	chr_apt_update
-    chr_apt_install contactless-keyring
 
 	chr apt-get -y --force-yes upgrade
 
