@@ -98,8 +98,8 @@ pipeline {
                 script {
                     def jobs = [:]
 
-                    for (job in imagesJobs) {
-                        def currentImageJob = job
+                    for (item in imagesJobs) {
+                        def currentImageJob = item.job
                         jobs["publish ${currentImageJob.getId()}"] = {
                             stage("Publish ${currentImageJob.getId()}") {
                                 build(job: 'pipelines/publish-image',
