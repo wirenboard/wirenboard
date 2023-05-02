@@ -32,24 +32,30 @@ pipeline {
             steps {
                 script {
                     def boards = params.BOARDS.split(' ')
+                    def jobs = [:]
 
                     for (board in boards) {
                         def currentBoard = board
-                        def imageJob = build(
-                            job: 'pipelines/build-image',
-                            wait: true,
-                            parameters: [
-                                string(name: 'DEBIAN_RELEASE', value: params.DEBIAN_RELEASE),
-                                string(name: 'BOARD', value: currentBoard),
-                                string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
-                                string(name: 'WB_RELEASE', value: params.WB_RELEASE),
-                                string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
-                                booleanParam(name: 'CLEANUP_ROOTFS', value: params.CLEANUP_ROOTFS),
-                                booleanParam(name: 'SAVE_ARTIFACTS', value: true)
-                            ])
-
-                        imagesJobs.add(imageJob)
+                        jobs["build ${currentBoard}"] = {
+                            stage("Build image for ${currentBoard}") { script {
+                                def imageJob = build(
+                                    job: 'pipelines/build-image',
+                                    wait: true,
+                                    parameters: [
+                                        string(name: 'DEBIAN_RELEASE', value: params.DEBIAN_RELEASE),
+                                        string(name: 'BOARD', value: currentBoard),
+                                        string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
+                                        string(name: 'WB_RELEASE', value: params.WB_RELEASE),
+                                        string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
+                                        booleanParam(name: 'CLEANUP_ROOTFS', value: params.CLEANUP_ROOTFS),
+                                        booleanParam(name: 'SAVE_ARTIFACTS', value: true)
+                                    ])
+                                imagesJobs.add([ job: imageJob, board: currentBoard ])
+                            }}
+                        }
                     }
+
+                    parallel jobs
                 }
             }
         }
@@ -59,19 +65,20 @@ pipeline {
                 script {
                     def jobs = [:]
 
-                    for (job in imagesJobs) {
-                        def currentImageJob = job
+                    for (item in imagesJobs) {
+                        def currentImageJob = item.job
+                        def currentBoard = item.board
 
                         jobs["test ${currentImageJob.getId()}"] = {
                             stage("Test ${currentImageJob.getId()}") {
                                 build(job: 'pipelines/release-test-orchestrator-test',
                                       wait: true,
                                       parameters: [
-                                        string(name: 'BENCH_BOARD', value: currentImageJob.getBuildVariables()['BOARD']),
+                                        string(name: 'BENCH_BOARD', value: currentBoard),
                                         string(name: 'FIT_BUILDID', value: currentImageJob.getId()),
                                         string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
                                         string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
-                                        booleanParam(name: 'RUN_FACTORYRESET', value: params.TEST_FACTORYRESET && currentImageJob.getBuildVariables()['BOARD'] == '7x'),
+                                        booleanParam(name: 'RUN_FACTORYRESET', value: params.TEST_FACTORYRESET && currentBoard == '7x'),
                                         booleanParam(name: 'RUN_STANDALONE', value: params.TEST_STANDALONE),
                                         booleanParam(name: 'RUN_RELEASE', value: false),  // suitable for release updates, not image publish
                                         booleanParam(name: 'RUN_LEGACY', value: false),  // suitable for 6x boards and not for image publish
