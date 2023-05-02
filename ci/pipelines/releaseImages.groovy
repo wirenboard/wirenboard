@@ -19,6 +19,7 @@ pipeline {
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
+        string(name: 'TEST_JOB', defaultValue: 'wirenboard/wb-release-tests/main')
         booleanParam(name: 'TEST_FACTORYRESET', defaultValue: true, description: 'run factory reset tests on images (wb7 only)')
         booleanParam(name: 'TEST_STANDALONE', defaultValue: true, description: 'run generic FIT update tests on images')
     }
@@ -78,6 +79,7 @@ pipeline {
                                         string(name: 'FIT_BUILDID', value: currentImageJob.getId()),
                                         string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
                                         string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
+                                        string(name: 'TEST_JOB', value: params.TEST_JOB),
                                         booleanParam(name: 'RUN_FACTORYRESET', value: params.TEST_FACTORYRESET && currentBoard == '7x'),
                                         booleanParam(name: 'RUN_STANDALONE', value: params.TEST_STANDALONE),
                                         booleanParam(name: 'RUN_RELEASE', value: false),  // suitable for release updates, not image publish
