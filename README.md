@@ -184,6 +184,16 @@ docker pull contactless/devenv
 wget -O /path/to/your/wbdev-script https://raw.githubusercontent.com/contactless/wirenboard/master/wbdev
 ```
 
+VSCode building and debugging 
+=============================
+
+There are VSCode config files in [vscode](vscode) folder. These files can be used to build and debug Wiren Board software. Take some attention on `includePath` settings in `c_cpp_properties.json` and `command` settings in debug tasks in *tasks.json* because they contain sensitive settings for your environment.
+
+For build and run cpp tests you need to install `qemu` and `binfmt` packages on your host.
+```
+apt install qemu-user-static binfmt-support
+```
+
 Split repositories
 ==================
 
