@@ -1,6 +1,8 @@
 #!/bin/bash
 # This file will be executed on host to run docker container
 
+DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-"cross"}
+
 DOCKER_TTY_OPTS=-i
 if [ -t 0 ]; then
     DOCKER_TTY_OPTS=-it
@@ -60,7 +62,7 @@ docker run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_TERM="$TERM" \
        $ENV_CMDLINE \
        -e DEB_BUILD_OPTIONS \
-       -e DEB_BUILD_PROFILES="cross" \
+       -e DEB_BUILD_PROFILES \
        $VOLUMES \
        $ssh_opts \
        -h wbdevenv \
