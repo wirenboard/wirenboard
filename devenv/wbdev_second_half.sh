@@ -1,6 +1,8 @@
 #!/bin/bash
 # This file will be executed on host to run docker container
 
+DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-"cross"}
+
 DOCKER_TTY_OPTS=-i
 if [ -t 0 ]; then
     DOCKER_TTY_OPTS=-it
