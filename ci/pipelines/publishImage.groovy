@@ -16,7 +16,6 @@ pipeline {
         string(name: 'LATEST_NAME', defaultValue: 'latest', description: 'used to publish "latest_*.fit, .md5 and .img files')
     }
     environment {
-        S3CMD_CONFIG = credentials('s3cmd-fw-releases-config')
         TARGET_DIR = "image-${params.IMAGE_BUILDNUMBER}"
         S3_ROOTDIR = "s3://fw-releases.wirenboard.com/fit_image"
     }
@@ -71,8 +70,10 @@ pipeline {
         stage('Publish image') {
             steps {
                 dir(env.TARGET_DIR) {
-                    sh '''s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_NAME} \
-                        --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
+                    withCredentials([file(credentialsId: 's3cmd-fw-releases-config', variable: 'S3CMD_CONFIG')]) {
+                        sh '''wbdev user s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_NAME} \
+                            --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
+                    }
                 }
             }
         }
@@ -87,9 +88,11 @@ pipeline {
             steps {
                 dir(env.TARGET_DIR) {
                     sh 'md5sum $FIT_NAME | awk \'{print \$1}\' > $FIT_MD5_NAME'
-                    sh 's3cmd -c $S3CMD_CONFIG put $FIT_MD5_NAME ${S3_PREFIX}/${FIT_MD5_NAME}'
-                    sh '''s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_PUB_NAME} \
-                        --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
+                    withCredentials([file(credentialsId: 's3cmd-fw-releases-config', variable: 'S3CMD_CONFIG')]) {
+                        sh 'wbdev user s3cmd -c $S3CMD_CONFIG put $FIT_MD5_NAME ${S3_PREFIX}/${FIT_MD5_NAME}'
+                        sh '''wbdev user s3cmd -c $S3CMD_CONFIG put $FIT_NAME ${S3_PREFIX}/${FIT_PUB_NAME} \
+                            --add-header="Content-Disposition: attachment; filename=\\"$FIT_NAME\\""'''
+                    }
                 }
             }
         }
@@ -105,10 +108,13 @@ pipeline {
                 dir(env.TARGET_DIR) {
                     sh 'md5sum $IMG_NAME | awk \'{print \$1}\' > ${IMG_PUB_NAME}.md5'
                     sh 'md5sum $IMG_ZIP_NAME | awk \'{print \$1}\' > ${IMG_PUB_NAME}.zip.md5'
-                    sh 's3cmd -c $S3CMD_CONFIG put ${IMG_PUB_NAME}.md5 ${S3_PREFIX}/${IMG_PUB_NAME}.md5'
-                    sh 's3cmd -c $S3CMD_CONFIG put ${IMG_PUB_NAME}.zip.md5 ${S3_PREFIX}/${IMG_PUB_NAME}.zip.md5'
-                    sh 's3cmd -c $S3CMD_CONFIG put $IMG_NAME ${S3_PREFIX}/${IMG_PUB_NAME}'
-                    sh 's3cmd -c $S3CMD_CONFIG put $IMG_ZIP_NAME ${S3_PREFIX}/${IMG_PUB_NAME}.zip'
+
+                    withCredentials([file(credentialsId: 's3cmd-fw-releases-config', variable: 'S3CMD_CONFIG')]) {
+                        sh 'wbdev user s3cmd -c $S3CMD_CONFIG put ${IMG_PUB_NAME}.md5 ${S3_PREFIX}/${IMG_PUB_NAME}.md5'
+                        sh 'wbdev user s3cmd -c $S3CMD_CONFIG put ${IMG_PUB_NAME}.zip.md5 ${S3_PREFIX}/${IMG_PUB_NAME}.zip.md5'
+                        sh 'wbdev user s3cmd -c $S3CMD_CONFIG put $IMG_NAME ${S3_PREFIX}/${IMG_PUB_NAME}'
+                        sh 'wbdev user s3cmd -c $S3CMD_CONFIG put $IMG_ZIP_NAME ${S3_PREFIX}/${IMG_PUB_NAME}.zip'
+                    }
                 }
             }
         }
