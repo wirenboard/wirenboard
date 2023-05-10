@@ -72,7 +72,7 @@ pipeline {
 
                         jobs["test ${currentImageJob.getId()}"] = {
                             stage("Test ${currentImageJob.getId()}") {
-                                build(job: 'pipelines/release-test-orchestrator-test',
+                                build(job: 'pipelines/release-test-orchestrator',
                                       wait: true,
                                       parameters: [
                                         string(name: 'BENCH_BOARD', value: currentBoard),
