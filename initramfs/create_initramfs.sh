@@ -41,10 +41,10 @@ install_dir() {
 install_file() {
 	local src="$1"
 	local dst="$2"
-	
+
 	local dstdir=$(dirname "$dst")
 	[[ -d "$INITRAMFS/$dstdir" ]] || install_dir "$dstdir"
-	
+
 	echo "file $dst <- $src"
 	cp "$src" "$INITRAMFS/$dst"
 }
@@ -147,9 +147,11 @@ FROM_ROOTFS=(
     /usr/lib/wb-utils/prepare/partitions.sh
     /usr/bin/rsync
     /usr/bin/mmc
+    /usr/bin/nohup
     /bin/dd
     /sbin/dumpe2fs
     /sbin/resize2fs
+    /sbin/e2fsck
 )
 
 for f in "${FROM_ROOTFS[@]}"; do
