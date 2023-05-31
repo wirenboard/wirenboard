@@ -17,8 +17,9 @@ wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/wbdev
 chmod +x wbdev
 ```
 
-In order to use the script, you must
-[install docker](http://docs.docker.com/engine/installation/ubuntulinux/)
+In order to use the script, you must install
+[docker](http://docs.docker.com/engine/installation/ubuntulinux/),
+`qemu-user-static`
 first.
 
 The development environment consists "host" environment which is
