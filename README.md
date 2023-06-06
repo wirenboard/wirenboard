@@ -193,7 +193,7 @@ For build and run cpp tests you need to install `qemu` and `binfmt` packages on 
 ```
 apt install qemu-user-static binfmt-support
 ```
-For debugging you need to install C/C++ extension. In order to debug source code you should stop `wb-mqtt-serial` service on target controller, run `Debug build and copy to wb7` task, go to `Run and debug` VSCode section and select `Remote debug`. In order to debug tests you should run `Run tests for debug` task, go to `Run and debug` VSCode section and select `Debug tests`.
+For debugging you need to install C/C++ extension. In order to debug source code you should stop `wb-mqtt-serial` service on target controller, run `Debug build and copy to wb7` task, go to `Run and debug` VSCode section and select `Remote debug`. In order to debug tests you should install `gdb-multiarch` in container (it's installed automatically on container setup), run `Run tests for debug` task, go to `Run and debug` VSCode section and select `Debug tests`.
 
 Split repositories
 ==================
