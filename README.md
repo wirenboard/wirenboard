@@ -17,8 +17,9 @@ wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/wbdev
 chmod +x wbdev
 ```
 
-In order to use the script, you must
-[install docker](http://docs.docker.com/engine/installation/ubuntulinux/)
+In order to use the script, you must install
+[docker](http://docs.docker.com/engine/installation/ubuntulinux/),
+`qemu-user-static`
 first.
 
 The development environment consists "host" environment which is
@@ -108,11 +109,11 @@ Usage:
 To change target architecture you should use environment variable
 WBDEV_TARGET. Possible values:
 
-* `wb5` build package for armel target (latest WB5.x)
-* `wb6` build package for armhf target (WB6.x) 
-
-Debian release (default `stretch`) could be overriden by `WBDEV_RELEASE` environment
-variable.
+* `stretch-armhf`, `wb6` build stretch package for armhf target (WB6.x) 
+* `stretch-armel`, `wb5`, `current-armel` build stretch package for armel target (latest WB5.x)
+* `stretch-host`, `host`, `stretch-amd64` build stretch package for amd64 target
+* `bullseye-armhf`, `current-armhf` build bullseye package for armhf target (default)
+* `bullseye-host`, `bullseye-amd64`, `current-amd64` build bullseye package for amd64 target
 
 Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
 

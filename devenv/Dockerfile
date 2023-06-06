@@ -40,7 +40,7 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     # for Jenkins python checks \
     pylint black python3-isort \
     # for Jenkins deployments \
-    python3-wbci
+    python3-wbci s3cmd
 
 
 # FIXME: we should not install anything with --force-yes
