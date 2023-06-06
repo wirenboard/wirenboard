@@ -23,6 +23,13 @@
         {
             "label": "Debug build test",
             "type": "shell",
+            "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'DEB_HOST_MULTIARCH=arm-linux-gnueabihf DEBUG=1 make -j12 test/wb-homa-test'",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Debug build test with coverage",
+            "type": "shell",
             "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'DEB_HOST_MULTIARCH=arm-linux-gnueabihf DEBUG=1 make -j12 lcov'",
             "group": "build",
             "problemMatcher": []
