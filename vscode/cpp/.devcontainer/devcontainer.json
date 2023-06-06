@@ -1,0 +1,5 @@
+{
+    "image": "contactless/devenv:latest",
+    "postCreateCommand": "bash -i ./.devcontainer/devenv-setup.sh",
+    "runArgs": [ "--privileged" ]
+}
