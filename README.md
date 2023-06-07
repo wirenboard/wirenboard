@@ -188,7 +188,7 @@ wget -O /path/to/your/wbdev-script https://raw.githubusercontent.com/contactless
 VSCode building and debugging 
 =============================
 
-There are VSCode config files in [vscode](vscode) folder. These files can be used to build and debug Wiren Board software. Take some attention on `includePath` settings in `c_cpp_properties.json` and `command` settings in debug tasks in *tasks.json* because they contain sensitive settings for your environment.
+There are VSCode config files in [vscode](vscode) folder. These files can be used to build and debug Wiren Board software. Take some attention on `includePath` settings in `c_cpp_properties.json` and `command` settings in debug tasks in *tasks.json* because they contain sensitive settings for your environment. In `Debug build and copy to wb7` and `Build and copy to wb7` tasks you should insert your controller's IP.
 
 For build and run cpp tests you need to install `qemu` and `binfmt` packages on your host.
 ```
