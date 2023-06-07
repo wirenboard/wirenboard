@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "compilerPath": "/srv/chroot/sbuild-bullseye-cross/usr/bin/arm-linux-gnueabihf-gcc",
+            "intelliSenseMode": "gcc-arm",
+            "cppStandard": "c++17",
+            "includePath": [
+                "/srv/chroot/sbuild-bullseye-cross/usr/include/**",
+                "./src",
+                "./thirdparty/gurux/development/include"
+            ]
+        }
+    ],
+    "version": 4
+}
