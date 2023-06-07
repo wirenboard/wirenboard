@@ -76,7 +76,7 @@
         {
             "label": "Make deb (must be run outside of devenv)",
             "type": "shell",
-            "command": "nix run ../wb-nixpkgs#wbdev -- cdeb -j12",
+            "command": "wbdev cdeb -j12",
             "problemMatcher": []
         },
         {
