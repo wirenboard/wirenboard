@@ -67,7 +67,6 @@ bullseye-armhf|current-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="bullseye"
-    WBDEV_TARGET_REPO_RELEASE="testing"
     ;;
 bullseye-host|bullseye-amd64|current-amd64)
     WBDEV_TARGET_BOARD="host"
