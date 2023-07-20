@@ -10,10 +10,10 @@ set -e
 FLAVOUR=$3
 
 case $FLAVOUR in
-wb2)
+wb2*|wb5*)
     LIBDIR=/lib/arm-linux-gnueabi
     ;;
-wb6|wb7)
+wb6*|wb7*)
     LIBDIR=/lib/arm-linux-gnueabihf
     ;;
 *)
@@ -96,19 +96,17 @@ install_file "$FILES_DIR/libupdate.wb7.sh" "/lib/libupdate.wb7.sh"
 install_file "$FILES_DIR/wait_for_button.sh" "/bin/wait_for_button"
 install_file "$FILES_DIR/README.ramdisk.txt" "/usr/share/README.ramdisk.txt"
 
-[[ $FLAVOUR == "wb2" ]] && {
-    arm-linux-gnueabi-gcc -o "${FILES_DIR}/memdump" "${FILES_DIR}/memdump.c" -Wall -Wextra -pedantic -std=c99
-    install_file "${FILES_DIR}/memdump" "/bin/memdump"
-}
 
 case $FLAVOUR in
-wb2)
+wb2*|wb5*)
+    arm-linux-gnueabi-gcc -o "${FILES_DIR}/memdump" "${FILES_DIR}/memdump.c" -Wall -Wextra -pedantic -std=c99
+    install_file "${FILES_DIR}/memdump" "/bin/memdump"
     install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.mxs /etc/fw_env.config
     ;;
-wb6)
+wb6*)
     install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.imx6 /etc/fw_env.config
     ;;
-wb7)
+wb7*)
     install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.sun8i /etc/fw_env.config
     ;;
 esac
