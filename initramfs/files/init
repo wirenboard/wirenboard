@@ -334,7 +334,7 @@ setup_usb_ssh() {
 
 case "$BOOTMODE" in
 	update_auto)
-		local enable_emmc_update="y"
+		enable_emmc_update="y"
 
 		is_usb_gadget_supported && setup_usb_ram_mass_storage
 
@@ -364,7 +364,7 @@ case "$BOOTMODE" in
 		[[ "${FIT_NAME}" == "usbupdate" ]] && FIT_NAME="wb_update.fit"
 
 		search_for_usb_drive &&
-			update_from_usb_drive ${FIT_NAME}
+			update_from_block_device "/dev/sd*" " ${FIT_NAME}" "USB Flash Drive"
 		;;
 	sdupdate*)
 		FIT_NAME="${BOOTMODE#*,}"

@@ -129,8 +129,8 @@ FROM_ROOTFS=(
     /usr/bin/xxd
 
     "$LIBDIR/libnss_files.so.2"
-    "$LIBDIR/libnss_files-2.24.so"
-    "$LIBDIR/ld-2.24.so"
+    "$LIBDIR/libnss_files-2.31.so"
+    "$LIBDIR/ld-2.31.so"
     "$LIBDIR/ld-linux.so.3"
 
     /etc/shadow
