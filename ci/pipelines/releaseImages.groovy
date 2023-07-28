@@ -20,6 +20,7 @@ pipeline {
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
         string(name: 'TEST_JOB', defaultValue: 'wirenboard/wb-release-tests/main')
+        booleanParam(name: 'ENABLE_TELEGRAM_ALERT', defaultValue: true, description: 'send alert to WB Monitoring if build is failed/restored')
         booleanParam(name: 'TEST_FACTORYRESET', defaultValue: true, description: 'run factory reset tests on images (wb7 only)')
         booleanParam(name: 'TEST_STANDALONE', defaultValue: true, description: 'run generic FIT update tests on images')
     }
@@ -117,5 +118,17 @@ pipeline {
                 }
             }
         }
+    }
+    post {
+        always { script {
+            if (params.ENABLE_TELEGRAM_ALERT) {
+                wb.notifyMaybeBuildRestored()
+            }
+        }}
+        failure { script {
+            if (params.ENABLE_TELEGRAM_ALERT) {
+                wb.notifyBuildFailed()
+            }
+        }}
     }
 }
