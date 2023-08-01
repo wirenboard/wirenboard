@@ -379,17 +379,6 @@ fdt_file=/boot/dtbs/${1}.dtb
 EOF
 }
 
-install_wb5_packages() {
-    pkgs=(
-        wb-suite netplug hostapd bluez can-utils u-boot-tools-wb \
-		cron bluez-hcidump
-    )
-
-    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-	chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools
-    fi
-    chr_apt_install "${pkgs[@]}"
-}
 
 [[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"
 

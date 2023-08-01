@@ -5,6 +5,6 @@ export DTB=/boot/dtbs/imx28-wirenboard55.dtb
 board_include soc_imx28.sh
 
 board_install() {
-	install_wb5_packages
+	wb-common
 	set_fdt imx28-wirenboard55
 }
