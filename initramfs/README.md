@@ -10,7 +10,7 @@ initramfs для загрузочного образа с USB Mass Storage и US
 wirenboard$ rootfs/create_rootfs.sh 2-usbgadget
 ```
 
-[FIXME](https://wirenboard.bitrix24.ru/workgroups/group/218/tasks/task/view/64680/):
+FIXME:
 Инициаллизации нужны mmc-utils с нашим [патчем](https://patchwork.kernel.org/project/linux-mmc/patch/7a2fd4e7-84b5-8e44-3789-e9ddffe30f64@gmail.com/).
 Патч так и не доехал до bullseye => rootfs для initram-бутлета нужно собирать с `DEBIAN_RELEASE=stretch` и сопутствующими костылями (fdisk => util-linux; libnss v2.24)
 
