@@ -380,7 +380,7 @@ EOF
 }
 
 wb-common_install() {
-	chr_apt_install wb-common
+	chr_apt_install task-wb-common-pkgs
 }
 
 [[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"
