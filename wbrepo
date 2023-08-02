@@ -6,7 +6,7 @@ set -e # exit on any fail
 # name of the Aptly repository
 REPO_NAME=devel
 # name of distribution (ex. wheezy, jessie, stable, testing, sid in Debian)
-DISTRIBUTION=testing
+DISTRIBUTION=bullseye
 # list of arches
 ARCH=armel,armhf,all
 

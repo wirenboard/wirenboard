@@ -6,6 +6,6 @@ board_include soc_imx28.sh
 BOARD_PACKAGES+=( wb-mqtt-lirc )
 
 board_install() {
-	wb-common
+	wb-common_install
 	set_fdt imx28-wirenboard52
 }

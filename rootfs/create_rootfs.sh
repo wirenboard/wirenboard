@@ -379,7 +379,7 @@ fdt_file=/boot/dtbs/${1}.dtb
 EOF
 }
 
-wb-common() {
+wb-common_install() {
 	chr_apt_install wb-common
 }
 
