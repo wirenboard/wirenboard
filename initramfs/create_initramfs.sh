@@ -49,6 +49,17 @@ install_file() {
 	cp "$src" "$INITRAMFS/$dst"
 }
 
+install_recursive() {
+    local src="$ROOTFS/$1"
+    local dst="$2"
+
+    local dstdir=$(dirname "$dst")
+    [[ -d "$INITRAMFS/$dstdir" ]] || install_dir "$dstdir"
+
+    echo "file $dst <- $src"
+    cp -r "$src" "$INITRAMFS/$dst"
+}
+
 install_from_rootfs() {
 	local src="$1"
 	local dst="$2"
@@ -110,6 +121,11 @@ wb6)
     ;;
 wb7)
     install_from_rootfs /usr/share/wb-configs/u-boot/fw_env.config.wb.sun8i /etc/fw_env.config
+    install_recursive /etc/ssl /etc/ssl
+    install_recursive /usr/lib/ssl /usr/lib/ssl
+    install_from_rootfs /usr/bin/c_rehash
+    install_from_rootfs /usr/bin/openssl
+    install_from_rootfs /usr/lib/arm-linux-gnueabihf/engines-1.1/ateccx08.so
     ;;
 esac
 
