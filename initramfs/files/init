@@ -37,7 +37,8 @@ source /lib/libupdate.sh
 
 EMMC=/dev/mmcblk0
 MICROSD=/dev/mmcblk1
-RAMDISK="/tmp/ramdisk.img"
+RAMDISK_FS="/tmp/bigtmpfs"
+RAMDISK="${RAMDISK_FS}/ramdisk.img"
 ALLOWED_FIT_NAMES="wb_update.fit wb6_update.fit wb_update_FACTORYRESET.fit wb6_update_FACTORYRESET.fit"
 USBDIR="/usb"
 
@@ -151,23 +152,21 @@ buzzer_update_beep() {
 	sleep 0.3
 }
 
-# Search for .fit files in a given directory and run update
+# Search for .fit files in a given directory
 #
 # @param $1 directory to look for .fit files
 # @param $2 list of allowable .fit file names
-# @param $3 human-readable source name
-update_from_fs() {
+search_for_fit() {
 	local DIR="$1"
 	local FIT_NAMES="$2"
-	local SOURCE="$3"
 
 	local FOUND_FIT_NAME=""
 	for FNAME in ${FIT_NAMES}; do
 		local FIT="$DIR/$FNAME"
 		if [[ -e "${FIT}" ]]; then
 			if [[ ! -z "${FOUND_FIT_NAME}" ]]; then
-				echo "ERROR: multiple .fit found on ${SOURCE} (${DIR}): ${FOUND_FIT_NAME} and ${FNAME}. Leave just one from a list: ${FIT_NAMES}"
-				exit
+				>&2 echo "ERROR: multiple .fit found on ${SOURCE} (${DIR}): ${FOUND_FIT_NAME} and ${FNAME}. Leave just one from a list: ${FIT_NAMES}"
+				return 1
 			fi
 
 			FOUND_FIT_NAME="$FNAME"
@@ -175,26 +174,38 @@ update_from_fs() {
 	done
 
 	if [[ ! -z "$FOUND_FIT_NAME" ]]; then
-		local FIT="$DIR/$FOUND_FIT_NAME"
-
-		echo "Will use ${FOUND_FIT_NAME} from ${SOURCE} (${DIR})"
-		if [[ "x${CONFIRM}" == "xy" ]]; then
-			set_led_prompt_user
-			echo "Press FW button to confirm updating from ${SOURCE} (${DIR})"
-			USE_BUZZER=n USE_ECHO=y WAIT_TIME=10 HOLD_TIME=0 wait_for_button 1>&2
-			local result=$?
-			if [[ $result != 0 ]]; then
-				echo "ERROR: update is not confirmed, exiting"
-				exit
-			fi
+		if check_fit_end_signature "$DIR/$FOUND_FIT_NAME"; then
+			echo $FOUND_FIT_NAME
+			return 0
 		fi
-
-		check_fit_end_signature "$FIT" &&
-			set_led_update_in_progress &&
-			buzzer_update_beep &&
-			wb-run-update --from-initramfs --no-mqtt --no-remove "$FIT" &&
-			break
 	fi
+	return 1
+}
+
+# Run update from a given .fit file
+#
+# @param $1 directory with .fit file
+# @param $2 .fit file name
+# @param $3 human-readable source name
+update_from_fit() {
+	local FIT_DIR="$1"
+	local FIT_NAME="$2"
+	local SOURCE="$3"
+	echo "Will use ${FIT_NAME} from ${SOURCE}"
+	if [[ "x${CONFIRM}" == "xy" ]]; then
+		set_led_prompt_user
+		echo "Press FW button to confirm updating from ${SOURCE}"
+		USE_BUZZER=n USE_ECHO=y WAIT_TIME=10 HOLD_TIME=0 wait_for_button 1>&2
+		local result=$?
+		if [[ $result != 0 ]]; then
+			>&2 echo "ERROR: update is not confirmed, exiting"
+			return 1
+		fi
+	fi
+
+	set_led_update_in_progress &&
+	buzzer_update_beep &&
+	wb-run-update --from-initramfs --no-mqtt --no-remove "${FIT_DIR}/${FIT_NAME}"
 }
 
 
@@ -220,7 +231,10 @@ update_from_block_device() {
 
 		umount "$BLOCKDIR" >/dev/null 2>&1 || true
 		mount -t auto "$BLOCKDEV" "$BLOCKDIR" >/dev/null 2>&1 || continue
-		update_from_fs "${BLOCKDIR}" "${FIT_NAMES}" "${SOURCE_NAME}"
+
+		local FIT=""
+		FIT=$(search_for_fit "${BLOCKDIR}" "${FIT_NAMES}" "${SOURCE_NAME}") &&
+		update_from_fit "${BLOCKDIR}" "$FIT" "${SOURCE_NAME}"
 	done
 	return 1
 }
@@ -254,28 +268,35 @@ update_from_emmc() {
 }
 
 update_from_gadget() {
-	modprobe -r g_mass_storage
 	mkdir -p "$USBDIR"
 	losetup -o 1048576 /dev/loop0 ${RAMDISK}
-	mount -t vfat /dev/loop0 "$USBDIR"
-	echo "Will look for update in USB gadget ramdisk"
-	update_from_fs "$USBDIR" "${ALLOWED_FIT_NAMES}" "USB gadget" ||
-		echo "ERROR: No update .fit uploaded to virtual USB drive!!"
+	mount -t vfat -o ro /dev/loop0 "$USBDIR"
+	local SOURCE_NAME="virtual USB drive"
+	local FIT=""
+	FIT=$(search_for_fit "${USBDIR}" "${ALLOWED_FIT_NAMES}" "${SOURCE_NAME}") && {
+		echo ""
+		modprobe -r g_mass_storage
+		mount -o remount,rw ${USBDIR}
+		update_from_fit "${USBDIR}" "$FIT" "${SOURCE_NAME}"
+	}
+	umount "$USBDIR"
 }
 
 check_usb_gadget_connected() {
 	[[ "x$(cat /sys/class/udc/*/current_speed)" != "xUNKNOWN" ]]
 }
 
-wait_for_gadget_disconnect() {
+wait_for_update_from_gadget() {
 	local COUNT=0
-	while check_usb_gadget_connected; do
-		echo -ne "Copy .fit file to virtual USB driver and unplug the cable ($(($COUNT+1)))\\r"
+	while check_usb_gadget_connected && check_usb_gadget_cable_present; do
+		echo -ne "Copy .fit file to virtual USB drive ($(($COUNT+1)))\\r"
+		update_from_gadget
 		sleep 1
 		let COUNT++
 	done
+	echo "USB gadget is not connected, exiting"
 	echo
-	! check_usb_gadget_connected
+	! (check_usb_gadget_connected && check_usb_gadget_cable_present)
 }
 
 check_usb_gadget_cable_present() {
@@ -312,17 +333,22 @@ is_usb_gadget_supported() {
 
 setup_usb_ram_mass_storage() {
 		# create usb_mass_storage first
-		dd if=/dev/zero of=${RAMDISK} bs=1M count=300  >/dev/null 2>&1
+		MEMSIZE_KB=`cat /proc/meminfo | grep MemTotal | awk '{print $2}'`
+		MEMSIZE_MB=$((MEMSIZE_KB / 1024))
+		mkdir -p "$RAMDISK_FS"
+		mount -t tmpfs -o size=${MEMSIZE_MB}M tmpfs ${RAMDISK_FS}
+		RAMDISK_SIZE_MB=$((MEMSIZE_MB-200))
+		dd if=/dev/zero of=${RAMDISK} bs=1M count=$RAMDISK_SIZE_MB  >/dev/null 2>&1
 		echo ",,b" | sfdisk ${RAMDISK}
 		losetup -o 1048576 /dev/loop0 ${RAMDISK}
-		mkfs.vfat /dev/loop0
+		mkfs.vfat /dev/loop0 -n "WB UPDATE"
 		mkdir -p "$USBDIR"
 		mount -t vfat /dev/loop0 "$USBDIR"
 		cp /usr/share/README.ramdisk.txt "${USBDIR}/README.txt"
 		umount "$USBDIR"
 
 		echo "Activate Mass Storage device"
-		modprobe g_mass_storage file=${RAMDISK} iManufacturer="Wiren Board" iProduct="Wiren Board RAM disk"
+		modprobe g_mass_storage file=${RAMDISK} iManufacturer="Wiren Board" iProduct="Wiren Board Update" iSerialNumber="$(cat /proc/device-tree/serial-number)"
 }
 
 setup_usb_ssh() {
@@ -340,8 +366,7 @@ case "$BOOTMODE" in
 
 		if is_usb_gadget_supported && check_usb_gadget_cable_present && wait_usb_gadget_connected; then
 			enable_emmc_update="n"
-			wait_for_gadget_disconnect
-			update_from_gadget
+			wait_for_update_from_gadget
 		fi
 
 		if force_enable_usb_host && search_for_usb_drive; then
