@@ -182,11 +182,11 @@ install_contactless_repo() {
     local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
-    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-		echo "Install gnupg"
-		chr apt-get update
-		chr apt-get install -y gnupg1
-	fi
+#    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
+#		echo "Install gnupg"
+#		chr apt-get update
+#		chr apt-get install -y gnupg1
+#	fi
 
 	echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
@@ -194,7 +194,7 @@ install_contactless_repo() {
     echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
 	
     chr_apt_update
-    chr_apt_install contactless-keyring
+    chr_apt_install gnupg1 contactless-keyring
 
     echo "deb $FULL_REPO_URL $WB_RELEASE main" > ${APT_LIST_TMP_FNAME}
     rm -f "${OUTPUT}${KEYRING_TMP}"
@@ -309,39 +309,42 @@ EOM
 	chr /usr/sbin/locale-gen
 	chr update-locale
 
+	echo "Creating $ROOTFS_BASE_TARBALL"
+	pushd ${OUTPUT}
+	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
+	popd
+
     echo "Install additional packages"
-    chr_apt_install netbase ifupdown \
+    chr_apt_install -f netbase ifupdown \
         iproute2 openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
         tzdata mc wireless-tools usbutils \
         i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq \
         memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        ssmtp moreutils firmware-realtek
+        ssmtp moreutils firmware-realtek liblog4cpp5v5 logrotate \
+        libnss-mdns kmod linux-image-${KERNEL_FLAVOUR} \
+        systemd-sysv
 
-	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-        chr_apt_install --force-yes liblog4cpp5v5 logrotate
-        fi
+#	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
+#        chr_apt_install --force-yes liblog4cpp5v5 logrotate
+#        fi
 
-	echo "Creating $ROOTFS_BASE_TARBALL"
-	pushd ${OUTPUT}
-	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
-	popd
 fi
 
 echo "Cleanup rootfs"
-chr_nofail dpkg -r geoip-database
+#chr_nofail dpkg -r geoip-database
 
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-chr_apt_update
+#chr_apt_update
 
 echo "Install some packages before wb-essential (to preserve conffiles diversions in wb-configs)"
-chr_apt_install libnss-mdns kmod
+#chr_apt_install libnss-mdns kmod
 
 echo "Install wb-essential (with wb-configs)"
-chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
+chr_apt_install wb-essential # linux-image-${KERNEL_FLAVOUR} systemd-sysv
 
 echo "Install packages from contactless repo"
 pkgs=(
@@ -350,19 +353,19 @@ pkgs=(
     openssl ca-certificates avahi-daemon pps-tools device-tree-compiler
 )
 
-chr_apt_update
+#chr_apt_update
 
-if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-    chr_apt_install systemd-sysv
-fi
+#if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
+#    chr_apt_install systemd-sysv
+#fi
 
-chr_apt_install "${pkgs[@]}"
+chr_apt_install "${pkgs[@]}" wb-mqtt-confed
 chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /usr/sbin/mosquitto -d -c /etc/mosquitto/mosquitto.conf
-chr_apt_install wb-mqtt-confed
+#chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
