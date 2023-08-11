@@ -33,6 +33,11 @@ mount /dev/pts
 mkdir -p /dev/shm
 mkdir -p /var/lock
 
+for file in /dev/watchdog*; do
+	echo "Run busybox watchdog for $file"
+	/bin/busybox watchdog "$file" -t 1 -F &
+done
+
 source /lib/libupdate.sh
 
 EMMC=/dev/mmcblk0
