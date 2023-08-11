@@ -309,10 +309,6 @@ EOM
 	chr /usr/sbin/locale-gen
 	chr update-locale
 
-	echo "Creating $ROOTFS_BASE_TARBALL"
-	pushd ${OUTPUT}
-	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
-	popd
 
     echo "Install additional packages"
     chr_apt_install -f netbase ifupdown \
@@ -329,6 +325,10 @@ EOM
 #	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
 #        chr_apt_install --force-yes liblog4cpp5v5 logrotate
 #        fi
+	echo "Creating $ROOTFS_BASE_TARBALL"
+	pushd ${OUTPUT}
+	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
+	popd
 
 fi
 
