@@ -274,7 +274,7 @@ update_from_emmc() {
 
 update_from_gadget() {
 	mkdir -p "$USBDIR"
-	losetup -o 1048576 /dev/loop0 ${RAMDISK}
+	losetup -o 1048576 /dev/loop0 ${RAMDISK} 2>/dev/null
 	mount -t vfat -o ro /dev/loop0 "$USBDIR"
 	local SOURCE_NAME="virtual USB drive"
 	local FIT=""
