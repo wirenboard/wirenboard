@@ -182,12 +182,6 @@ install_contactless_repo() {
     local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
-#    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-#		echo "Install gnupg"
-#		chr apt-get update
-#		chr apt-get install -y gnupg1
-#	fi
-
 	echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
     wget -O "${OUTPUT}${KEYRING_TMP}" https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg
@@ -309,7 +303,6 @@ EOM
 	chr /usr/sbin/locale-gen
 	chr update-locale
 
-
     echo "Install additional packages"
     chr_apt_install -f netbase ifupdown \
         iproute2 openssh-server \
@@ -322,9 +315,6 @@ EOM
         libnss-mdns kmod linux-image-${KERNEL_FLAVOUR} \
         systemd-sysv
 
-#	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-#        chr_apt_install --force-yes liblog4cpp5v5 logrotate
-#        fi
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
 	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
@@ -332,19 +322,11 @@ EOM
 
 fi
 
-echo "Cleanup rootfs"
-#chr_nofail dpkg -r geoip-database
-
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
-#chr_apt_update
-
-echo "Install some packages before wb-essential (to preserve conffiles diversions in wb-configs)"
-#chr_apt_install libnss-mdns kmod
-
 echo "Install wb-essential (with wb-configs)"
-chr_apt_install wb-essential # linux-image-${KERNEL_FLAVOUR} systemd-sysv
+chr_apt_install wb-essential
 
 echo "Install packages from contactless repo"
 pkgs=(
@@ -353,19 +335,12 @@ pkgs=(
     openssl ca-certificates avahi-daemon pps-tools device-tree-compiler
 )
 
-#chr_apt_update
-
-#if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-#    chr_apt_install systemd-sysv
-#fi
-
 chr_apt_install "${pkgs[@]}" wb-mqtt-confed
 chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /usr/sbin/mosquitto -d -c /etc/mosquitto/mosquitto.conf
-#chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
