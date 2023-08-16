@@ -304,16 +304,7 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt_install -f netbase ifupdown \
-        iproute2 openssh-server \
-        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-        tzdata mc wireless-tools usbutils \
-        i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq \
-        memtester apt-utils dialog locales \
-        python3-minimal unzip minicom iw ppp libmodbus5 \
-        ssmtp moreutils firmware-realtek liblog4cpp5v5 logrotate \
-        libnss-mdns kmod linux-image-${KERNEL_FLAVOUR} \
-        systemd-sysv
+    chr_apt_install -f task-wb-additional-pkgs
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -328,14 +319,7 @@ mkdir ${OUTPUT}/mnt/data
 echo "Install wb-essential (with wb-configs)"
 chr_apt_install wb-essential
 
-echo "Install packages from contactless repo"
-pkgs=(
-    cmux hubpower python-wb-io modbus-utils busybox
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
-    openssl ca-certificates avahi-daemon pps-tools device-tree-compiler
-)
-
-chr_apt_install "${pkgs[@]}" wb-mqtt-confed
+chr_apt_install task-wb-contactless-pkgs
 chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
