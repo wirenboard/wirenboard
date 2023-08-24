@@ -190,7 +190,9 @@ install_contactless_repo() {
 
 	echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
-    wget -O "${OUTPUT}${KEYRING_TMP}" https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg
+
+    gpg1 --no-default-keyring --keyring "${OUTPUT}${KEYRING_TMP}" --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
+    chmod 0644 "${OUTPUT}${KEYRING_TMP}"
     echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
 	
     chr_apt_update
