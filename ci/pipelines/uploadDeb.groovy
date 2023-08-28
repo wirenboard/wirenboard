@@ -4,29 +4,42 @@ Map uploadJobs = [
 ]
 
 pipeline {
-  agent any
+  agent {
+    label 'devenv'
+  }
   parameters {
     stashedFile 'upload.deb'
     choice(name: 'REPO', choices: ['release', 'devtools'], description: 'which repo to publish to')
     booleanParam(name: 'FORCE_OVERWRITE', defaultValue: false,
                  description: 'use only you know what you are doing, replace existing version of package')
   }
+  environment {
+    FILES_DIR = "files"
+  }
   stages {
-    stage('Setup deploy') {
+    stage('Cleanup workspace') {
       steps {
-        script {
-          unstash 'upload.deb'
-          def deployArgs = [
-            forceOverwrite: params.FORCE_OVERWRITE,
-            uploadJob: uploadJobs[params.REPO],
-            aptlyConfig: params.REPO + "-aptly-config",
-            filesFilter: "*.deb",
-            withGithubRelease: false
-          ]
-
-          wbDeploy(deployArgs)
-        }
+        cleanWs deleteDirs: true, patterns: [[pattern: "$FILES_DIR", type: 'INCLUDE']]
       }
+    }
+    stage('Prepare file') {
+      steps { dir("$FILES_DIR") {
+        unstash 'upload.deb'
+        sh 'wbdev user dpkg-name upload.deb'
+      }}
+    }
+    stage('Setup deploy') {
+      steps { script {
+        def deployArgs = [
+          forceOverwrite: params.FORCE_OVERWRITE,
+          uploadJob: uploadJobs[params.REPO],
+          aptlyConfig: params.REPO + "-aptly-config",
+          filesFilter: "$FILES_DIR/*.deb",
+          withGithubRelease: false
+        ]
+
+        wbDeploy(deployArgs)
+      }}
     }
   }
 }

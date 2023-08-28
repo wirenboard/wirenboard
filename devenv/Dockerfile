@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.vendor="Wiren Board team"
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update && apt install -y curl wget gnupg && \
-    curl -fsSL https://github.com/wirenboard/keyring/raw/master/keyrings/contactless-keyring.gpg > \
+    curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
        /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
@@ -32,7 +32,7 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
        clang-format \
     # for image building \
-    fdisk u-boot-tools fit-aligner \
+    fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
     rsync  \
     # legacy requirement for go-required packages \
@@ -40,7 +40,9 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     # for Jenkins python checks \
     pylint black python3-isort \
     # for Jenkins deployments \
-    python3-wbci s3cmd
+    python3-wbci s3cmd \
+    # to install fpm later for simple package building \
+    ruby-rubygems && gem install fpm
 
 
 # FIXME: we should not install anything with --force-yes

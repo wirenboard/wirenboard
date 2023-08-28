@@ -5,7 +5,7 @@ export DTB=/boot/dtbs/sun8i-r40-wirenboard72x-initram.dtb
 board_include soc_sun8i_r40.sh
 
 board_install() {
-    chr_apt dropbear mmc-utils rsync dosfstools fdisk
+    chr_apt dropbear mmc-utils rsync dosfstools util-linux openssl libateccssl1.1
 
 	set_fdt sun8i-r40-wirenboard72x-initram
 }
