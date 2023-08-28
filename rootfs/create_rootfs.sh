@@ -304,7 +304,7 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt_install -f linux-image-${KERNEL_FLAVOUR}, task-wb-additional-pkgs
+    chr_apt_install -f linux-image-${KERNEL_FLAVOUR} task-wb-additional-pkgs
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
