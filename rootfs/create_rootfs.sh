@@ -322,7 +322,6 @@ mkdir ${OUTPUT}/mnt/data
 echo "Install wb-essential (with wb-configs)"
 chr_apt_install wb-essential
 
-chr_apt_install task-wb-contactless-pkgs
 chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
