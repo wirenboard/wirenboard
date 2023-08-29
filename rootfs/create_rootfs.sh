@@ -307,7 +307,21 @@ EOM
 
     echo "Install additional packages"
     chr_apt_update
-    chr_apt_install -f task-wb-base-system linux-image-${KERNEL_FLAVOUR} 
+        if apt-cache show task-wb-base-system &> /dev/null ; then
+        #echo "new_way of install"
+    chr_apt_install -f task-wb-base-system linux-image-${KERNEL_FLAVOUR}
+    else
+        #echo "old_way of install"
+    chr_apt_install -f netbase ifupdown \
+        iproute2 openssh-server \
+        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
+        tzdata mc wireless-tools usbutils \
+        i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq \
+        memtester apt-utils dialog locales \
+        python3-minimal unzip minicom iw ppp libmodbus5 \
+        ssmtp moreutils firmware-realtek logrotate libnss-mdns kmod \
+        linux-image-${KERNEL_FLAVOUR} systemd-sysv
+    fi
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -344,7 +358,16 @@ EOF
 }
 
 wb-common_install() {
-	chr_apt_install task-wb-common-pkgs
+	  if apt-cache show task-wb-common-pkgs &> /dev/null ; then
+        chr_apt_install task-wb-common-pkgs
+    else
+    chr_apt_install -f cmux hubpower python-wb-io modbus-utils \
+        busybox libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients \
+        openssl ca-certificates avahi-daemon pps-tools device-tree-compiler \
+        libateccssl1.1 knxd knxd-tools wb-suite netplug \
+        hostapd bluez can-utils u-boot-tools-wb \
+        cron bluez-hcidump
+    fi
 }
 
 [[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"
