@@ -307,7 +307,7 @@ EOM
 
     echo "Install additional packages"
     chr_apt_update
-        if apt-cache show task-wb-base-system ; then # &> /dev/null ; then
+        if chr apt-cache show task-wb-base-system ; then # &> /dev/null ; then
         echo "new_way of install, task-wb-base-system"
     chr_apt_install -f task-wb-base-system
     else
@@ -358,7 +358,7 @@ EOF
 }
 
 wb-common_install() {
-	  if apt-cache show task-wb-common-pkgs &> /dev/null ; then
+	  if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
         echo "new_way of install, task-wb-common-pkgs"
         chr_apt_install task-wb-common-pkgs
     else
