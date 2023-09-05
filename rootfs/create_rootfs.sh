@@ -307,11 +307,9 @@ EOM
 
     echo "Install additional packages"
     chr_apt_update
-        if chr apt-cache show task-wb-base-system ; then # &> /dev/null ; then
-        echo "new_way of install, task-wb-base-system"
+        if chr apt-cache show task-wb-base-system &> /dev/null ; then
     chr_apt_install -f task-wb-base-system
     else
-        echo "old_way of install"
     chr_apt_install -f netbase ifupdown \
         iproute2 openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
@@ -359,7 +357,6 @@ EOF
 
 wb-common_install() {
 	  if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
-        echo "new_way of install, task-wb-common-pkgs"
         chr_apt_install task-wb-common-pkgs
     else
     chr_apt_install -f cmux hubpower python-wb-io modbus-utils \
