@@ -309,7 +309,7 @@ EOM
     chr_apt_update
         if apt-cache show task-wb-base-system &> /dev/null ; then
         #echo "new_way of install"
-    chr_apt_install -f linux-image-${KERNEL_FLAVOUR} task-wb-base-system
+    chr_apt_install -f task-wb-base-system
     else
         #echo "old_way of install"
     chr_apt_install -f netbase ifupdown \
@@ -320,7 +320,7 @@ EOM
         memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
         ssmtp moreutils firmware-realtek logrotate libnss-mdns kmod \
-        linux-image-${KERNEL_FLAVOUR} systemd-sysv
+        systemd-sysv
     fi
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
@@ -334,7 +334,7 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install wb-essential (with wb-configs)"
-chr_apt_install wb-essential
+chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
 
 chr_apt_update
 # stop mosquitto on host
