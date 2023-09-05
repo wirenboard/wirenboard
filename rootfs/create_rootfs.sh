@@ -309,7 +309,7 @@ EOM
     chr_apt_update
         if apt-cache show task-wb-base-system &> /dev/null ; then
         #echo "new_way of install"
-    chr_apt_install -f task-wb-base-system linux-image-${KERNEL_FLAVOUR}
+    chr_apt_install -f linux-image-${KERNEL_FLAVOUR} task-wb-base-system
     else
         #echo "old_way of install"
     chr_apt_install -f netbase ifupdown \
