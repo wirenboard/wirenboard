@@ -307,10 +307,11 @@ EOM
 
     echo "Install additional packages"
     chr_apt_update
-        if chr apt-cache show task-wb-base-system &> /dev/null ; then
-    chr_apt_install -f task-wb-base-system
+
+    if chr apt-cache show task-wb-base-system &> /dev/null ; then
+        chr_apt_install -f task-wb-base-system
     else
-    chr_apt_install -f netbase ifupdown \
+        chr_apt_install -f netbase ifupdown \
         iproute2 openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
         tzdata mc wireless-tools usbutils \
@@ -325,7 +326,6 @@ EOM
 	pushd ${OUTPUT}
 	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
 	popd
-
 fi
 
 echo "Creating /mnt/data mountpoint"
@@ -356,10 +356,10 @@ EOF
 }
 
 wb-common_install() {
-	  if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
+    if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
         chr_apt_install task-wb-common-pkgs
     else
-    chr_apt_install -f cmux hubpower python-wb-io modbus-utils \
+        chr_apt_install -f cmux hubpower python-wb-io modbus-utils \
         busybox libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients \
         openssl ca-certificates avahi-daemon pps-tools device-tree-compiler \
         libateccssl1.1 knxd knxd-tools wb-suite netplug \
