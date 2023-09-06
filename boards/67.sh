@@ -5,7 +5,7 @@ export DTB=/boot/dtbs/imx6ul-wirenboard670.dtb
 board_include soc_imx6ul.sh
 
 board_install() {
-	install_wb5_packages
+	wb-common_install
 
 	set_fdt imx6ul-wirenboard670
 }

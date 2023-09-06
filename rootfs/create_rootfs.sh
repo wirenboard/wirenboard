@@ -182,12 +182,6 @@ install_contactless_repo() {
     local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
-    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-		echo "Install gnupg"
-		chr apt-get update
-		chr apt-get install -y gnupg1
-	fi
-
 	echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
 
@@ -196,7 +190,7 @@ install_contactless_repo() {
     echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
 	
     chr_apt_update
-    chr_apt_install contactless-keyring
+    chr_apt_install gnupg1 contactless-keyring
 
     echo "deb $FULL_REPO_URL $WB_RELEASE main" > ${APT_LIST_TMP_FNAME}
     rm -f "${OUTPUT}${KEYRING_TMP}"
@@ -312,18 +306,21 @@ EOM
 	chr update-locale
 
     echo "Install additional packages"
-    chr_apt_install netbase ifupdown \
+    chr_apt_update
+
+    if chr apt-cache show task-wb-base-system &> /dev/null ; then
+        chr_apt_install -f task-wb-base-system
+    else
+        chr_apt_install -f netbase ifupdown \
         iproute2 openssh-server \
         iputils-ping wget udev net-tools ntpdate ntp vim nano less \
         tzdata mc wireless-tools usbutils \
         i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq \
         memtester apt-utils dialog locales \
         python3-minimal unzip minicom iw ppp libmodbus5 \
-        ssmtp moreutils firmware-realtek
-
-	if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-        chr_apt_install --force-yes liblog4cpp5v5 logrotate
-        fi
+        ssmtp moreutils firmware-realtek logrotate libnss-mdns kmod \
+        systemd-sysv
+    fi
 
 	echo "Creating $ROOTFS_BASE_TARBALL"
 	pushd ${OUTPUT}
@@ -331,40 +328,17 @@ EOM
 	popd
 fi
 
-echo "Cleanup rootfs"
-chr_nofail dpkg -r geoip-database
-
 echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
-
-chr_apt_update
-
-echo "Install some packages before wb-essential (to preserve conffiles diversions in wb-configs)"
-chr_apt_install libnss-mdns kmod
 
 echo "Install wb-essential (with wb-configs)"
 chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
 
-echo "Install packages from contactless repo"
-pkgs=(
-    cmux hubpower python-wb-io modbus-utils busybox
-    libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients
-    openssl ca-certificates avahi-daemon pps-tools device-tree-compiler
-)
-
-chr_apt_update
-
-if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-    chr_apt_install systemd-sysv
-fi
-
-chr_apt_install "${pkgs[@]}"
 chr_apt_update
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 
 chr /usr/sbin/mosquitto -d -c /etc/mosquitto/mosquitto.conf
-chr_apt_install wb-mqtt-confed
 
 date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
 
@@ -381,16 +355,17 @@ fdt_file=/boot/dtbs/${1}.dtb
 EOF
 }
 
-install_wb5_packages() {
-    pkgs=(
-        wb-suite netplug hostapd bluez can-utils u-boot-tools-wb \
-		cron bluez-hcidump
-    )
-
-    if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-	chr_apt_install --force-yes libateccssl1.1 knxd knxd-tools
+wb-common_install() {
+    if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
+        chr_apt_install task-wb-common-pkgs
+    else
+        chr_apt_install -f cmux hubpower python-wb-io modbus-utils \
+        busybox libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients \
+        openssl ca-certificates avahi-daemon pps-tools device-tree-compiler \
+        libateccssl1.1 knxd knxd-tools wb-suite netplug \
+        hostapd bluez can-utils u-boot-tools-wb \
+        cron bluez-hcidump
     fi
-    chr_apt_install "${pkgs[@]}"
 }
 
 [[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"

@@ -5,7 +5,7 @@ export DTB=/boot/dtbs/sun8i-r40-wirenboard720.dtb
 board_include soc_sun8i_r40.sh
 
 board_install() {
-	install_wb5_packages
+	wb-common_install
 
 	set_fdt sun8i-r40-wirenboard720
 }
