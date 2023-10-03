@@ -17,7 +17,7 @@ do_build_sbuild_env() {
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
 
-	REPO="http://deb.debian.org/debian"
+	REPO="http://debian-mirror.wirenboard.com/debian"
 	if [[ "$RELEASE" = "stretch" ]]; then
 		REPO="http://archive.debian.org/debian"
 	fi
@@ -57,7 +57,7 @@ Pin: release a=stretch-backports
 Pin-Priority: 510
 EOF
 	elif [[ "$RELEASE" = "bullseye" ]]; then
-		echo "deb http://deb.debian.org/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
+		echo "deb http://debian-mirror.wirenboard.com/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
         cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
 Package: libnm0 libmbim-*:any libqmi-*:any gir1.2-mbim-1.0 git1.2-qmi-1.0
 Pin: release a=bullseye-backports
