@@ -3,7 +3,7 @@ wirenboard
 
 WirenBoard-specific software packages, tools and default configs to make rootfs, hardware stuff, development environment and so on.
 
-Check out http://www.contactless.ru/wirenboard for details about Wiren Board
+Check out https://wirenboard.com/en/ for details about Wiren Board
 
 Development Environment
 =======================
@@ -182,7 +182,7 @@ To update wbdev image and wbdev script, use the following commands
 
 ```
 docker pull contactless/devenv
-wget -O /path/to/your/wbdev-script https://raw.githubusercontent.com/contactless/wirenboard/master/wbdev
+wget -O /path/to/your/wbdev-script https://raw.githubusercontent.com/wirenboard/wirenboard/master/wbdev
 ```
 
 VSCode building and debugging 
@@ -200,7 +200,7 @@ Split repositories
 ==================
 
 Following directories from this repository were moved to separate repositories:
-* [common](https://github.com/contactless/wb-common)
-* [configs](https://github.com/contactless/wb-configs)
-* [utils](https://github.com/contactless/wb-utils)
-* [system\_rules](https://github.com/contactless/wb-rules-system)
+* [common](https://github.com/wirenboard/wb-common)
+* [configs](https://github.com/wirenboard/wb-configs)
+* [utils](https://github.com/wirenboard/wb-utils)
+* [system\_rules](https://github.com/wirenboard/wb-rules-system)

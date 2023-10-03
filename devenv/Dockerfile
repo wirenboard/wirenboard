@@ -16,7 +16,7 @@ RUN apt update && apt install -y curl wget gnupg && \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
     \
     # Low-priority testing repo for pinning pylint \
-    echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/testing.list && \
+    echo "deb http://debian-mirror.wirenboard.com/debian testing main" > /etc/apt/sources.list.d/testing.list && \
     echo 'Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
 Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: release a=testing\nPin-Priority: 900' > \
        /etc/apt/preferences.d/pylint-from-testing.pref && \
