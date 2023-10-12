@@ -2,6 +2,23 @@
 set -u -e
 cd /root
 
+KNOWN_BUILD_DEPS=(
+    # test-suite-ng
+    dh-python
+    python3-all
+    python3-libgpiod
+    python3-numpy
+    python3-pil
+    python3-qrcode
+    python3-pymysql
+    python3-pytest
+    python3-semantic-version
+    python3-testinfra
+    python3-tqdm
+    python3-usb
+    python3-wb-mcu-fw-updater
+)
+
 do_build() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
@@ -16,6 +33,9 @@ do_build_sbuild_env() {
 	export RELEASE=$1
 	export ROOTFS="/srv/chroot/sbuild-${RELEASE}-cross"
 	export CHROOT_NAME="${RELEASE}-amd64-sbuild"
+
+	shift
+	local ADD_PACKAGES=("$@")
 
 	REPO="http://debian-mirror.wirenboard.com/debian"
 	if [[ "$RELEASE" = "stretch" ]]; then
@@ -68,7 +88,9 @@ EOF
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install multi-arch common build dependencies 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go node-rimraf python3-jinja2
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
+		libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go node-rimraf python3-jinja2 \
+		"${ADD_PACKAGES[@]}"
 
 	#virtualization support packages
 	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
@@ -108,7 +130,7 @@ do_build stretch armhf 6x wb6
 do_build bullseye armhf 6x wb6
 
 do_build_sbuild_env stretch 
-do_build_sbuild_env bullseye
+do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash
