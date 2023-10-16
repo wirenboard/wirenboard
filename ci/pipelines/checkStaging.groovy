@@ -49,21 +49,26 @@ pipeline {
             steps {
                 script {
                     def targets = params.BOARDS.split(' ')
+                    def jobs = [:]
 
                     for (target in targets) {
                         def currentTarget = target
-                        stage("Build image for ${currentTarget}") {
-                            build job: 'pipelines/build-image', wait: true, parameters: [
-                                string(name: 'DEBIAN_RELEASE', value: params.DEBIAN_RELEASE),
-                                string(name: 'BOARD', value: currentTarget),
-                                string(name: 'WB_TARGET', value: 'all'),
-                                string(name: 'WB_RELEASE', value: 'staging'),
-                                string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
-                                string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
-                                booleanParam(name: 'SAVE_ARTIFACTS', value: false)
-                            ]
+                        jobs["build ${currentTarget}"] = {
+                            stage("Build image for ${currentTarget}") {
+                                build job: 'pipelines/build-image', wait: true, parameters: [
+                                    string(name: 'DEBIAN_RELEASE', value: params.DEBIAN_RELEASE),
+                                    string(name: 'BOARD', value: currentTarget),
+                                    string(name: 'WB_TARGET', value: 'all'),
+                                    string(name: 'WB_RELEASE', value: 'staging'),
+                                    string(name: 'WIRENBOARD_BRANCH', value: params.WIRENBOARD_BRANCH),
+                                    string(name: 'WBDEV_IMAGE', value: params.WBDEV_IMAGE),
+                                    booleanParam(name: 'SAVE_ARTIFACTS', value: false)
+                                ]
+                            }
                         }
                     }
+
+                    parallel jobs
                 }
             }
         }
