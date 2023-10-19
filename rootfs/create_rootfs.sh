@@ -13,26 +13,25 @@ WB_RELEASE=${WB_RELEASE:-stable}
 DEFAULT_ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$DEBIAN_RELEASE}
 DEFAULT_ADD_REPO_COMPONENT=${ADD_REPO_COMPONENT:-"main"}
 
-if [[ ( "$#" < 1)  ]]
-then
-  echo "USAGE: $0 <BOARD> [list of additional repos]"
-  echo ""
-  echo "Environment variables:"
-  echo -e "\tROOTFS\tOverrides default rootfs path"
-  echo -e "\tWB_REPO\tOverrides default repository URL (default '$WB_REPO')"
-  echo -e "\tWB_REPO_PREFIX\tOverrides default repository prefix after URL (default '$WB_REPO_PREFIX')"
-  echo -e "\tWB_RELEASE\tOverrides default release (default '$WB_RELEASE')"
-  echo -e "\tWB_TEMP_REPO\tSet to 'true' if default repository will be unavailable after build"
-  echo -e "\tDEBIAN_RELEASE\tSets Debian release (default '$DEBIAN_RELEASE')"
-  echo ""
-  echo "How to use additional repos:"
-  echo -e "\t $0 <BOARD> \"http://localhost:8086/\" [more repos...]"
-  echo -e "By default, repos  will be expanded as"
-  echo -e "\t \"deb <repo_address> ${DEFAULT_ADD_REPO_RELEASE} ${DEFAULT_ADD_REPO_COMPONENT}\"."
-  echo -e "Repository will be added with [trusted=yes], so no key is required."
-  echo -e "\nYou can specify release and component like this (optional):"
-  echo -e "\t \"http://example.com/path/to@release:component\""
-  exit 1
+if [[ ( "$#" < 1)  ]]; then
+    echo "USAGE: $0 <BOARD> [list of additional repos]"
+    echo ""
+    echo "Environment variables:"
+    echo -e "\tROOTFS\tOverrides default rootfs path"
+    echo -e "\tWB_REPO\tOverrides default repository URL (default '$WB_REPO')"
+    echo -e "\tWB_REPO_PREFIX\tOverrides default repository prefix after URL (default '$WB_REPO_PREFIX')"
+    echo -e "\tWB_RELEASE\tOverrides default release (default '$WB_RELEASE')"
+    echo -e "\tWB_TEMP_REPO\tSet to 'true' if default repository will be unavailable after build"
+    echo -e "\tDEBIAN_RELEASE\tSets Debian release (default '$DEBIAN_RELEASE')"
+    echo ""
+    echo "How to use additional repos:"
+    echo -e "\t $0 <BOARD> \"http://localhost:8086/\" [more repos...]"
+    echo -e "By default, repos  will be expanded as"
+    echo -e "\t \"deb <repo_address> ${DEFAULT_ADD_REPO_RELEASE} ${DEFAULT_ADD_REPO_COMPONENT}\"."
+    echo -e "Repository will be added with [trusted=yes], so no key is required."
+    echo -e "\nYou can specify release and component like this (optional):"
+    echo -e "\t \"http://example.com/path/to@release:component\""
+    exit 1
 fi
 
 # flag showing usage of additional repo
@@ -54,13 +53,13 @@ WB_TARGET=${WB_TARGET:-"${REPO_PLATFORM}/${DEBIAN_RELEASE}"}
 [[ -e "$OUTPUT" ]] && die "output rootfs folder $OUTPUT already exists, exiting"
 
 [[ -n "$__unshared" ]] || {
-	[[ $EUID == 0 ]] || {
-		exec sudo -E "$0" "$@"
-	}
+    [[ $EUID == 0 ]] || {
+        exec sudo -E "$0" "$@"
+    }
 
-	# Jump into separate namespace
-	export __unshared=1
-	exec unshare -umi "$0" "$@"
+    # Jump into separate namespace
+    export __unshared=1
+    exec unshare -umi "$0" "$@"
 }
 
 
@@ -137,7 +136,7 @@ setup_additional_repos() {
 
     mkdir -p `dirname $ADD_REPO_FILE`
     echo > $ADD_REPO_FILE
-	echo > $ADD_REPO_PIN_FILE
+	  echo > $ADD_REPO_PIN_FILE
     for repo in "${@}"; do
         parse_repo_entry $repo
 
@@ -146,7 +145,7 @@ setup_additional_repos() {
 
 		echo "Setup pinning"
 		decode_release_item() {
-			wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "^$1: \K.*$"
+        wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "^$1: \K.*$"
 		}
 
 		local o="$(decode_release_item Origin)"
@@ -160,29 +159,27 @@ setup_additional_repos() {
 		echo >> ${ADD_REPO_PIN_FILE} # mandatory newline
     done
 
-	echo "Addtitional repo $ADD_REPO_FILE contents:"
-	cat  $ADD_REPO_FILE
-	echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
-	cat  $ADD_REPO_PIN_FILE
+    echo "Addtitional repo $ADD_REPO_FILE contents:"
+    cat  $ADD_REPO_FILE
+    echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
+    cat  $ADD_REPO_PIN_FILE
 
 }
 
 run_additional_script() {
-
     if [ ${ADDITIONAL_SCRIPT} ]; then
-	echo "Additional script $ADDITIONAL_SCRIPT detected, running"
-	cp $ADDITIONAL_SCRIPT $OUTPUT/additional
-	chr /additional
-	rm $OUTPUT/additional
+        echo "Additional script $ADDITIONAL_SCRIPT detected, running"
+        cp $ADDITIONAL_SCRIPT $OUTPUT/additional
+        chr /additional
+        rm $OUTPUT/additional
     fi
-
 }
 
 install_contactless_repo() {
     local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
-	echo "Install initial repos"
+	  echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
 
     gpg1 --no-default-keyring --keyring "${OUTPUT}${KEYRING_TMP}" --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
@@ -202,13 +199,13 @@ echo "Install dependencies"
 apt-get install -y qemu-user-static binfmt-support || true
 
 if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
-	echo "Using existing $ROOTFS_BASE_TARBALL"
-	rm -rf $OUTPUT
-	mkdir -p $OUTPUT
-	tar xpf $ROOTFS_BASE_TARBALL -C ${OUTPUT}
+    echo "Using existing $ROOTFS_BASE_TARBALL"
+    rm -rf $OUTPUT
+    mkdir -p $OUTPUT
+    tar xpf $ROOTFS_BASE_TARBALL -C ${OUTPUT}
 
-	prepare_chroot
-	services_disable
+    prepare_chroot
+    services_disable
 
     # setup additional repositories
     if $USE_EXPERIMENTAL; then
@@ -216,34 +213,33 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
         setup_additional_repos $ADD_REPOS
     fi
 
-	echo "Updating"
-	chr apt-get update
-
-	chr apt-get -y upgrade
+    echo "Updating"
+    chr apt-get update
+    chr apt-get -y upgrade
 
 else
-	echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
-	#~ exit
-	debootstrap \
-		--foreign \
-		--verbose \
-		--arch $ARCH \
-		--variant=minbase \
-		${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
+    echo "No $ROOTFS_BASE_TARBALL found, will create one for later use"
+    #~ exit
+    debootstrap \
+        --foreign \
+        --verbose \
+        --arch $ARCH \
+        --variant=minbase \
+        ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
-	echo "Copy qemu to rootfs"
-	cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
-	cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
-	modprobe binfmt_misc || true
+    echo "Copy qemu to rootfs"
+    cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
+    cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+    modprobe binfmt_misc || true
 
-	# kludge to fix ssmtp configure that breaks when FQDN is unknown
-	echo "127.0.0.1       wirenboard localhost" > ${OUTPUT}/etc/hosts
-	echo "::1     localhost ip6-localhost ip6-loopback" >> ${OUTPUT}/etc/hosts
-	echo "fe00::0     ip6-localnet" >> ${OUTPUT}/etc/hosts
-	echo "ff00::0     ip6-mcastprefix" >> ${OUTPUT}/etc/hosts
-	echo "ff02::1     ip6-allnodes" >> ${OUTPUT}/etc/hosts
-	echo "ff02::2     ip6-allrouters" >> ${OUTPUT}/etc/hosts
-	echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
+    # kludge to fix ssmtp configure that breaks when FQDN is unknown
+    echo "127.0.0.1       wirenboard localhost" > ${OUTPUT}/etc/hosts
+    echo "::1     localhost ip6-localhost ip6-loopback" >> ${OUTPUT}/etc/hosts
+    echo "fe00::0     ip6-localnet" >> ${OUTPUT}/etc/hosts
+    echo "ff00::0     ip6-mcastprefix" >> ${OUTPUT}/etc/hosts
+    echo "ff02::1     ip6-allnodes" >> ${OUTPUT}/etc/hosts
+    echo "ff02::2     ip6-allrouters" >> ${OUTPUT}/etc/hosts
+    echo "127.0.0.2 $(hostname)" >> ${OUTPUT}/etc/hosts
 
     echo "Delete unused locales"
     /bin/sh -c "find ${OUTPUT}/usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en' ! -name 'ru*' | xargs rm -r"
@@ -263,22 +259,21 @@ path-exclude /usr/share/lintian/*
 path-exclude /usr/share/linda/*
 EOM
 
-	echo "Second debootstrap stage"
-	chr /debootstrap/debootstrap --second-stage
+    echo "Second debootstrap stage"
+    chr /debootstrap/debootstrap --second-stage
 
-	prepare_chroot
-	services_disable
+    prepare_chroot
+    services_disable
 
-	echo "Set root password"
-	chr /bin/sh -c "echo root:wirenboard | chpasswd"
-        echo "Install primary sources.list"
-        echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
+    echo "Set root password"
+    chr /bin/sh -c "echo root:wirenboard | chpasswd"
+    echo "Install primary sources.list"
+    echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
-        if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
-			echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-			echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
+    if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
+		  	echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+			  echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
 		fi
-
 
     install_contactless_repo
     # apt pin
@@ -287,23 +282,23 @@ EOM
     echo "Pin: release o=wirenboard, a=$WB_RELEASE" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-	board_override_repos
+  	board_override_repos
 
     # setup additional repositories
     echo "Install additional repos"
     setup_additional_repos ${@:2}
 
-	echo "Update&upgrade apt"
+	  echo "Update & upgrade apt"
 
-	chr apt-get -y --force-yes upgrade
+	  chr apt-get -y --force-yes upgrade
 
-	echo "Setup locales"
+	  echo "Setup locales"
     chr_apt_install locales
-	echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
-	echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
-	echo "ru_RU.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
-	chr /usr/sbin/locale-gen
-	chr update-locale
+    echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
+    echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
+    echo "ru_RU.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
+    chr /usr/sbin/locale-gen
+    chr update-locale
 
     echo "Install additional packages"
     chr_apt_update
@@ -322,10 +317,10 @@ EOM
         systemd-sysv
     fi
 
-	echo "Creating $ROOTFS_BASE_TARBALL"
-	pushd ${OUTPUT}
-	tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
-	popd
+    echo "Creating $ROOTFS_BASE_TARBALL"
+    pushd ${OUTPUT}
+    tar czpf $ROOTFS_BASE_TARBALL --one-file-system ./
+    popd
 fi
 
 echo "Creating /mnt/data mountpoint"
@@ -373,11 +368,11 @@ wb-common_install() {
 board_install
 
 if chr [ -f /var/run/mosquitto.pid ]; then
-	# trigger saving persistence db to disk
-	echo "saving persistence"
-	chr cat /var/run/mosquitto.pid || true
-	ps aux | grep mosquitto
-	chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
+    # trigger saving persistence db to disk
+    echo "saving persistence"
+    chr cat /var/run/mosquitto.pid || true
+    ps aux | grep mosquitto
+    chr /bin/bash -c 'kill "`cat /var/run/mosquitto.pid`"'
 fi
 
 echo 'remove additional repo files'
@@ -386,7 +381,7 @@ rm -rf $ADD_REPO_PIN_FILE
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
 if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-	rm -f ${OUTPUT}/etc/apt/sources.list
+	  rm -f ${OUTPUT}/etc/apt/sources.list
 fi
 
 # removing SSH host keys
