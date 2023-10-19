@@ -403,6 +403,10 @@ fi
 
 run_additional_script
 
+if [ ${ROOTFS_CUSTOM_TAG} ]; then
+    echo "${ROOTFS_CUSTOM_TAG}" > ${OUTPUT}/etc/wb-fw-custom
+fi
+
 echo "cleanup apt caches"
 chr apt-get clean
 rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
