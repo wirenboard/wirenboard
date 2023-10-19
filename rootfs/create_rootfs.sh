@@ -98,7 +98,7 @@ check_additional_repos() {
         parse_repo_entry $repo
         echo "Checking presence of repo $repo"
 
-		wget "${repo_url}/dists/${repo_release}/Release" -O- >/dev/null || {
+    wget "${repo_url}/dists/${repo_release}/Release" -O- >/dev/null || {
             echo "> Can't access repo $repo, check everything again"
             exit 3
         }
@@ -136,27 +136,26 @@ setup_additional_repos() {
 
     mkdir -p `dirname $ADD_REPO_FILE`
     echo > $ADD_REPO_FILE
-	  echo > $ADD_REPO_PIN_FILE
+    echo > $ADD_REPO_PIN_FILE
     for repo in "${@}"; do
         parse_repo_entry $repo
-
         echo "=> Setup additional repository $repo..."
         echo "deb [trusted=yes] $repo_url $repo_release $repo_component" >> $ADD_REPO_FILE
+        echo "Setup pinning"
 
-		echo "Setup pinning"
-		decode_release_item() {
-        wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "^$1: \K.*$"
-		}
+        decode_release_item() {
+            wget "${repo_url}/dists/${repo_release}/Release" -O- | head | grep -P -o "^$1: \K.*$"
+        }
 
-		local o="$(decode_release_item Origin)"
-		local l="$(decode_release_item Label)"
-		local n="$(decode_release_item Codename)"
-		local a="$(decode_release_item Suite)"
+        local o="$(decode_release_item Origin)"
+        local l="$(decode_release_item Label)"
+        local n="$(decode_release_item Codename)"
+        local a="$(decode_release_item Suite)"
 
-		echo "Package: *" >> ${ADD_REPO_PIN_FILE}
-		echo "Pin: release o=$o,l=$l,a=$a,n=$n" >> ${ADD_REPO_PIN_FILE}
-		echo "Pin-Priority: 1001" >> ${ADD_REPO_PIN_FILE}  # allow downgrade to these versions
-		echo >> ${ADD_REPO_PIN_FILE} # mandatory newline
+        echo "Package: *" >> ${ADD_REPO_PIN_FILE}
+        echo "Pin: release o=$o,l=$l,a=$a,n=$n" >> ${ADD_REPO_PIN_FILE}
+        echo "Pin-Priority: 1001" >> ${ADD_REPO_PIN_FILE}  # allow downgrade to these versions
+        echo >> ${ADD_REPO_PIN_FILE} # mandatory newline
     done
 
     echo "Addtitional repo $ADD_REPO_FILE contents:"
@@ -179,13 +178,13 @@ install_contactless_repo() {
     local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
-	  echo "Install initial repos"
+    echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
 
     gpg1 --no-default-keyring --keyring "${OUTPUT}${KEYRING_TMP}" --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
     chmod 0644 "${OUTPUT}${KEYRING_TMP}"
     echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
-	
+
     chr_apt_update
     chr_apt_install gnupg1 contactless-keyring
 
@@ -271,9 +270,9 @@ EOM
     echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
     if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
-		  	echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-			  echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
-		fi
+        echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+        echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
+    fi
 
     install_contactless_repo
     # apt pin
@@ -282,17 +281,17 @@ EOM
     echo "Pin: release o=wirenboard, a=$WB_RELEASE" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-  	board_override_repos
+    board_override_repos
 
     # setup additional repositories
     echo "Install additional repos"
     setup_additional_repos ${@:2}
 
-	  echo "Update & upgrade apt"
+    echo "Update & upgrade apt"
 
-	  chr apt-get -y --force-yes upgrade
+    chr apt-get -y --force-yes upgrade
 
-	  echo "Setup locales"
+    echo "Setup locales"
     chr_apt_install locales
     echo "en_GB.UTF-8 UTF-8" > ${OUTPUT}/etc/locale.gen
     echo "en_US.UTF-8 UTF-8" >> ${OUTPUT}/etc/locale.gen
@@ -381,7 +380,7 @@ rm -rf $ADD_REPO_PIN_FILE
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
 if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-	  rm -f ${OUTPUT}/etc/apt/sources.list
+    rm -f ${OUTPUT}/etc/apt/sources.list
 fi
 
 # removing SSH host keys
