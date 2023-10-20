@@ -44,6 +44,11 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     # to install fpm later for simple package building \
     ruby-rubygems && gem install fpm
 
+# install common build-dependencies
+# TODO: remove it after full migration to sbuild
+COPY common-deps.sh /root/
+RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -y --force-yes ${COMMON_DEPS[@]}'
+
 
 # FIXME: we should not install anything with --force-yes
 
