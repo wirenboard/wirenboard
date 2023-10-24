@@ -2,22 +2,7 @@
 set -u -e
 cd /root
 
-KNOWN_BUILD_DEPS=(
-    # test-suite-ng
-    dh-python
-    python3-all
-    python3-libgpiod
-    python3-numpy
-    python3-pil
-    python3-qrcode
-    python3-pymysql
-    python3-pytest
-    python3-semantic-version
-    python3-testinfra
-    python3-tqdm
-    python3-usb
-    python3-wb-mcu-fw-updater
-)
+source /root/common-deps.sh
 
 do_build() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
