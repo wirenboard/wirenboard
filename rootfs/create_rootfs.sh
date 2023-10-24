@@ -402,7 +402,7 @@ fi
 
 run_additional_script
 
-if [ ${ROOTFS_CUSTOM_TAG} ]; then
+if [ -n "${ROOTFS_CUSTOM_TAG}" ]; then
     echo "${ROOTFS_CUSTOM_TAG}" > ${OUTPUT}/etc/wb-fw-custom
 fi
 
