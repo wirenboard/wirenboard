@@ -14,23 +14,27 @@ DEFAULT_ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$DEBIAN_RELEASE}
 DEFAULT_ADD_REPO_COMPONENT=${ADD_REPO_COMPONENT:-"main"}
 
 if [[ ( "$#" < 1)  ]]; then
-    echo "USAGE: $0 <BOARD> [list of additional repos]"
-    echo ""
-    echo "Environment variables:"
-    echo -e "\tROOTFS\tOverrides default rootfs path"
-    echo -e "\tWB_REPO\tOverrides default repository URL (default '$WB_REPO')"
-    echo -e "\tWB_REPO_PREFIX\tOverrides default repository prefix after URL (default '$WB_REPO_PREFIX')"
-    echo -e "\tWB_RELEASE\tOverrides default release (default '$WB_RELEASE')"
-    echo -e "\tWB_TEMP_REPO\tSet to 'true' if default repository will be unavailable after build"
-    echo -e "\tDEBIAN_RELEASE\tSets Debian release (default '$DEBIAN_RELEASE')"
-    echo ""
-    echo "How to use additional repos:"
-    echo -e "\t $0 <BOARD> \"http://localhost:8086/\" [more repos...]"
-    echo -e "By default, repos  will be expanded as"
-    echo -e "\t \"deb <repo_address> ${DEFAULT_ADD_REPO_RELEASE} ${DEFAULT_ADD_REPO_COMPONENT}\"."
-    echo -e "Repository will be added with [trusted=yes], so no key is required."
-    echo -e "\nYou can specify release and component like this (optional):"
-    echo -e "\t \"http://example.com/path/to@release:component\""
+    cat <<EOF
+USAGE: $0 <BOARD> [list of additional repos]
+
+Environment variables:
+    ROOTFS         Overrides default rootfs path
+    WB_REPO        Overrides default repository URL (default '$WB_REPO')
+    WB_REPO_PREFIX Overrides default repository prefix after URL (default '$WB_REPO_PREFIX')
+    WB_RELEASE     Overrides default release (default '$WB_RELEASE')
+    WB_TEMP_REPO   Set to 'true' if default repository will be unavailable after build
+    DEBIAN_RELEASE Sets Debian release (default '$DEBIAN_RELEASE')
+
+How to use additional repos:
+    $0 <BOARD> "http://localhost:8086/" [more repos...]
+
+By default, repos will be expanded as
+    "deb <repo_address> ${DEFAULT_ADD_REPO_RELEASE} ${DEFAULT_ADD_REPO_COMPONENT}".
+Repository will be added with [trusted=yes], so no key is required.
+
+You can specify release and component like this (optional):
+    "http://example.com/path/to@release:component"
+EOF
     exit 1
 fi
 
