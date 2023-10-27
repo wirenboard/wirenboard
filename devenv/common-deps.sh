@@ -8,10 +8,12 @@ export KNOWN_BUILD_DEPS=(
     # test-suite-ng
     dh-python
     python3-all
+    python3-configargparse
     python3-libgpiod
     python3-numpy
     python3-pil
     python3-qrcode
+    python3-requests
     python3-pymysql
     python3-pytest
     python3-semantic-version
