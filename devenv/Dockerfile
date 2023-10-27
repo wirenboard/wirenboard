@@ -22,12 +22,12 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
        /etc/apt/preferences.d/pylint-from-testing.pref && \
     \
     apt update &&\
-    apt install -y --force-yes git debootstrap proot build-essential pkg-config debhelper \
+    apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
-       devscripts python3-virtualenv git equivs qemu-user-static binfmt-support node-rimraf \
+       devscripts python3-virtualenv equivs qemu-user-static binfmt-support node-rimraf \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
-       valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzop \
+       valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
        python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
        clang-format lintian \
