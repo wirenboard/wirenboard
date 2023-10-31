@@ -17,6 +17,8 @@ cleanup_chroot() {
     umount ${ROOTFS}/proc
     umount ${ROOTFS}/sys
 
+    echo "" > "$ROOTFS/etc/resolv.conf"
+
     services_enable
 
     return $ret
@@ -39,6 +41,10 @@ prepare_chroot() {
 	        ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 	    fi
 	fi
+
+	# remove /etc/resolv.conf from cache and use current system one instead
+	rm -f "${ROOTFS}/etc/resolv.conf"
+	cp /etc/resolv.conf "${ROOTFS}/etc/resolv.conf"
 
 	trap cleanup_chroot EXIT
 }
