@@ -27,8 +27,9 @@ do_build_sbuild_env() {
 		REPO="http://archive.debian.org/debian"
 	fi
 
-	sbuild-createchroot --include="crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} ${REPO}
 
+	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
