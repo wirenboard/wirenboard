@@ -68,6 +68,11 @@ bullseye-armhf|current-armhf)
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="bullseye"
     ;;
+bullseye-arm64|current-arm64|wb8)
+    WBDEV_TARGET_BOARD="wb8"
+    WBDEV_TARGET_ARCH="arm64"
+    WBDEV_TARGET_RELEASE="bullseye"
+    ;;
 bullseye-host|bullseye-amd64|current-amd64)
     WBDEV_TARGET_BOARD="host"
     WBDEV_TARGET_ARCH="amd64"
@@ -228,13 +233,20 @@ sbuild_buildpackage() {
         UNSTABLE_REPO_SPEC=""
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
-        STABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
+        local STABLE_REPO_SPEC=""
+
+        if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
+            echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build"
+            STABLE_REPO_SPEC="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
+        else
+            echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)"
+        fi
 
         local UNSTABLE_REPO_SPEC=""
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
             if platform_has_suite unstable $WB_REPO_PLATFORM; then
                 echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
-                UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
+                UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
             else
                 echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
             fi
@@ -298,6 +310,10 @@ case "$cmd" in
                 ;;
             armhf)
                 devsudo CC=arm-linux-gnueabihf-gcc dpkg-buildpackage -b -aarmhf -us -uc "$@"
+                ;;
+            *)
+                echo "Unsupported target arch: $WBDEV_TARGET_ARCH"
+                exit 1
                 ;;
         esac
         ;;
