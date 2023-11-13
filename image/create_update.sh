@@ -65,11 +65,15 @@ dtb_get_compatible() {
 
 if [[ -d "$ROOTFS" ]]; then
 	ROOTFS_TARBALL="$TMPDIR/rootfs.tar.gz"
+	EXTENDING_TOOLS_TARBALL="$TMPDIR/extending_tools.tar.gz"
 
 	echo "Creating rootfs tarball"
 	pushd "$ROOTFS" >/dev/null
 	sudo tar czp --numeric-owner ./ > "$ROOTFS_TARBALL" || die "tarball of $ROOTFS creation failed"
 	popd >/dev/null
+
+	echo "Creating rootfs extending tools tarball"
+	mv "$ROOTFS/var/lib/wb-image-update/deps.tar.gz" "$EXTENDING_TOOLS_TARBALL"
 elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
 fi
@@ -138,6 +142,7 @@ EOF
 	include dtb "$BOOT_DTB" "Update DTB" "type = \"flat_dt\"; arch = \"arm\";"
 	include install "$INSTALL_SCRIPT" "Installation script (bash)"
 	include rootfs "$ROOTFS_TARBALL" "Root filesystem tarball"
+	include extending_tools "$EXTENDING_TOOLS_TARBALL" "Tools tarball for rootfs extending"
 cat <<EOF
 	};
 	configurations {
