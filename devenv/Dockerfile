@@ -30,7 +30,7 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
        python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
-       clang-format lintian \
+       clang-format lintian ccache \
     # for image building \
     fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
@@ -87,6 +87,11 @@ COPY projects.list /
 COPY chr /usr/local/bin/
 COPY debootstrap-functions.diff /usr/share/debootstrap/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
+
+RUN mkdir -p /var/cache/ccache && chmod 777 /var/cache/ccache
+COPY schroot/fstab /etc/schroot/sbuild/fstab
+COPY schroot/copyfiles /etc/schroot/sbuild/copyfiles
+COPY schroot/ccache-setup /usr/local/bin/ccache-setup
 
 # patch a bug in debootstrap/functions, preventing schroot from working inside Docker 
 # see https://bugs.launchpad.net/ubuntu/+source/debootstrap/+bug/1948713

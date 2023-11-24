@@ -27,7 +27,8 @@ do_build_sbuild_env() {
 		REPO="http://archive.debian.org/debian"
 	fi
 
-	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
+    SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
@@ -105,17 +106,20 @@ EOF
 	#output everyting on screen instead of file
 	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf
 
+    # enable ccache wrapper
+    echo "command-prefix=/usr/local/bin/ccache-setup" >> "${SCHROOT_CONF}"
+
 	# set correct symlink to /dev/ptmx
 	rm -f ${ROOTFS}/dev/ptmx
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build stretch armel 58 wb2
-do_build stretch armhf 6x wb6
+#do_build stretch armel 58 wb2
+#do_build stretch armhf 6x wb6
 
-do_build bullseye armhf 6x wb6
+#do_build bullseye armhf 6x wb6
 
-do_build_sbuild_env stretch 
+#do_build_sbuild_env stretch 
 do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:

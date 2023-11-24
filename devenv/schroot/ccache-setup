@@ -1,0 +1,13 @@
+#!/bin/sh
+export CCACHE_DIR=/var/cache/ccache
+
+# skip ccache if the CCACHE_DIR does not exist
+if [ ! -d "$CCACHE_DIR" ]; then
+    exec "$@"
+fi
+
+export CCACHE_UMASK=002
+export CCACHE_COMPRESS=1
+unset CCACHE_HARDLINK
+export PATH="/usr/lib/ccache:$PATH"
+exec "$@"

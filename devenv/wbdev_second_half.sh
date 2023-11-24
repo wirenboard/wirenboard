@@ -49,6 +49,9 @@ elif [[ -z "$DEV_DIR" ]]; then
     VOLUMES="$VOLUMES -v $HOME:$VM_HOME -v ${PWD%/*}:$PREFIX"
 fi
 
+if [[ -n "$DEV_CCACHE_VOLUME" ]]; then
+    VOLUMES="$VOLUMES -v $DEV_CCACHE_VOLUME:/var/cache/ccache"
+fi
 
 ENV_CMDLINE=""
 for var in $(env | grep -o "WBDEV_[^=]*"); do

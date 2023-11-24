@@ -92,7 +92,9 @@ rm -f /.devdir $ROOTFS/.devdir
 if [ -n "$DEV_DIR" ]; then
     if [ -n "$shell_cmd" ]; then
         echo "$DEV_DIR" >/.devdir
-        echo "$DEV_DIR" >$ROOTFS/.devdir
+        if [[ -d "$ROOTFS" ]]; then
+            echo "$DEV_DIR" >"$ROOTFS/.devdir"
+        fi
     elif ! cd "$DEV_DIR"; then
         echo "WARNING: can't chdir to $DEV_DIR"
     fi
