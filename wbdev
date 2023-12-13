@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 WBDEV_IMAGE=${WBDEV_IMAGE:-"contactless/devenv:latest"}
 FNAME=`mktemp /tmp/wbdev.sh.XXXXXX`
 docker run --rm --entrypoint cat ${WBDEV_IMAGE} /wbdev_second_half.sh > ${FNAME}
