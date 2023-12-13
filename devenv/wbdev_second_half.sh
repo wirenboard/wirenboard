@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This file will be executed on host to run docker container
 
 DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-"cross"}
