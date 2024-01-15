@@ -23,7 +23,7 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     \
     apt update &&\
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
-       nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf sudo locales \
+       nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
        devscripts python3-virtualenv equivs qemu-user-static binfmt-support node-rimraf \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \

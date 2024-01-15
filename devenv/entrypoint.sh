@@ -313,6 +313,9 @@ case "$cmd" in
             armhf)
                 devsudo CC=arm-linux-gnueabihf-gcc dpkg-buildpackage -b -aarmhf -us -uc "$@"
                 ;;
+            arm64)
+                devsudo CC=aarch64-linux-gnu-gcc dpkg-buildpackage -b -aarm64 -us -uc "$@"
+                ;;
             *)
                 echo "Unsupported target arch: $WBDEV_TARGET_ARCH"
                 exit 1
