@@ -269,7 +269,8 @@ sbuild_buildpackage() {
 
     if has_arch_any; then
         echo "Build packages for binary architectures"
-        sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
+        sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}" | tee sbuild.log
+        grep "gcc\|g++" sbuild.log | compiledb -o compile_commands.json
     else
         echo "No binary architecture packages in this source"
     fi

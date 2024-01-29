@@ -30,7 +30,7 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
        python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
-       clang-format lintian ccache \
+       clang-format clang-tidy lintian ccache \
     # for image building \
     fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
@@ -42,7 +42,9 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     # for Jenkins deployments \
     python3-wbci s3cmd \
     # to install fpm later for simple package building \
-    ruby-rubygems && gem install fpm
+    ruby-rubygems && gem install fpm && \
+    # for clang-tidy checks
+    pip3 install compiledb
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
