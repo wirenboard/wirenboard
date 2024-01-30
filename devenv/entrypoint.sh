@@ -269,8 +269,7 @@ sbuild_buildpackage() {
 
     if has_arch_any; then
         echo "Build packages for binary architectures"
-        sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}" | tee sbuild.log
-        grep "gcc\|g++" sbuild.log | compiledb -o compile_commands.json
+        sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
     else
         echo "No binary architecture packages in this source"
     fi
@@ -344,6 +343,13 @@ case "$cmd" in
             chr mk-build-deps -ir -t "apt-get --force-yes -y"
         fi
         chu make "$@"
+        ;;
+    compiledb)
+        print_target_info
+        chr apt-get update
+        chr mk-build-deps -ir -t "apt-get --force-yes -y"
+        chu make -Bnwk | compiledb -o compile_commands.json
+        $shell_cmd "$@"
         ;;
     cdeb)
         print_target_info
