@@ -350,8 +350,10 @@ case "$cmd" in
         chr mk-build-deps -ir -t "apt-get --force-yes -y"
         if [ -f CMakeLists.txt ]; then
             mkdir -p build
-            cd build
+            pushd build
             chu cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+            popd
+            mv build/compile_commands.json compile_commands.json
         elif [ -f Makefile ]; then
             chu make -Bnwk | compiledb -o compile_commands.json
         fi
