@@ -348,7 +348,13 @@ case "$cmd" in
         print_target_info
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y"
-        chu make -Bnwk | compiledb -o compile_commands.json
+        if [ -f CMakeLists.txt ]; then
+            mkdir -p build
+            cd build
+            chu cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+        elif [ -f Makefile ]; then
+            chu make -Bnwk | compiledb -o compile_commands.json
+        fi
         $shell_cmd "$@"
         ;;
     cdeb)
