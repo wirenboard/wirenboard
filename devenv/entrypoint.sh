@@ -344,6 +344,21 @@ case "$cmd" in
         fi
         chu make "$@"
         ;;
+    compiledb)
+        print_target_info
+        chr apt-get update
+        chr mk-build-deps -ir -t "apt-get --force-yes -y"
+        if [ -f CMakeLists.txt ]; then
+            mkdir -p build
+            pushd build
+            chu cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
+            popd
+            mv build/compile_commands.json compile_commands.json
+        elif [ -f Makefile ]; then
+            chu make -Bnwk | compiledb -o compile_commands.json
+        fi
+        $shell_cmd "$@"
+        ;;
     cdeb)
         print_target_info
         if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
