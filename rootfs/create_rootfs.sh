@@ -13,7 +13,7 @@ WB_RELEASE=${WB_RELEASE:-stable}
 DEFAULT_ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$DEBIAN_RELEASE}
 DEFAULT_ADD_REPO_COMPONENT=${ADD_REPO_COMPONENT:-"main"}
 
-if [[ ( "$#" < 1)  ]]; then
+if [[ $# -lt 1 ]]; then
     cat <<EOF
 USAGE: $0 <BOARD> [list of additional repos]
 
@@ -102,7 +102,7 @@ check_additional_repos() {
         parse_repo_entry $repo
         echo "Checking presence of repo $repo"
 
-    wget "${repo_url}/dists/${repo_release}/Release" -O- >/dev/null || {
+        wget "${repo_url}/dists/${repo_release}/Release" -O- >/dev/null || {
             echo "> Can't access repo $repo, check everything again"
             exit 3
         }

@@ -21,5 +21,5 @@ export KNOWN_BUILD_DEPS=(
     python3-tqdm
     python3-usb
     python3-wb-mcu-fw-updater
+    j2cli
 )
-
