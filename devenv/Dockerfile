@@ -9,7 +9,7 @@ RUN apt update && apt install -y curl wget gnupg && \
        /usr/share/keyrings/contactless-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
        /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
-    apt-get install -y --allow-unauthenticated gnupg1 ca-certificates apt-transport-https && \
+    apt-get install -y --allow-unauthenticated gnupg1 ca-certificates && \
     # TODO: add llvm dependencies to our own repository \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
@@ -21,7 +21,7 @@ RUN apt update && apt install -y curl wget gnupg && \
 Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: release a=testing\nPin-Priority: 900' > \
        /etc/apt/preferences.d/pylint-from-testing.pref && \
     \
-    apt update &&\
+    apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
        devscripts python3-virtualenv equivs qemu-user-static binfmt-support node-rimraf \
@@ -34,7 +34,7 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     # for image building \
     fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
-    rsync  \
+    rsync \
     # legacy requirement for go-required packages \
     golang-go \
     # for Jenkins python checks \
