@@ -2,7 +2,7 @@
 # This file will be executed on host to run docker container
 
 DEB_BUILD_PROFILES=${DEB_BUILD_PROFILES:-"cross"}
-
+DOCKER=${DOCKER:-"docker"}
 DOCKER_TTY_OPTS=-i
 if [ -t 0 ]; then
     DOCKER_TTY_OPTS=-it
@@ -58,7 +58,7 @@ for var in $(env | grep -o "WBDEV_[^=]*"); do
     ENV_CMDLINE="$ENV_CMDLINE -e $var"
 done
 
-docker run $DOCKER_TTY_OPTS --privileged --rm \
+$DOCKER run $DOCKER_TTY_OPTS --privileged --rm \
        -e DEV_UID=$UID \
        -e DEV_USER=$USER \
        -e DEV_DIR="$DEV_DIR" \

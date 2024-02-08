@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -e
+DOCKER=${DOCKER:-"docker"}
 WBDEV_IMAGE=${WBDEV_IMAGE:-"contactless/devenv:latest"}
 FNAME=`mktemp /tmp/wbdev.sh.XXXXXX`
-docker run --rm --entrypoint cat ${WBDEV_IMAGE} /wbdev_second_half.sh > ${FNAME}
+$DOCKER run --rm --entrypoint cat ${WBDEV_IMAGE} /wbdev_second_half.sh > ${FNAME}
 chmod a+x ${FNAME}
 cleanup() {
     rm ${FNAME}
