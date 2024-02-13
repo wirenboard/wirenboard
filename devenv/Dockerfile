@@ -14,13 +14,6 @@ RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
-    \
-    # Low-priority testing repo for pinning pylint \
-    echo "deb http://debian-mirror.wirenboard.com/debian testing main" > /etc/apt/sources.list.d/testing.list && \
-    echo 'Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
-Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: release a=testing\nPin-Priority: 900' > \
-       /etc/apt/preferences.d/pylint-from-testing.pref && \
-    \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
@@ -37,14 +30,14 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     rsync \
     # legacy requirement for go-required packages \
     golang-go \
-    # for Jenkins python checks \
-    pylint black python3-isort \
     # for Jenkins deployments \
     python3-wbci s3cmd \
     # to install fpm later for simple package building \
     ruby-rubygems && gem install fpm && \
     # for clang-tidy checks
-    pip3 install compiledb
+    pip3 install compiledb && \
+    # for Jenkins python checks, pinned versions \
+    pip3 install black pylint==2.17.4 astroid==2.15.6 isort==5.6.4
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
