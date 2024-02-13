@@ -14,13 +14,6 @@ RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
-    \
-    # Low-priority testing repo for pinning pylint \
-    echo "deb http://debian-mirror.wirenboard.com/debian testing main" > /etc/apt/sources.list.d/testing.list && \
-    echo 'Package: *\nPin: release a=testing\nPin-Priority: 70\n\n\
-Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: release a=testing\nPin-Priority: 900' > \
-       /etc/apt/preferences.d/pylint-from-testing.pref && \
-    \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
