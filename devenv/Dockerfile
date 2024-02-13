@@ -37,14 +37,14 @@ Package: pylint python3-astroid python3-typing-extensions python3-dill\nPin: rel
     rsync \
     # legacy requirement for go-required packages \
     golang-go \
-    # for Jenkins python checks \
-    pylint black python3-isort \
     # for Jenkins deployments \
     python3-wbci s3cmd \
     # to install fpm later for simple package building \
     ruby-rubygems && gem install fpm && \
     # for clang-tidy checks
-    pip3 install compiledb
+    pip3 install compiledb && \
+    # for Jenkins python checks, pinned versions \
+    pip3 install black pylint==2.17.4 astroid==2.15.6 isort==5.6.4
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
