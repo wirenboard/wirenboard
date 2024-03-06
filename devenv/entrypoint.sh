@@ -35,6 +35,7 @@ WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armhf}
 WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
 WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"bullseye"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
+WBDEV_TESTING_SET=${WBDEV_TESTING_SET:-""}
 
 # Parse parameters supplied via env variables
 case "$WBDEV_BUILD_METHOD" in
@@ -256,9 +257,17 @@ sbuild_buildpackage() {
     fi
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
-    SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild" --bd-uninstallable-explainer="apt" \
-                 --extra-repository="$UNSTABLE_REPO_SPEC" --extra-repository="$STABLE_REPO_SPEC" \
-                 --no-apt-upgrade --no-apt-distupgrade -d "${WBDEV_TARGET_RELEASE}" "$@")
+    SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
+    SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
+    SBUILD_ARGS+=(--extra-repository="$UNSTABLE_REPO_SPEC")
+    SBUILD_ARGS+=(--extra-repository="$STABLE_REPO_SPEC")
+    if [ -n "$WBDEV_TESTING_SET" ]; then
+        local TESTING_SET_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/all experimental.$WBDEV_TESTING_SET main"
+        SBUILD_ARGS+=(--extra-repository="$TESTING_SET_REPO_SPEC")
+    fi
+    SBUILD_ARGS+=(--no-apt-upgrade --no-apt-distupgrade)
+    SBUILD_ARGS+=(-d "${WBDEV_TARGET_RELEASE}")
+    SBUILD_ARGS+=("$@")
 
     if has_arch_all; then
         echo "Build packages for Architecture: all"
