@@ -262,7 +262,8 @@ sbuild_buildpackage() {
     SBUILD_ARGS+=(--extra-repository="$UNSTABLE_REPO_SPEC")
     SBUILD_ARGS+=(--extra-repository="$STABLE_REPO_SPEC")
     if [ -n "$WBDEV_TESTING_SETS" ]; then
-        for testing_set in $(echo $WBDEV_TESTING_SETS | tr ',' ' '); do
+        IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
+        for testing_set in "${testing_sets[@]}"; do
             local TESTING_SET_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/all experimental.${testing_set} main"
             SBUILD_ARGS+=(--extra-repository="$TESTING_SET_REPO_SPEC")
         done
