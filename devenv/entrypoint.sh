@@ -196,7 +196,7 @@ platform_has_suite() {
 
     local URL="http://deb.wirenboard.com/$(wb_repo_path $PLATFORM)/dists/${SUITE}/Release"
     local HTTP_CODE
-    echo "Checking $URL..."
+    echo "Checking $URL..." >&2
     HTTP_CODE=`curl --silent --head --output /dev/null --write-out '%{http_code}\n' $URL`
     local CURL_STATUS=$?
 
@@ -208,7 +208,7 @@ platform_has_suite() {
     #  - code=404 -> no such suite
     #  - 200<=code<400 -> ok
     #  - else -> failure
-    echo "Server returned $HTTP_CODE"
+    echo "Server returned $HTTP_CODE" >&2
     if [[ $HTTP_CODE -eq 404 ]]; then
         return 1  # no such suite
     elif [[ $HTTP_CODE -ge 200 ]] && [[ $HTTP_CODE -lt 400 ]]; then
