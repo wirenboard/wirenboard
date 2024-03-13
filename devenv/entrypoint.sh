@@ -250,11 +250,13 @@ get_unstable_repo_spec() {
     local UNSTABLE_REPO_SPEC=""
     local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
-    if platform_has_suite unstable $WB_REPO_PLATFORM; then
-        echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build" >&2
-        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
-    else
-        echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite" >&2
+    if [ "${WBDEV_TARGET_BOARD}" != "host" ]; then
+        if platform_has_suite unstable $WB_REPO_PLATFORM; then
+            echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build" >&2
+            UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
+        else
+            echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite" >&2
+        fi
     fi
 
     echo "$UNSTABLE_REPO_SPEC"
