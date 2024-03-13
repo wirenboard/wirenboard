@@ -230,16 +230,16 @@ get_stable_repo_spec() {
     local STABLE_REPO_SPEC=""
 
     if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
-        echo "host target selected, using dev-tools repo as stable"
+        echo "host target selected, using dev-tools repo as stable" >&2
         STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
         if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
-            echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build"
+            echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build" >&2
             STABLE_REPO_SPEC="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
         else
-            echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)"
+            echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)" >&2
         fi
     fi
 
@@ -251,10 +251,10 @@ get_unstable_repo_spec() {
     local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
     if platform_has_suite unstable $WB_REPO_PLATFORM; then
-        echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
+        echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build" >&2
         UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
     else
-        echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
+        echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite" >&2
     fi
 
     echo "$UNSTABLE_REPO_SPEC"
