@@ -227,37 +227,37 @@ has_arch_any() {
 }
 
 get_stable_repo_spec() {
-    local stable_repo_spec=""
+    local STABLE_REPO_SPEC=""
 
     if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
         echo "host target selected, using dev-tools repo as stable"
-        stable_repo_spec="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
+        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
         if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
             echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build"
-            stable_repo_spec="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
+            STABLE_REPO_SPEC="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
         else
             echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)"
         fi
     fi
 
-    echo "$stable_repo_spec"
+    echo "$STABLE_REPO_SPEC"
 }
 
 get_unstable_repo_spec() {
-    local unstable_repo_spec=""
+    local UNSTABLE_REPO_SPEC=""
     local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
     if platform_has_suite unstable $WB_REPO_PLATFORM; then
         echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
-        unstable_repo_spec="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
+        UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
     else
         echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
     fi
 
-    echo "$unstable_repo_spec"
+    echo "$UNSTABLE_REPO_SPEC"
 }
 
 sbuild_buildpackage() {
