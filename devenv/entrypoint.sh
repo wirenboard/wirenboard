@@ -196,7 +196,7 @@ platform_has_suite() {
 
     local URL="http://deb.wirenboard.com/$(wb_repo_path $PLATFORM)/dists/${SUITE}/Release"
     local HTTP_CODE
-    echo "Checking $URL..."
+    echo "Checking $URL..." >&2
     HTTP_CODE=`curl --silent --head --output /dev/null --write-out '%{http_code}\n' $URL`
     local CURL_STATUS=$?
 
@@ -208,7 +208,7 @@ platform_has_suite() {
     #  - code=404 -> no such suite
     #  - 200<=code<400 -> ok
     #  - else -> failure
-    echo "Server returned $HTTP_CODE"
+    echo "Server returned $HTTP_CODE" >&2
     if [[ $HTTP_CODE -eq 404 ]]; then
         return 1  # no such suite
     elif [[ $HTTP_CODE -ge 200 ]] && [[ $HTTP_CODE -lt 400 ]]; then
@@ -226,41 +226,53 @@ has_arch_any() {
     grep '^Architecture:' debian/control | grep -vq '^Architecture: all$'
 }
 
+get_stable_repo_spec() {
+    local STABLE_REPO_SPEC=""
+
+    if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
+        echo "host target selected, using dev-tools repo as stable" >&2
+        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
+    else
+        local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
+
+        if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
+            echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build" >&2
+            STABLE_REPO_SPEC="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
+        else
+            echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)" >&2
+        fi
+    fi
+
+    echo "$STABLE_REPO_SPEC"
+}
+
+get_unstable_repo_spec() {
+    local UNSTABLE_REPO_SPEC=""
+    local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
+
+    if [ "${WBDEV_TARGET_BOARD}" != "host" ]; then
+        if platform_has_suite unstable $WB_REPO_PLATFORM; then
+            echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build" >&2
+            UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
+        else
+            echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite" >&2
+        fi
+    fi
+
+    echo "$UNSTABLE_REPO_SPEC"
+}
+
 sbuild_buildpackage() {
     local ARCH=$1
     shift
 
-    if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
-        echo "host target selected, using dev-tools repo as stable"
-        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
-        UNSTABLE_REPO_SPEC=""
-    else
-        local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
-        local STABLE_REPO_SPEC=""
-
-        if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
-            echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build"
-            STABLE_REPO_SPEC="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
-        else
-            echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)"
-        fi
-
-        local UNSTABLE_REPO_SPEC=""
-        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            if platform_has_suite unstable $WB_REPO_PLATFORM; then
-                echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build"
-                UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
-            else
-                echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite"
-            fi
-        fi
-    fi
-
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
-    SBUILD_ARGS+=(--extra-repository="$UNSTABLE_REPO_SPEC")
-    SBUILD_ARGS+=(--extra-repository="$STABLE_REPO_SPEC")
+    if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+        SBUILD_ARGS+=(--extra-repository="$(get_unstable_repo_spec)")
+    fi
+    SBUILD_ARGS+=(--extra-repository="$(get_stable_repo_spec)")
     if [ -n "$WBDEV_TESTING_SETS" ]; then
         IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
         for testing_set in "${testing_sets[@]}"; do
@@ -358,6 +370,11 @@ case "$cmd" in
         ;;
     compiledb)
         print_target_info
+        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        else
+            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        fi
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y"
         if [ -f CMakeLists.txt ]; then
