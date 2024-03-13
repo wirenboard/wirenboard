@@ -358,6 +358,7 @@ case "$cmd" in
         ;;
     compiledb)
         print_target_info
+        chr sh -c "echo 'deb http://deb.wirenboard.com/${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE} ${WBDEV_TARGET_REPO_RELEASE} main' > /etc/apt/sources.list.d/wirenboard.list"
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y"
         if [ -f CMakeLists.txt ]; then
