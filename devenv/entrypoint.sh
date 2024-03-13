@@ -370,9 +370,10 @@ case "$cmd" in
         ;;
     compiledb)
         print_target_info
-        chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/unstable.list"
+            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        else
+            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
         fi
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y"
