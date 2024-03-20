@@ -231,8 +231,8 @@ else
         ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
     echo "Copy qemu to rootfs"
-    cp /usr/bin/qemu-arm-static ${OUTPUT}/usr/bin ||
-    cp /usr/bin/qemu-arm ${OUTPUT}/usr/bin
+    cp /usr/bin/qemu-{aarch64,arm}-static ${OUTPUT}/usr/bin ||
+    cp /usr/bin/qemu-{aarch64,arm} ${OUTPUT}/usr/bin
     modprobe binfmt_misc || true
 
     # kludge to fix ssmtp configure that breaks when FQDN is unknown
@@ -357,7 +357,7 @@ wb-common_install() {
     if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
         chr_apt_install task-wb-common-pkgs
     else
-        chr_apt_install -f cmux hubpower python-wb-io modbus-utils \
+        chr_apt_install -f modbus-utils \
         busybox libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients \
         openssl ca-certificates avahi-daemon pps-tools device-tree-compiler \
         libateccssl1.1 knxd knxd-tools wb-suite netplug \

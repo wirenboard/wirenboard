@@ -37,6 +37,8 @@ WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"bullseye"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
 WBDEV_TESTING_SETS=${WBDEV_TESTING_SETS:-""}
 
+QEMU_ARCH=${QEMU_ARCH:-"arm"}
+
 # Parse parameters supplied via env variables
 case "$WBDEV_BUILD_METHOD" in
 sbuild|qemuchroot)
@@ -73,6 +75,7 @@ bullseye-arm64|current-arm64|wb8)
     WBDEV_TARGET_BOARD="wb8"
     WBDEV_TARGET_ARCH="arm64"
     WBDEV_TARGET_RELEASE="bullseye"
+    QEMU_ARCH="aarch64"
     ;;
 bullseye-host|bullseye-amd64|current-amd64)
     WBDEV_TARGET_BOARD="host"
@@ -124,11 +127,11 @@ devsudo () {
 }
 
 chu () {
-    devsudo proot -R $ROOTFS -q qemu-arm-static $shell_cmd "$@"
+    devsudo proot -R $ROOTFS -q qemu-${QEMU_ARCH}-static $shell_cmd "$@"
 }
 
 chr () {
-    proot -S $ROOTFS -q qemu-arm-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+    proot -S $ROOTFS -q qemu-${QEMU_ARCH}-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
 }
 
 loadprojects() {
