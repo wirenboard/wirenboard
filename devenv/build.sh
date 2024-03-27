@@ -5,10 +5,10 @@ cd /root
 source /root/common-deps.sh
 
 do_build() {
-	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4
+	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4 ADDITIONAL_REPOS=${5:-}
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
 
-	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD
+	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
 
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
@@ -28,7 +28,7 @@ do_build_sbuild_env() {
 	fi
 
 	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
-    SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
+	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
@@ -36,13 +36,13 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install mosquitto and e2fslibs-dev:armhf from debian repo to avoid future conflicts with contactless versions 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:arm64 libmosquitto-dev:arm64 libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
 
 	#add conactless repo
-    echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
+	echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
 
-    cat <<EOF >${ROOTFS}/etc/apt/preferences.d/wb-releases
+	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/wb-releases
 Package: *:any
 Pin: release o=wirenboard a=pool
 Pin-Priority: 10
@@ -58,14 +58,14 @@ EOF
 
 	if [[ "$RELEASE" = "stretch" ]]; then
 		echo "deb http://archive.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
-        cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
+		cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
 Package: node*:any npm:any libuv1*:any
 Pin: release a=stretch-backports
 Pin-Priority: 510
 EOF
 	elif [[ "$RELEASE" = "bullseye" ]]; then
 		echo "deb http://debian-mirror.wirenboard.com/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
-        cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
+		cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
 Package: libnm0 libmbim-*:any libqmi-*:any gir1.2-mbim-1.0 git1.2-qmi-1.0
 Pin: release a=bullseye-backports
 Pin-Priority: 510
@@ -74,19 +74,22 @@ EOF
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
-	#install multi-arch common build dependencies 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
-		libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel golang-go node-rimraf python3-jinja2 \
+	#install multi-arch common build dependencies
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 libc-ares2:arm64 \
+		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
+		libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel \
+		golang-go node-rimraf python3-jinja2 \
 		"${ADD_PACKAGES[@]}"
 
 	#virtualization support packages
-	cp /usr/bin/qemu-arm-static ${ROOTFS}/usr/bin/
+	cp /usr/bin/qemu-{aarch64,arm}-static ${ROOTFS}/usr/bin/
 
 	#install precompiled gtest and gmock
 	if [[ "$RELEASE" = "stretch" ]]; then
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
 	else
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev:armel libgmock-dev
 	fi
 
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
@@ -106,8 +109,8 @@ EOF
 	#output everyting on screen instead of file
 	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf
 
-    # enable ccache wrapper
-    echo "command-prefix=/usr/local/bin/ccache-setup" >> "${SCHROOT_CONF}"
+	# enable ccache wrapper
+	echo "command-prefix=/usr/local/bin/ccache-setup" >> "${SCHROOT_CONF}"
 
 	# set correct symlink to /dev/ptmx
 	rm -f ${ROOTFS}/dev/ptmx
@@ -118,6 +121,7 @@ do_build stretch armel 58 wb2
 do_build stretch armhf 6x wb6
 
 do_build bullseye armhf 6x wb6
+do_build bullseye arm64 8x wb8 http://deb.wirenboard.com/all@experimental.wb8:main
 
 do_build_sbuild_env stretch
 do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
