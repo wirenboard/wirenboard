@@ -5,10 +5,10 @@ cd /root
 source /root/common-deps.sh
 
 do_build() {
-	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4 ADDITIONAL_REPOS=${5:-}
+	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4 WB_RELEASE=${5:-stable} ADDITIONAL_REPOS=${6:-}
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
 
-	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
+	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH WB_RELEASE=$WB_RELEASE /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
 
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
@@ -121,7 +121,7 @@ do_build stretch armel 58 wb2
 do_build stretch armhf 6x wb6
 
 do_build bullseye armhf 6x wb6
-do_build bullseye arm64 8x wb8 http://deb.wirenboard.com/all@experimental.wb8:main
+do_build bullseye arm64 8x wb8 testing http://deb.wirenboard.com/all@experimental.wb8:main
 
 do_build_sbuild_env stretch
 do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
