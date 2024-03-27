@@ -17,16 +17,15 @@ pkgs=(devscripts equivs build-essential \
     libgtest-dev google-mock cmake \
     cdbs autoconf automake libtool \
     knxd-dev knxd-tools knxd \
-    git git-man gcc g++ linux-headers-${PLATFORM}
+    git git-man gcc g++
 )
-
 
 chr_apt_install "${pkgs[@]}"
 
 ##fix me
 echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
 echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
-echo "/usr/arm-linux-gnueabi/lib" >>  /etc/ld.so.conf.d/multiarch.conf
+echo "/usr/arm-linux-gnueabi/lib" >> /etc/ld.so.conf.d/multiarch.conf
 # for wb-mqtt-knx
 if [ ! -e /usr/lib/x86_64-linux-gnu/libeibclient.so ]; then
 #FIX ME
