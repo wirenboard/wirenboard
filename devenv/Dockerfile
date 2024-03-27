@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.vendor="Wiren Board team"
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update && apt install -y curl wget gnupg && \
-    curl -fsSL https://raw.githubusercontent.com/wirenboard/keyring/master/keyrings/contactless-keyring.gpg > \
+    curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
        /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
