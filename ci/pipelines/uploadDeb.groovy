@@ -26,6 +26,7 @@ pipeline {
       steps { dir("$FILES_DIR") {
         unstash 'upload.deb'
         sh 'wbdev user dpkg-name upload.deb'
+        archiveArtifacts artifacts: '*.deb'
       }}
     }
     stage('Setup deploy') {
@@ -34,7 +35,6 @@ pipeline {
           forceOverwrite: params.FORCE_OVERWRITE,
           uploadJob: uploadJobs[params.REPO],
           aptlyConfig: params.REPO + "-aptly-config",
-          filesFilter: "$FILES_DIR/*.deb",
           withGithubRelease: false
         ]
 
