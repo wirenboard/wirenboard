@@ -35,8 +35,11 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
-	#install mosquitto and e2fslibs-dev:armhf from debian repo to avoid future conflicts with contactless versions 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:arm64 libmosquitto-dev:arm64 libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
+	#install mosquitto from debian repo to avoid future conflicts with contactless versions
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+		libmosquittopp-dev:arm64 libmosquitto-dev:arm64 \
+		libmosquittopp-dev:armhf libmosquitto-dev:armhf \
+		libmosquittopp-dev:armel libmosquitto-dev:armel
 
 	#add conactless repo
 	echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
@@ -73,6 +76,12 @@ EOF
 	fi
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
+
+	if [[ "$RELEASE" = "stretch" ]]; then
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install e2fslibs
+	else
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libext2fs2  # will get package from dev-tools repo
+	fi
 
 	#install multi-arch common build dependencies
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
