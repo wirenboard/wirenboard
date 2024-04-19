@@ -75,13 +75,15 @@ Pin-Priority: 510
 EOF
 	fi
 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
+	# prevent e2fsprogs packages from being installed from wb repo, it messes up with host versions.
+	# it is only needed for actual hardware anyway
+	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/000libext2fs
+Package: src:e2fsprogs:any
+Pin: release o=wirenboard
+Pin-Priority: -1
+EOF
 
-	if [[ "$RELEASE" = "stretch" ]]; then
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install e2fslibs
-	else
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libext2fs2  # will get package from dev-tools repo
-	fi
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#install multi-arch common build dependencies
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
