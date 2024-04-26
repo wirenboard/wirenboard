@@ -74,9 +74,6 @@ elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
 fi
 
-COMPATIBLE=`dtb_get_compatible < "$TARGET_DTB"`
-[[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
-
 VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
 source $ROOTFS/usr/lib/wb-release || die "Unable to get release information"
 
@@ -114,6 +111,16 @@ if [[ -e "$ROOTFS_BOOT_DTB_PATH" ]]; then
 else
     echo "No bootlet DTB in rootfs, using default one"
     BOOT_DTB="$DEFAULT_BOOT_DTB"
+fi
+
+if [[ -e "$TARGET_DTB" ]]; then
+    echo "Using compatible from target DTB ($TARGET_DTB)"
+    COMPATIBLE=$(dtb_get_compatible < "$TARGET_DTB")
+    [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
+else
+    echo "Using compatible from boot DTB ($BOOT_DTB)"
+    COMPATIBLE=$(dtb_get_compatible < "$BOOT_DTB")
+    [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
 fi
 
 ITS=$TMPDIR/update.its
