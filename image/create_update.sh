@@ -95,7 +95,19 @@ else
     FIRMWARE_COMPATIBLE="unknown"
 fi
 
-ROOTFS_BOOTLET_ZIMAGE_PATH="$ROOTFS/var/lib/wb-image-update/zImage"
+case "$ARCH" in
+    arm64)
+        KERNEL_IMAGE_NAME="Image.gz"
+        ;;
+    armhf|armel)
+        KERNEL_IMAGE_NAME="zImage"
+        ;;
+    *)
+        die "Unsupported architecture: $ARCH"
+        ;;
+esac
+
+ROOTFS_BOOTLET_ZIMAGE_PATH="$ROOTFS/var/lib/wb-image-update/$KERNEL_IMAGE_NAME"
 if [[ -e "$ROOTFS_BOOTLET_ZIMAGE_PATH" ]]; then
     echo "Using bootlet zImage from rootfs ($ROOTFS_BOOTLET_ZIMAGE_PATH)"
     ZIMAGE="$ROOTFS_BOOTLET_ZIMAGE_PATH"
