@@ -6,3 +6,5 @@ export U_BOOT_ROOTFS=usr/lib/u-boot/mx6ul_wirenboard6/u-boot-with-spl.imx
 export REPO_PLATFORM=wb6
 export FIT_IMAGE_DTB=imx6ul-wirenboard6x-init.dtb
 export BOARD_SUPPORTS_IMG=y
+export BOARD_BOOTLET_ON_S3=y
+export BOARD_BOOTLET_IN_ROOTFS=y

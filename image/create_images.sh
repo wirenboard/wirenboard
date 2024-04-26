@@ -100,14 +100,14 @@ ZIMAGE_DEFAULT_PATH="${SCRIPT_DIR}/../contrib/usbupdate/zImage.$KERNEL_FLAVOUR"
 mkdir -p "$(dirname "$ZIMAGE_DEFAULT_PATH")"
 
 ZIMAGE="$(readlink -f "$ZIMAGE_DEFAULT_PATH" || true)"
-if [[ ! -f $ZIMAGE ]]; then
+if [[ ! -f $ZIMAGE ]] && [[ "$BOARD_BOOTLET_ON_S3" == "y" ]]; then
     echo "Local zImage not found, downloading one to $ZIMAGE_DEFAULT_PATH"
     ZIMAGE_URL="http://fw-releases.wirenboard.com/utils/build-image/zImage.$KERNEL_FLAVOUR"
     wget -O "$ZIMAGE_DEFAULT_PATH" "$ZIMAGE_URL"
     ZIMAGE="$(readlink -f "$ZIMAGE_DEFAULT_PATH")"
 fi
 
-if [[ ! -f "$ZIMAGE" ]]; then
+if [[ ! -f "$ZIMAGE" ]] && [[ "$BOARD_BOOTLET_IN_ROOTFS" != y ]]; then
     echo "Failed to find zImage even after downloading, something went wrong"
     exit 1
 fi
@@ -120,14 +120,14 @@ get_dtb() {
         mkdir -p "$(dirname "$DTB_DEFAULT_PATH")"
 
         DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
-        if [[ ! -e "$DTB" ]]; then
+        if [[ ! -e "$DTB" ]] && [[ "$BOARD_BOOTLET_ON_S3" == "y" ]]; then
             echo "Local DTB not found, downloading one to $DTB_DEFAULT_PATH"
             DTB_URL="http://fw-releases.wirenboard.com/utils/build-image/dtbs/$KERNEL_FLAVOUR/$DTB_NAME"
             wget -O "$DTB_DEFAULT_PATH" "$DTB_URL"
             DTB="$(readlink -f "$DTB_DEFAULT_PATH")"
         fi
 
-        if [[ ! -e "$DTB" ]]; then
+        if [[ ! -e "$DTB" ]] && [[ "$BOARD_BOOTLET_IN_ROOTFS" != y ]]; then
             echo "Failed to find DTB even after downloading, something went wrong"
             exit 1
         fi
@@ -139,7 +139,14 @@ get_dtb() {
 TARGET_DTB=$(get_dtb "$TARGET_DTB_NAME")
 BOOT_DTB=$(get_dtb "$BOOT_DTB_NAME")
 
-echo "Using zImage from $ZIMAGE"
+if [[ -n "$ZIMAGE" ]]; then
+    echo "Using fallback zImage from $ZIMAGE"
+fi
+
+if [[ -n "$BOOT_DTB" ]]; then
+    echo "Using fallback boot DTB from $BOOT_DTB"
+fi
+
 "$TOP_DIR/image/create_update.sh" "$ROOTFS" "$ZIMAGE" "$BOOT_DTB" "$TARGET_DTB" "$WEBUPD_NAME"
 
 echo "Done"
