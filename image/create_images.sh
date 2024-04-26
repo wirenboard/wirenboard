@@ -79,7 +79,7 @@ mkdir -p ${OUT_DIR}
 IMG_NAME="${OUT_DIR}/${FULL_VERSION}_emmc_wb${BOARD}.img"
 WEBUPD_NAME="${OUT_DIR}/${FULL_VERSION}_wb${BOARD}.fit"
 
-if  [ -n "$MAKE_IMG" ]; then
+if  [ -n "$MAKE_IMG" ] && [ "$BOARD_SUPPORTS_IMG" == "y" ]; then
     echo "Create IMG"
     rm -f ${IMG_NAME}
 
