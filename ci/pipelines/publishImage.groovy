@@ -12,7 +12,7 @@ pipeline {
     parameters {
         string(name: 'IMAGE_BUILDNUMBER', defaultValue: '', description: 'from pipelines/build-image')
         booleanParam(name: 'SET_LATEST', defaultValue: false, description: 'remove saved rootfs images before build')
-        booleanParam(name: 'PUBLISH_IMG', defaultValue: true, description: 'works with SET_LATEST=true')
+        booleanParam(name: 'PUBLISH_IMG', defaultValue: false, description: 'works with SET_LATEST=true')
         string(name: 'LATEST_NAME', defaultValue: 'latest', description: 'used to publish "latest_*.fit, .md5 and .img files')
     }
     environment {
