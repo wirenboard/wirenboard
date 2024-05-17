@@ -59,6 +59,11 @@ write_uboot_sun8i_r40() {
 
 eval "PART_START=\${PART_START_${SOC_TYPE}}"
 
+if [ -z "$PART_START" ]; then
+    echo "Unsupported soc type for *.img: $SOC_TYPE"
+    exit 1
+fi
+
 truncate -s ${IMGSIZE}M $IMGFILE
 
 # Generates single partition definition line for sfdisk.

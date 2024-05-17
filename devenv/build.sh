@@ -35,8 +35,11 @@ do_build_sbuild_env() {
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
-	#install mosquitto and e2fslibs-dev:armhf from debian repo to avoid future conflicts with contactless versions 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libmosquittopp-dev:arm64 libmosquitto-dev:arm64 libmosquittopp-dev:armhf libmosquitto-dev:armhf libmosquittopp-dev:armel libmosquitto-dev:armel e2fslibs-dev:armhf
+	#install mosquitto from debian repo to avoid future conflicts with contactless versions
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+		libmosquittopp-dev:arm64 libmosquitto-dev:arm64 \
+		libmosquittopp-dev:armhf libmosquitto-dev:armhf \
+		libmosquittopp-dev:armel libmosquitto-dev:armel
 
 	#add conactless repo
 	echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
@@ -71,6 +74,14 @@ Pin: release a=bullseye-backports
 Pin-Priority: 510
 EOF
 	fi
+
+	# prevent e2fsprogs packages from being installed from wb repo, it messes up with host versions.
+	# it is only needed for actual hardware anyway
+	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/000libext2fs
+Package: src:e2fsprogs:any
+Pin: release o=wirenboard
+Pin-Priority: -1
+EOF
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 

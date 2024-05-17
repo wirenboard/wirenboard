@@ -74,9 +74,6 @@ elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
 fi
 
-COMPATIBLE=`dtb_get_compatible < "$TARGET_DTB"`
-[[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
-
 VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
 source $ROOTFS/usr/lib/wb-release || die "Unable to get release information"
 
@@ -98,7 +95,19 @@ else
     FIRMWARE_COMPATIBLE="unknown"
 fi
 
-ROOTFS_BOOTLET_ZIMAGE_PATH="$ROOTFS/var/lib/wb-image-update/zImage"
+case "$ARCH" in
+    arm64)
+        KERNEL_IMAGE_NAME="Image.gz"
+        ;;
+    armhf|armel)
+        KERNEL_IMAGE_NAME="zImage"
+        ;;
+    *)
+        die "Unsupported architecture: $ARCH"
+        ;;
+esac
+
+ROOTFS_BOOTLET_ZIMAGE_PATH="$ROOTFS/var/lib/wb-image-update/$KERNEL_IMAGE_NAME"
 if [[ -e "$ROOTFS_BOOTLET_ZIMAGE_PATH" ]]; then
     echo "Using bootlet zImage from rootfs ($ROOTFS_BOOTLET_ZIMAGE_PATH)"
     ZIMAGE="$ROOTFS_BOOTLET_ZIMAGE_PATH"
@@ -114,6 +123,16 @@ if [[ -e "$ROOTFS_BOOT_DTB_PATH" ]]; then
 else
     echo "No bootlet DTB in rootfs, using default one"
     BOOT_DTB="$DEFAULT_BOOT_DTB"
+fi
+
+if [[ -e "$TARGET_DTB" ]]; then
+    echo "Using compatible from target DTB ($TARGET_DTB)"
+    COMPATIBLE=$(dtb_get_compatible < "$TARGET_DTB")
+    [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
+else
+    echo "Using compatible from boot DTB ($BOOT_DTB)"
+    COMPATIBLE=$(dtb_get_compatible < "$BOOT_DTB")
+    [[ -n "$COMPATIBLE" ]] || die "Unable to get 'compatible' DTB param"
 fi
 
 ITS=$TMPDIR/update.its

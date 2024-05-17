@@ -14,7 +14,7 @@ pipeline {
     }
     parameters {
         string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'Debian release')
-        string(name: 'BOARDS', defaultValue: '6x 67 7x', description: 'space-separated list')
+        string(name: 'BOARDS', defaultValue: '6x 67 7x 8x', description: 'space-separated list')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
