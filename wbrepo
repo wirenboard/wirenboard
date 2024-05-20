@@ -8,7 +8,7 @@ REPO_NAME=devel
 # name of distribution (ex. wheezy, jessie, stable, testing, sid in Debian)
 DISTRIBUTION=testing
 # list of arches
-ARCH=armel,armhf,all
+ARCH=armel,armhf,arm64,all
 
 # repo origin and label should be different from main repository
 # to distinguish it in apt pins
