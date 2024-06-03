@@ -17,7 +17,7 @@ pipeline {
     }
     parameters {
         string(name: 'DEBIAN_RELEASE', defaultValue: 'bullseye', description: 'debian release')
-        string(name: 'BOARDS', defaultValue: '67 7x', description: 'boards to build images for')
+        string(name: 'BOARDS', defaultValue: '67 7x 8x', description: 'boards to build images for')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch, passed to build-image')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
         booleanParam(name: 'ADVANCE_UNSTABLE', defaultValue: true, description: 'disable if you want just to check')
