@@ -13,7 +13,7 @@ pipeline {
         choice(name: 'DEBIAN_RELEASE', choices: wb.debianReleases, description: 'Debian release')
         string(name: 'REPO_PREFIX', defaultValue: '', description: 'APT repository prefix (after deb.wirenboard.com)')
         string(name: 'ADDITIONAL_REPOS', defaultValue: '',
-               description: 'space-separated for multiple repos, example: http://example.com/path/to@stable:main')
+               description: 'space-separated for multiple repos, example: http://deb.wirenboard.com/all@experimental.foo:main')
         string(name: 'WIRENBOARD_BRANCH', defaultValue: 'master', description: 'wirenboard/wirenboard repo branch')
         string(name: 'WB_TARGET', defaultValue: '', description: 'leave empty for auto detection. Examples: wb6/stretch, all')
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
