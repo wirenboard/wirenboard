@@ -57,7 +57,7 @@ RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -
  
 # Go environment
 # from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
-ENV GOLANG_VERSION 1.13.1
+ENV GOLANG_VERSION 1.18.10
 ENV GOLANG_DOWNLOAD_URL   https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_SHA1  e9275a46508483242feb6200733b6382f127cb43
  
