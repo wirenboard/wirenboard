@@ -92,6 +92,18 @@ ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
 export GOPATH="$WORKSPACE_DIR"/go
 
+if [ -n "$WBDEV_CCACHE_DIR" ]; then
+    cat <<EOF >/etc/ccache.conf
+cache_dir = $WBDEV_CCACHE_DIR
+max_size = ${WBDEV_CCACHE_MAX_SIZE:-10G}
+compression = true
+compression_level = 6
+hard_link = false
+umask = 002
+EOF
+    export PATH="/usr/lib/ccache:$PATH"
+fi
+
 rm -f /.devdir $ROOTFS/.devdir
 if [ -n "$DEV_DIR" ]; then
     if [ -n "$shell_cmd" ]; then

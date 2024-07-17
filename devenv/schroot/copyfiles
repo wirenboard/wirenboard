@@ -1,2 +1,3 @@
 /etc/resolv.conf
+/etc/ccache.conf
 /usr/local/bin/ccache-setup

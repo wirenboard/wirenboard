@@ -50,7 +50,13 @@ elif [[ -z "$DEV_DIR" ]]; then
 fi
 
 if [[ -n "$DEV_CCACHE_VOLUME" ]]; then
-    VOLUMES="$VOLUMES -v $DEV_CCACHE_VOLUME:/var/cache/ccache"
+    WBDEV_CCACHE_DIR=${WBDEV_CCACHE_DIR:-/var/cache/ccache}
+    VOLUMES="$VOLUMES -v $DEV_CCACHE_VOLUME:$WBDEV_CCACHE_DIR"
+else
+    if [[ -n "$WBDEV_CCACHE_DIR" ]]; then
+        echo "WBDEV_CCACHE_DIR is set but DEV_CCACHE_VOLUME is not"
+        exit 1
+    fi
 fi
 
 ENV_CMDLINE=""
