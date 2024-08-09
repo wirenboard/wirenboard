@@ -23,6 +23,7 @@ pipeline {
         booleanParam(name: 'ENABLE_TELEGRAM_ALERT', defaultValue: true, description: 'send alert to WB Monitoring if build is failed/restored')
         booleanParam(name: 'TEST_FACTORYRESET', defaultValue: true, description: 'run factory reset tests on images (wb7 only)')
         booleanParam(name: 'TEST_STANDALONE', defaultValue: true, description: 'run generic FIT update tests on images')
+        booleanParam(name: 'PUBLISH_IMAGES', defaultValue: true, description: 'publish images')
     }
     triggers {
         parameterizedCron('''
@@ -95,6 +96,7 @@ pipeline {
             }
         }
         stage('Publish images') {
+            when { expression { params.PUBLISH_IMAGES } }
             steps {
                 script {
                     def jobs = [:]
