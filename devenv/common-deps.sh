@@ -18,6 +18,7 @@ export KNOWN_BUILD_DEPS=(
     python3-pytest
     python3-semantic-version
     python3-testinfra
+    python3-tomli
     python3-tqdm
     python3-usb
     python3-wb-mcu-fw-updater
