@@ -330,6 +330,10 @@ case "$cmd" in
         fi
         ;;
     ndeb)
+        if [ -n "$WBDEV_PYBUILD_TEST_ARGS" ]; then
+            export PYBUILD_TEST_ARGS="$WBDEV_PYBUILD_TEST_ARGS"
+        fi
+
         if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
             echo "WARNING: wbdev ndeb with sbuild is deprecated."
             echo "  To build arch-all package for Wiren Board, use wbdev cdeb instead."
