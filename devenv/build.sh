@@ -109,10 +109,11 @@ EOF
 		cat <<EOF > ${ROOTFS}/deb_build_options_wrapper.sh
 #!/bin/bash
 DEB_BUILD_OPTIONS=\${_DEB_BUILD_OPTIONS} "\$@"
+PYBUILD_TEST_ARGS=\${_PYBUILD_TEST_ARGS} "\$@"
 EOF
 		cat <<EOF > /etc/sbuild/sbuild.conf
 use Dpkg::Build::Info;
-\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), '_DEB_BUILD_OPTIONS'];
+\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), '_DEB_BUILD_OPTIONS','_PYBUILD_TEST_ARGS'];
 \$build_env_cmnd = '/deb_build_options_wrapper.sh';
 EOF
 		chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh

@@ -284,6 +284,8 @@ sbuild_buildpackage() {
     shift
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
+    export _PYBUILD_TEST_ARGS="$WBDEV_PYBUILD_TEST_ARGS"
+
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
@@ -303,6 +305,7 @@ sbuild_buildpackage() {
 
     if has_arch_all; then
         echo "Build packages for Architecture: all"
+        echo "$_PYBUILD_TEST_ARGS"
         sbuild --arch-all --no-arch-any "${SBUILD_ARGS[@]}"
     else
         echo "No Architecture: all packages in this source"
@@ -310,6 +313,7 @@ sbuild_buildpackage() {
 
     if has_arch_any; then
         echo "Build packages for binary architectures"
+        echo "$_PYBUILD_TEST_ARGS"
         sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
     else
         echo "No binary architecture packages in this source"
@@ -330,10 +334,6 @@ case "$cmd" in
         fi
         ;;
     ndeb)
-        if [ -n "$WBDEV_PYBUILD_TEST_ARGS" ]; then
-            export PYBUILD_TEST_ARGS="$WBDEV_PYBUILD_TEST_ARGS"
-        fi
-
         if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
             echo "WARNING: wbdev ndeb with sbuild is deprecated."
             echo "  To build arch-all package for Wiren Board, use wbdev cdeb instead."
