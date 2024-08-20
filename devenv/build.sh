@@ -106,18 +106,21 @@ EOF
 
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
 	if dpkg --compare-versions `dpkg -s sbuild | grep  -oP "Version: \K.*$"` lt 0.78.0; then
-		cat <<EOF > ${ROOTFS}/deb_build_options_wrapper.sh
+		FILTER_OPTION="DEB_BUILD_OPTIONS"
+	else
+		FILTER_OPTION="PYBUILD_TEST_ARGS"
+	fi
+
+	cat <<EOF > ${ROOTFS}/deb_build_options_wrapper.sh
 #!/bin/bash
-DEB_BUILD_OPTIONS=\${_DEB_BUILD_OPTIONS} "\$@"
-PYBUILD_TEST_ARGS=\${_PYBUILD_TEST_ARGS} "\$@"
+$FILTER_OPTION=\${_$FILTER_OPTION} "\$@"
 EOF
-		cat <<EOF > /etc/sbuild/sbuild.conf
+	cat <<EOF > /etc/sbuild/sbuild.conf
 use Dpkg::Build::Info;
-\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), '_DEB_BUILD_OPTIONS','_PYBUILD_TEST_ARGS'];
+\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), '_$FILTER_OPTION'];
 \$build_env_cmnd = '/deb_build_options_wrapper.sh';
 EOF
-		chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
-	fi
+	chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
 
 	#output everyting on screen instead of file
 	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf

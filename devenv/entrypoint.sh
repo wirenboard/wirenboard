@@ -39,6 +39,8 @@ WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"bullseye"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
 WBDEV_TESTING_SETS=${WBDEV_TESTING_SETS:-""}
 
+PYBUILD_TEST_ARGS="${WBDEV_PYBUILD_TEST_ARGS:-}"
+
 QEMU_ARCH=${QEMU_ARCH:-"arm"}
 
 # Parse parameters supplied via env variables
@@ -284,7 +286,7 @@ sbuild_buildpackage() {
     shift
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
-    export _PYBUILD_TEST_ARGS="$WBDEV_PYBUILD_TEST_ARGS"
+    export _PYBUILD_TEST_ARGS=${PYBUILD_TEST_ARGS}
 
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
@@ -305,7 +307,6 @@ sbuild_buildpackage() {
 
     if has_arch_all; then
         echo "Build packages for Architecture: all"
-        echo "$_PYBUILD_TEST_ARGS"
         sbuild --arch-all --no-arch-any "${SBUILD_ARGS[@]}"
     else
         echo "No Architecture: all packages in this source"
@@ -313,7 +314,6 @@ sbuild_buildpackage() {
 
     if has_arch_any; then
         echo "Build packages for binary architectures"
-        echo "$_PYBUILD_TEST_ARGS"
         sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
     else
         echo "No binary architecture packages in this source"
