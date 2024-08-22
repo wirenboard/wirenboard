@@ -104,20 +104,22 @@ EOF
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev:armel libgmock-dev
 	fi
 
+	FILTER_OPTIONS=("PYBUILD_TEST_ARGS")
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
 	if dpkg --compare-versions `dpkg -s sbuild | grep  -oP "Version: \K.*$"` lt 0.78.0; then
-		FILTER_OPTION="DEB_BUILD_OPTIONS"
-	else
-		FILTER_OPTION="PYBUILD_TEST_ARGS"
+		FILTER_OPTIONS+="DEB_BUILD_OPTIONS"
 	fi
+
+	WRAPPER_LINES=$( for op in ${FILTER_OPTIONS[@]}; do echo "$op=\${_$op} \"\$@\""; done )
+	ENV_FILTER_LINES=$( for op in "${FILTER_OPTIONS[@]}"; do echo -n "'_$op',"; done | sed 's/,$//')
 
 	cat <<EOF > ${ROOTFS}/deb_build_options_wrapper.sh
 #!/bin/bash
-$FILTER_OPTION=\${_$FILTER_OPTION} "\$@"
+$WRAPPER_LINES
 EOF
 	cat <<EOF > /etc/sbuild/sbuild.conf
 use Dpkg::Build::Info;
-\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), '_$FILTER_OPTION'];
+\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), $ENV_FILTER_LINES];
 \$build_env_cmnd = '/deb_build_options_wrapper.sh';
 EOF
 	chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
