@@ -16,6 +16,7 @@ export KNOWN_BUILD_DEPS=(
     python3-requests
     python3-pymysql
     python3-pytest
+    python3-pytest-cov
     python3-semantic-version
     python3-testinfra
     python3-tomli
