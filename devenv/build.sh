@@ -107,7 +107,7 @@ EOF
 	FILTER_OPTIONS=("PYBUILD_TEST_ARGS")
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
 	if dpkg --compare-versions `dpkg -s sbuild | grep  -oP "Version: \K.*$"` lt 0.78.0; then
-		FILTER_OPTIONS+="DEB_BUILD_OPTIONS"
+		FILTER_OPTIONS+=("DEB_BUILD_OPTIONS")
 	fi
 
 	WRAPPER_LINES=$( for op in ${FILTER_OPTIONS[@]}; do echo "$op=\${_$op} \"\$@\""; done )
