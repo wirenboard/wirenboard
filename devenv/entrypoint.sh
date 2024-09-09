@@ -74,12 +74,14 @@ bullseye-armhf|current-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="bullseye"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig"
     ;;
 bullseye-arm64|current-arm64|wb8)
     WBDEV_TARGET_BOARD="wb8"
     WBDEV_TARGET_ARCH="arm64"
     WBDEV_TARGET_RELEASE="bullseye"
     QEMU_ARCH="aarch64"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
     ;;
 bullseye-host|bullseye-amd64|current-amd64)
     WBDEV_TARGET_BOARD="host"
@@ -399,7 +401,7 @@ case "$cmd" in
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y"
         if [ -f CMakeLists.txt ]; then
-            chu mkdir -p build; ( cd build && cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. )
+            chu mkdir -p build; ( cd build && PKG_CONFIG_PATH=$ROOTFS_PKG_CONFIG_PATH cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. )
             mv build/compile_commands.json compile_commands.json
         elif [ -f Makefile ]; then
             chu make -Bnwk | compiledb -o compile_commands.json
