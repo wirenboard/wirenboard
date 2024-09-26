@@ -124,12 +124,12 @@ pipeline {
     post {
         always { script {
             if (params.ENABLE_TELEGRAM_ALERT) {
-                wb.notifyMaybeBuildRestored()
+                wb.notifyMaybeBuildRestored("Boards: ${params.BOARDS}, WB release: ${params.WB_RELEASE}")
             }
         }}
         failure { script {
             if (params.ENABLE_TELEGRAM_ALERT) {
-                wb.notifyBuildFailed()
+                wb.notifyBuildFailed("Boards: ${params.BOARDS}, WB release: ${params.WB_RELEASE}")
             }
         }}
     }
