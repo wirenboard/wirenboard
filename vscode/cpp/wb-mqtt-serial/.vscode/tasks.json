@@ -30,7 +30,7 @@
         {
             "label": "Debug build test with coverage",
             "type": "shell",
-            "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'DEB_HOST_MULTIARCH=arm-linux-gnueabihf DEBUG=1 make -j12 lcov'",
+            "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'DEB_HOST_MULTIARCH=arm-linux-gnueabihf DEBUG=1 make -j12 test'",
             "group": "build",
             "problemMatcher": []
         },
