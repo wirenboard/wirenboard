@@ -73,7 +73,7 @@ pipeline {
                         def currentBoard = item.board
 
                         jobs["test ${currentImageJob.getId()}"] = {
-                            stage("Test ${currentImageJob.getId()}") {
+                            stage("Test ${currentBoard} ${currentImageJob.getId()}") {
                                 build(job: 'pipelines/release-test-orchestrator',
                                       wait: true,
                                       parameters: [
