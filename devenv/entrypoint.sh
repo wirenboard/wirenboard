@@ -95,9 +95,6 @@ WBDEV_TARGET_REPO_PREFIX=${WBDEV_TARGET_REPO_PREFIX:-""}
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 
-export WORKSPACE_DIR="/home/$DEV_USER/wbdev"
-export GOPATH="$WORKSPACE_DIR"/go
-
 if [ -n "$WBDEV_CCACHE_DIR" ]; then
     cat <<EOF >/etc/ccache.conf
 cache_dir = $WBDEV_CCACHE_DIR
@@ -150,49 +147,6 @@ chu () {
 
 chr () {
     proot -S $ROOTFS -q qemu-${QEMU_ARCH}-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
-}
-
-loadprojects() {
-    n_projects=0
-    while read projs[$n_projects] proj_base_dirs[$n_projects] \
-               proj_urls[$n_projects] proj_branches[$n_projects] proj_how[$n_projects]; do
-        n_projects=$((n_projects+1))
-    done </projects.list
-}
-
-update_workspace() {
-    loadprojects
-    devsudo mkdir -p "$WORKSPACE_DIR" "$WORKSPACE_DIR/go"
-    for ((n=0; n < n_projects; n++)); do
-        proj="${projs[n]}"
-        proj_base_dir="$WORKSPACE_DIR"/"${proj_base_dirs[$n]}"
-        proj_dir="$proj_base_dir"/"$proj"
-        proj_url="${proj_urls[n]}"
-        proj_branch="${proj_branches[n]}"
-        if [ ! -d "$proj_dir" ]; then
-            devsudo mkdir -p "$proj_dir"
-            (
-                cd "$proj_base_dir"
-                if ! devsudo git clone "$proj_url" "$proj"; then
-                    echo "WARNING: git clone failed for $proj (url: $proj_url)" 1>&2
-                    continue
-                fi
-            )
-        fi
-        if [ -d "$proj_dir" ]; then
-            (
-                cd "$proj_dir"
-                if ! devsudo git checkout "$proj_branch"; then
-                    echo "WARNING: git checkout failed for $proj (url: $proj_url)" 1>&2
-                    continue
-                fi
-                if ! devsudo git pull --ff-only origin "$proj_branch"; then
-                    echo "WARNING: git pull --ff-only failed for $proj (url: $proj_url)" 1>&2
-                    continue
-                fi
-            )
-        fi
-    done
 }
 
 die() {
@@ -423,9 +377,6 @@ case "$cmd" in
     chroot)
         print_target_info
         chr "$@"
-        ;;
-    update-workspace)
-        update_workspace
         ;;
     *)
         echo "Unknown command '$cmd'" 1>&2

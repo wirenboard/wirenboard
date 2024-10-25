@@ -1,6 +1,0 @@
-homeui . git@github.com:contactless/wb-homa-drivers contactless ndeb
-wb-homa-drivers . git@github.com:contactless/wb-homa-drivers master cdeb
-wb-rules go/src/github.com/contactless git@github.com:contactless/wb-rules master gdeb
-wb-mqtt-confed go/src/github.com/contactless git@github.com:contactless/wb-mqtt-confed master gdeb
-wb-mqtt-smartbus go/src/github.com/contactless git@github.com:contactless/wb-mqtt-smartbus master gdeb
-wb-mqtt-apcsnmp go/src/github.com/contactless git@github.com:contactless/wb-mqtt-apcsnmp master gdeb
