@@ -54,29 +54,13 @@ RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -
 # (manually using dpkg-dev and sed :) ) before uploading to WB dev-tools repo.
 #
 # It would be nice to update llvm from time to time though.
- 
-# Go environment
-# from https://github.com/docker-library/golang/blob/master/1.5/Dockerfile
-ENV GOLANG_VERSION 1.13.1
-ENV GOLANG_DOWNLOAD_URL   https://dl.google.com/go/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA1  e9275a46508483242feb6200733b6382f127cb43
- 
-RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
-  && tar -C /usr/local -xzf golang.tar.gz \
-  && rm golang.tar.gz
- 
-ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
-RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
- 
 COPY wbdev_second_half.sh /
 COPY build.sh /root/
 COPY rootfs /root/rootfs
 COPY boards /root/boards
 COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
-COPY projects.list /
 COPY chr /usr/local/bin/
 COPY debootstrap-functions.diff /usr/share/debootstrap/
 RUN chmod +x /root/*.sh /usr/local/bin/chr

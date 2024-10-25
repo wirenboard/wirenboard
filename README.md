@@ -139,41 +139,6 @@ fi
 This will prefix the command prompt with `(wbch)` in case when the
 chroot user mode and with `(wbdev)` in case when the host user mode.
 
-WBDEV Workspace
-===============
-
-Go-based Wiren Board apps make use of [glide](https://glide.sh/)
-package manager which requires proper Go workspace to function.
-To make this part easier and for added convenience for other WB
-projects `wbdev update-workspace` builds and unified directory
-layout for WB projects, performing `git clone` for projects
-listed in [devenv/projects.list](devenv/projects.list):
-
-```
-~/wbdev
-   |
-   +--- homeui
-   |
-   +--- wb-mqtt-serial
-   |
-   +--- other non-Go apps...
-   |
-   +--- go/
-         +- src/
-             +- github.com/
-                 +- contactless
-                     +- wb-rules
-                     |
-                     +- wb-mqtt-confed
-                     |
-                     +- other go projects...
-    
-```
-
-This layout is required for building Go projects using wbdev.
-`wbdev update-workspace` performs `git pull --ff-only origin <primary-branch>`
-for projects that are already cloned.
-
 Updating wbdev
 ==============
 
