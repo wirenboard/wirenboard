@@ -16,8 +16,7 @@ pkgs=(devscripts equivs build-essential \
     pkg-config bash-completion \
     libgtest-dev google-mock cmake \
     cdbs autoconf automake libtool \
-    knxd-dev knxd-tools knxd \
-    git git-man gcc g++
+    git git-man gcc g++ ccache
 )
 
 chr_apt_install "${pkgs[@]}"
