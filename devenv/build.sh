@@ -135,13 +135,13 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build stretch armel 58 wb2
-do_build stretch armhf 6x wb6
+#do_build stretch armel 58 wb2
+#do_build stretch armhf 6x wb6
 
 do_build bullseye armhf 6x wb6
 do_build bullseye arm64 8x wb8
 
-do_build_sbuild_env stretch
+#do_build_sbuild_env stretch
 do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:
