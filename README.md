@@ -23,12 +23,12 @@ In order to use the script, you must install
 first.
 
 The development environment consists "host" environment which is
-Debian "stretch" Linux image used to build Python noarch packages,
+Debian "bullseye" Linux image used to build Python noarch packages,
 Go-based packages such as `wb-rules` and `wb-mqtt-confed` and
 `wb-mqtt-homeui` frontend.
 
 Cross-compilation is used to build C/C++ packages such as `wb-mqtt-serial`
-for armhf and armel target architectures. It's implemented using
+for armhf and arm64 target architectures. It's implemented using
 [Debian sbuild](https://wiki.debian.org/sbuild) with different 
 non-virtualized chroot rootfses for each Debian release.
 
@@ -93,11 +93,11 @@ Usage:
 * `wbdev gdeb` builds an armel or armhf (see below) deb from a Go project in the current
   directory (should be used under a wbdev workspace, see **WBDEV
   Workspace** below).
-* `wbdev cdeb [args...]` builds an armel or armhf deb from a C++ project in the current
+* `wbdev cdeb [args...]` builds an arm64 or armhf deb from a C++ project in the current
   directory. Sbuild is used by default. Arguments are passed to sbuild.
   For instance, ` --build-failed-commands="%SBUILD_SHELL"` will invoke shell in sbuild env
   if build is failed. See
-  [man sbuild](https://manpages.debian.org/stretch/sbuild/sbuild.1.en.html) for details.
+  [man sbuild](https://manpages.debian.org/bullseye/sbuild/sbuild.1.en.html) for details.
 * `wbdev make [args...]` invokes `make` in qemu chroot environment in
   the current directory.
 * `wbdev hmake [args...]` invokes `make` in host user mode in the
@@ -109,10 +109,8 @@ Usage:
 To change target architecture you should use environment variable
 WBDEV_TARGET. Possible values:
 
-* `stretch-armhf`, `wb6` build stretch package for armhf target (WB6.x) 
-* `stretch-armel`, `wb5`, `current-armel` build stretch package for armel target (latest WB5.x)
-* `stretch-host`, `host`, `stretch-amd64` build stretch package for amd64 target
 * `bullseye-armhf`, `current-armhf` build bullseye package for armhf target (default)
+* `bullseye-arm64`, `current-arm64` build bullseye package for arm64 target
 * `bullseye-host`, `bullseye-amd64`, `current-amd64` build bullseye package for amd64 target
 
 Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
