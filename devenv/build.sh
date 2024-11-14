@@ -80,9 +80,9 @@ EOF
 	cp /usr/bin/qemu-{aarch64,arm}-static ${ROOTFS}/usr/bin/
 
 	#install precompiled gtest and gmock
-    schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
-        libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev \
-        libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+		libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev \
+		libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev
 
 	FILTER_OPTIONS=("PYBUILD_TEST_ARGS")
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
