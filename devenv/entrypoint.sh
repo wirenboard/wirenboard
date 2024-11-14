@@ -55,21 +55,6 @@ esac
 # current-<arch> targets are (or should be) used by CI (jenkins)
 
 case "$WBDEV_TARGET" in
-stretch-armhf|wb6)
-    WBDEV_TARGET_BOARD="wb6"
-    WBDEV_TARGET_ARCH="armhf"
-    WBDEV_TARGET_RELEASE="stretch"
-    ;;
-stretch-armel|wb5|current-armel)
-    WBDEV_TARGET_BOARD="wb5"
-    WBDEV_TARGET_ARCH="armel"
-    WBDEV_TARGET_RELEASE="stretch"
-    ;;
-stretch-host|host|stretch-amd64)
-    WBDEV_TARGET_BOARD="host"
-    WBDEV_TARGET_ARCH="amd64"
-    WBDEV_TARGET_RELEASE="stretch"
-    ;;
 bullseye-armhf|current-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
@@ -212,7 +197,7 @@ get_stable_repo_spec() {
 
         if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
             echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build" >&2
-            STABLE_REPO_SPEC="deb [arch=armhf,armel,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
+            STABLE_REPO_SPEC="deb [arch=armhf,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
         else
             echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)" >&2
         fi
@@ -228,7 +213,7 @@ get_unstable_repo_spec() {
     if [ "${WBDEV_TARGET_BOARD}" != "host" ]; then
         if platform_has_suite unstable $WB_REPO_PLATFORM; then
             echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build" >&2
-            UNSTABLE_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
+            UNSTABLE_REPO_SPEC="deb [arch=armhf,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
         else
             echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite" >&2
         fi
@@ -253,7 +238,7 @@ sbuild_buildpackage() {
     if [ -n "$WBDEV_TESTING_SETS" ]; then
         IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
         for testing_set in "${testing_sets[@]}"; do
-            local TESTING_SET_REPO_SPEC="deb [arch=armhf,armel,amd64,arm64] http://deb.wirenboard.com/all experimental.${testing_set} main"
+            local TESTING_SET_REPO_SPEC="deb [arch=armhf,amd64,arm64] http://deb.wirenboard.com/all experimental.${testing_set} main"
             SBUILD_ARGS+=(--extra-repository="$TESTING_SET_REPO_SPEC")
         done
     fi
@@ -278,7 +263,7 @@ sbuild_buildpackage() {
 
 print_target_info() {
     echo "Build target: ${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH} (board ${WBDEV_TARGET_BOARD})"
-    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'stretch-armhf'/'stretch-armel' or 'wb6'/'wb5')"
+    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'bullseye-armhf'/'bullseye-arm64')"
 }
 
 case "$cmd" in
@@ -308,9 +293,6 @@ case "$cmd" in
     gdeb)
         print_target_info
         case "$WBDEV_TARGET_ARCH" in
-            armel)
-                devsudo CC=arm-linux-gnueabi-gcc dpkg-buildpackage -b -aarmel -us -uc "$@"
-                ;;
             armhf)
                 devsudo CC=arm-linux-gnueabihf-gcc dpkg-buildpackage -b -aarmhf -us -uc "$@"
                 ;;

@@ -23,24 +23,14 @@ do_build_sbuild_env() {
 	local ADD_PACKAGES=("$@")
 
 	REPO="http://debian-mirror.wirenboard.com/debian"
-	if [[ "$RELEASE" = "stretch" ]]; then
-		REPO="http://archive.debian.org/debian"
-	fi
 
-	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf crossbuild-essential-armel build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
 	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 	touch /etc/ccache.conf  # make schroot's copyfiles happy
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
-	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armel
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
-
-	#install mosquitto from debian repo to avoid future conflicts with contactless versions
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
-		libmosquittopp-dev:arm64 libmosquitto-dev:arm64 \
-		libmosquittopp-dev:armhf libmosquitto-dev:armhf \
-		libmosquittopp-dev:armel libmosquitto-dev:armel
 
 	#add conactless repo
 	echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
@@ -60,14 +50,7 @@ Pin: release o=wirenboard
 Pin-Priority: 991
 EOF
 
-	if [[ "$RELEASE" = "stretch" ]]; then
-		echo "deb http://archive.debian.org/debian stretch-backports main" > ${ROOTFS}/etc/apt/sources.list.d/stretch-backports.list
-		cat <<EOF >${ROOTFS}/etc/apt/preferences.d/nodejs
-Package: node*:any npm:any libuv1*:any
-Pin: release a=stretch-backports
-Pin-Priority: 510
-EOF
-	elif [[ "$RELEASE" = "bullseye" ]]; then
+	if [[ "$RELEASE" = "bullseye" ]]; then
 		echo "deb http://debian-mirror.wirenboard.com/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
 		cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
 Package: libnm0 libmbim-*:any libqmi-*:any gir1.2-mbim-1.0 git1.2-qmi-1.0
@@ -90,7 +73,6 @@ EOF
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
 		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 libc-ares2:arm64 \
 		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
-		libssl-dev:armel linux-libc-dev:armel libc6-dev:armel libc-ares2:armel \
 		golang-go node-rimraf python3-jinja2 \
 		"${ADD_PACKAGES[@]}"
 
@@ -98,11 +80,9 @@ EOF
 	cp /usr/bin/qemu-{aarch64,arm}-static ${ROOTFS}/usr/bin/
 
 	#install precompiled gtest and gmock
-	if [[ "$RELEASE" = "stretch" ]]; then
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install -t stretch-backports libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:armhf libgmock-dev:armel libgmock-dev
-	else
-		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev:armel libgtest-dev libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev:armel libgmock-dev
-	fi
+    schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+        libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev \
+        libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev
 
 	FILTER_OPTIONS=("PYBUILD_TEST_ARGS")
 	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
@@ -119,7 +99,7 @@ $WRAPPER_LINES
 EOF
 	cat <<EOF > /etc/sbuild/sbuild.conf
 use Dpkg::Build::Info;
-\$environment_filter = [Dpkg::Build::Info::get_build_env_whitelist(), $ENV_FILTER_LINES];
+\$environment_filter = [Dpkg::Build::Info::get_build_env_allowed(), $ENV_FILTER_LINES];
 \$build_env_cmnd = '/deb_build_options_wrapper.sh';
 EOF
 	chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
@@ -135,13 +115,9 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-#do_build stretch armel 58 wb2
-#do_build stretch armhf 6x wb6
-
 do_build bullseye armhf 6x wb6
 do_build bullseye arm64 8x wb8
 
-#do_build_sbuild_env stretch
 do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:
