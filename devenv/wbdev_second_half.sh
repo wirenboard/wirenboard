@@ -50,7 +50,7 @@ elif [[ -z "$DEV_DIR" ]]; then
 fi
 
 if [[ -n "$DEV_CCACHE_VOLUME" ]]; then
-    WBDEV_CCACHE_DIR=${WBDEV_CCACHE_DIR:-/var/cache/ccache}
+    export WBDEV_CCACHE_DIR=${WBDEV_CCACHE_DIR:-/var/cache/ccache}
     VOLUMES="$VOLUMES -v $DEV_CCACHE_VOLUME:$WBDEV_CCACHE_DIR"
 else
     if [[ -n "$WBDEV_CCACHE_DIR" ]]; then
