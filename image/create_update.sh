@@ -68,7 +68,11 @@ if [[ -d "$ROOTFS" ]]; then
 
 	echo "Creating rootfs tarball"
 	pushd "$ROOTFS" >/dev/null
-	sudo tar czp --numeric-owner ./ > "$ROOTFS_TARBALL" || die "tarball of $ROOTFS creation failed"
+	# to speedup FIT installing, rootfs files should be sorted (dtbs at the beginning)
+	sorted_files_list=`mktemp`
+	find . | sort > $sorted_files_list
+	sudo tar czpf "$ROOTFS_TARBALL" --numeric-owner --no-recursion --files-from=$sorted_files_list || die "tarball of $ROOTFS creation failed"
+	rm $sorted_files_list
 	popd >/dev/null
 elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
