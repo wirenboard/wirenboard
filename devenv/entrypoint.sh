@@ -91,9 +91,11 @@ umask = 002
 EOF
     export PATH="/usr/lib/ccache:$PATH"
 
-    cp /etc/ccache.conf $ROOTFS/etc/ccache.conf
-    cp /usr/local/bin/ccache-setup $ROOTFS/usr/local/bin/ccache-setup
-    mkdir -p $ROOTFS/var/cache/ccache && chmod 777 $ROOTFS/var/cache/ccache
+    if [ -d "$ROOTFS" ]; then
+        cp /etc/ccache.conf $ROOTFS/etc/ccache.conf
+        cp /usr/local/bin/ccache-setup $ROOTFS/usr/local/bin/ccache-setup
+        mkdir -p $ROOTFS/var/cache/ccache && chmod 777 $ROOTFS/var/cache/ccache
+    fi
 fi
 
 rm -f /.devdir $ROOTFS/.devdir
