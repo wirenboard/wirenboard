@@ -21,16 +21,6 @@ pkgs=(devscripts equivs build-essential \
 
 chr_apt_install "${pkgs[@]}"
 
-##fix me
-echo "/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
-echo "/usr/lib/arm-linux-gnueabi" >> /etc/ld.so.conf.d/multiarch.conf
-echo "/usr/arm-linux-gnueabi/lib" >> /etc/ld.so.conf.d/multiarch.conf
-# for wb-mqtt-knx
-if [ ! -e /usr/lib/x86_64-linux-gnu/libeibclient.so ]; then
-#FIX ME
-	ln -s /usr/lib/x86_64-linux-gnu/libeibclient.so.0 /usr/lib/x86_64-linux-gnu/libeibclient.so | true 
-fi
-
 cp /etc/profile.d/wbdev_profile.sh $ROOTFS/etc/profile.d/
 
 chr apt-get clean
