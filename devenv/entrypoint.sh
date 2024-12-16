@@ -87,7 +87,7 @@ max_size = $WBDEV_CCACHE_MAX_SIZE
 compression = true
 compression_level = 6
 hard_link = false
-umask = 002
+umask = 000
 EOF
     export PATH="/usr/lib/ccache:$PATH"
 
@@ -359,7 +359,7 @@ case "$cmd" in
                 chr apt-get update
                 chr mk-build-deps -ir -t "apt-get --force-yes -y"
             fi
-            chu dpkg-buildpackage -us -uc "$@"
+            chu ccache-setup dpkg-buildpackage -us -uc "$@"
         fi
         ;;
     chroot)
