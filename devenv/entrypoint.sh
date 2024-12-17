@@ -341,7 +341,7 @@ case "$cmd" in
             chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
         fi
         chr apt-get update
-        chr mk-build-deps -ir -t "apt-get --force-yes -y"
+        chr mk-build-deps -ir -t "apt-get --force-yes -y -o Dpkg::Options::=--force-confdef"
         if [ -f CMakeLists.txt ]; then
             chu mkdir -p build; ( cd build && PKG_CONFIG_PATH=$ROOTFS_PKG_CONFIG_PATH cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .. )
             mv build/compile_commands.json compile_commands.json
