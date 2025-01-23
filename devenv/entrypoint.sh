@@ -48,7 +48,7 @@ case "$WBDEV_BUILD_METHOD" in
 sbuild|qemuchroot)
     ;;
 *)
-    echo "Warning: sbuild+multiarch will be used. Set WBDEV_BUILD_METHOD=qemuchroot for legacy virtualized build."
+    echo "Warning: sbuild+multiarch will be used. Set WBDEV_BUILD_METHOD=qemuchroot for legacy virtualized build." >&2
     WBDEV_BUILD_METHOD="sbuild"
 esac
 
