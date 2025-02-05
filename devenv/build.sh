@@ -73,7 +73,7 @@ EOF
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
 		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 libc-ares2:arm64 \
 		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
-		golang-go node-rimraf python3-jinja2 \
+		golang-1.21-go node-rimraf python3-jinja2 \
 		"${ADD_PACKAGES[@]}"
 
 	#virtualization support packages

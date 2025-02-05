@@ -28,8 +28,6 @@ RUN apt update && apt install -y curl wget gnupg && \
     fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
     rsync \
-    # legacy requirement for go-required packages \
-    golang-go \
     # for Jenkins deployments \
     python3-wbci s3cmd \
     # to install fpm later for simple package building \
