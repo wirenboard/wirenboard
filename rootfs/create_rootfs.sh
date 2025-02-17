@@ -334,7 +334,7 @@ service mosquitto stop || /bin/true
 
 chr /usr/sbin/mosquitto -d -c /etc/mosquitto/mosquitto.conf
 
-date '+%Y%m%d%H%M' > ${OUTPUT}/etc/wb-fw-version
+echo "202501301119" > ${OUTPUT}/etc/wb-fw-version
 
 set_fdt() {
     cat > ${OUTPUT}/boot/uEnv.txt << EOF
@@ -422,6 +422,8 @@ if dpkg --compare-versions "$WB_UTILS_VERSION" ge "4.0.0"; then
 else
     echo "wb-utils is old, do not clear machine-id"
 fi
+
+sed -i 's/^RELEASE_NAME=.*$/RELEASE_NAME=202501301119/' ${OUTPUT}/usr/lib/wb-release
 
 # (re-)start mosquitto on host
 service mosquitto start || /bin/true
