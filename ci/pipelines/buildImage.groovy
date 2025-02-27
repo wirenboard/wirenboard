@@ -67,6 +67,9 @@ pipeline {
         }
         stage('Build rootfs') {
             steps {
+                script {
+                    currentBuild.displayName = "#${BUILD_NUMBER} (${BOARD}/${WB_RELEASE})"
+                }
                 sh """
                     wbdev root bash -c 'rm -rf ./output/rootfs_wb$BOARD;
                     WB_REPO_PREFIX=$REPO_PREFIX WB_TARGET=$WB_TARGET WB_RELEASE=$WB_RELEASE \\
