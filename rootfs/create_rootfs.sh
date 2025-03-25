@@ -164,7 +164,6 @@ setup_additional_repos() {
     cat  $ADD_REPO_FILE
     echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
     cat  $ADD_REPO_PIN_FILE
-
 }
 
 run_additional_script() {
@@ -226,7 +225,7 @@ else
         --verbose \
         --arch $ARCH \
         --variant=minbase \
-        --include=ca-certificates \
+        --include=ca-certificates,gpgv \
         ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
     if $WB_COPY_QEMU; then
@@ -277,7 +276,13 @@ EOM
     echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
     echo "deb http://debian-mirror.wirenboard.com/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
 
-    install_contactless_repo
+    echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > ${OUTPUT}/etc/apt/apt.conf.d/99use-gpgv
+    chr_apt_update update
+    chr_apt_install gnupg1
+    chr gpg1 --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
+    chr gpg1 --export AEE07869 | tee ${OUTPUT}/etc/apt/trusted.gpg.d/contactless-keyring.gpg
+
+    #install_contactless_repo
     # apt pin
     echo "Set temporary APT PIN"
     echo "Package: *" > ${APT_PIN_TMP_FNAME}
@@ -372,8 +377,8 @@ rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
 sed "/$(hostname)/d" -i "`readlink -f ${OUTPUT}/etc/hosts`"
 
 echo "remove installation time apt pinning and lists"
-rm ${APT_LIST_TMP_FNAME}
-rm ${APT_PIN_TMP_FNAME}
+#rm ${APT_LIST_TMP_FNAME}
+#rm ${APT_PIN_TMP_FNAME}
 
 if ! $WB_TEMP_REPO; then
     echo "regenerate default apt lists for consistency"
@@ -388,7 +393,8 @@ fi
 
 echo "cleanup apt caches"
 chr apt-get clean
-rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
+rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/*
+find ${OUTPUT}/var/lib/apt/lists/ -type f -not -path "*/partial" -delete
 
 WB_UTILS_VERSION=$(chr dpkg -s wb-utils | grep Version | awk '{print $2}')
 
