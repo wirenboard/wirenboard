@@ -35,7 +35,7 @@ WBDEV_CCACHE_MAX_SIZE=${WBDEV_CCACHE_MAX_SIZE:-"10G"}
 WBDEV_TARGET_BOARD=${WBDEV_TARGET_BOARD:-wb6}
 WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armhf}
 WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
-WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"bullseye"}
+WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"trixie"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
 WBDEV_TESTING_SETS=${WBDEV_TESTING_SETS:-""}
 
@@ -55,23 +55,23 @@ esac
 # current-<arch> targets are (or should be) used by CI (jenkins)
 
 case "$WBDEV_TARGET" in
-bullseye-armhf|current-armhf)
+trixie-armhf|current-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
-    WBDEV_TARGET_RELEASE="bullseye"
-    ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig"
+    WBDEV_TARGET_RELEASE="trixie"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig"
     ;;
-bullseye-arm64|current-arm64|wb8)
+trixie-arm64|current-arm64|wb8)
     WBDEV_TARGET_BOARD="wb8"
     WBDEV_TARGET_ARCH="arm64"
-    WBDEV_TARGET_RELEASE="bullseye"
+    WBDEV_TARGET_RELEASE="trixie"
     QEMU_ARCH="aarch64"
-    ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
     ;;
-bullseye-host|bullseye-amd64|current-amd64)
+trixie-host|trixie-amd64|current-amd64)
     WBDEV_TARGET_BOARD="host"
     WBDEV_TARGET_ARCH="amd64"
-    WBDEV_TARGET_RELEASE="bullseye"
+    WBDEV_TARGET_RELEASE="trixie"
     ;;
 esac
 
@@ -197,7 +197,7 @@ get_stable_repo_spec() {
 
     if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
         echo "host target selected, using dev-tools repo as stable" >&2
-        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
+        #STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
@@ -213,7 +213,7 @@ get_stable_repo_spec() {
 }
 
 get_unstable_repo_spec() {
-    local UNSTABLE_REPO_SPEC=""
+    local UNSTABLE_REPO_SPEC="deb http://deb.wirenboard.com/all experimental.trixie main"
     local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
     if [ "${WBDEV_TARGET_BOARD}" != "host" ]; then
@@ -234,6 +234,14 @@ sbuild_buildpackage() {
 
     export _DEB_BUILD_OPTIONS=${DEB_BUILD_OPTIONS}
     export _PYBUILD_TEST_ARGS=${PYBUILD_TEST_ARGS}
+
+    local build_profiles=()
+    local profile
+    for profile in ${DEB_BUILD_PROFILES:-}; do
+        if [ "$profile" != "cross" ]; then
+            build_profiles+=("$profile")
+        fi
+    done
 
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
@@ -256,18 +264,24 @@ sbuild_buildpackage() {
     fi
     SBUILD_ARGS+=(--no-apt-upgrade --no-apt-distupgrade)
     SBUILD_ARGS+=(-d "${WBDEV_TARGET_RELEASE}")
+    SBUILD_ARGS+=(--no-clean-source)
     SBUILD_ARGS+=("$@")
 
     if has_arch_all; then
         echo "Build packages for Architecture: all"
-        sbuild --arch-all --no-arch-any "${SBUILD_ARGS[@]}"
+        DEB_BUILD_PROFILES="${build_profiles[*]}" \
+            sbuild --arch-all --no-arch-any "${SBUILD_ARGS[@]}"
     else
         echo "No Architecture: all packages in this source"
     fi
 
     if has_arch_any; then
         echo "Build packages for binary architectures"
-        sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
+        if [ "$ARCH" != "$(dpkg --print-architecture)" ]; then
+            build_profiles+=("cross")
+        fi
+        DEB_BUILD_PROFILES="${build_profiles[*]}" \
+            sbuild --no-arch-all --arch-any --host="$ARCH" "${SBUILD_ARGS[@]}"
     else
         echo "No binary architecture packages in this source"
     fi
@@ -275,7 +289,7 @@ sbuild_buildpackage() {
 
 print_target_info() {
     echo "Build target: ${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH} (board ${WBDEV_TARGET_BOARD})"
-    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'bullseye-armhf'/'bullseye-arm64')"
+    echo "You can change it by setting WBDEV_TARGET variable (e.g. 'trixie-armhf'/'trixie-arm64')"
 }
 
 case "$cmd" in
@@ -290,7 +304,7 @@ case "$cmd" in
         if [ "$WBDEV_BUILD_METHOD" = "sbuild" ]; then
             echo "WARNING: wbdev ndeb with sbuild is deprecated."
             echo "  To build arch-all package for Wiren Board, use wbdev cdeb instead."
-            echo "  To build for dev machine, use wbdev cdeb with WBDEV_TARGET=bullseye-host."
+            echo "  To build for dev machine, use wbdev cdeb with WBDEV_TARGET=trixie-host."
             echo ""
 
             sbuild_buildpackage amd64 "$@"
