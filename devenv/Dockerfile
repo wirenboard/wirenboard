@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie
 ARG PYPI_REGISTRY_URL="https://nexus.hq.wirenboard.com/repository/pypi-group/simple/"
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
@@ -7,8 +7,9 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
 # ca-certificates should be installed before moving to debian-mirror.wirenboard.com
-RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
+RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list.d/debian.sources && \
     apt update && apt install -y curl wget gnupg && \
+    echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > /etc/apt/apt.conf.d/99use-gpgv && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
@@ -16,9 +17,9 @@ RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
     apt-get install -y --allow-unauthenticated gnupg1 ca-certificates && \
     # TODO: add llvm dependencies to our own repository \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
-       /etc/apt/sources.list.d/llvm-bullseye-15.list && \
-    sed -i 's#mirror.docker.ru#debian-mirror.wirenboard.com#' /etc/apt/sources.list && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/trixie/ llvm-toolchain-trixie-22 main" > \
+       /etc/apt/sources.list.d/llvm-trixie-22.list && \
+    sed -i 's#mirror.docker.ru#debian-mirror.wirenboard.com#' /etc/apt/sources.list.d/debian.sources && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
@@ -28,7 +29,7 @@ RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
        python3-netaddr python3-pyparsing libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
-       clang-format-15 clang-tidy-15 lintian ccache \
+       clang-format-22 clang-tidy-22 lintian ccache \
     # for image building \
     fdisk u-boot-tools-wb fit-aligner cpio \
     # legacy requirement for kernel building \
@@ -40,8 +41,8 @@ RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
     # for clang-tidy checks
     pip3 install compiledb -i ${PYPI_REGISTRY_URL} && \
     # set as defauls
-    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100 && \
-    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-15 100
+    update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-22 100 && \
+    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-22 100
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
@@ -86,4 +87,4 @@ ENV LC_ALL en_US.UTF-8
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
-RUN rm -rf /var/lib/apt/lists/*
+RUN find /var/lib/apt/lists/ -type f -not -path "*/partial" -delete
