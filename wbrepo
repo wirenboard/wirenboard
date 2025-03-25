@@ -129,7 +129,7 @@ fi
 
 case $1 in
 add)
-    aptly $APTLY_ARGS repo add $REPO_NAME ${@:2}
+    aptly $APTLY_ARGS repo add -force-replace $REPO_NAME ${@:2}
     aptly $APTLY_ARGS publish drop $DISTRIBUTION >/dev/null 2>/dev/null || true
     aptly $APTLY_ARGS publish repo -architectures="$ARCH" -distribution="$DISTRIBUTION" $REPO_ARGS $REPO_NAME 2>/dev/null
 ;;

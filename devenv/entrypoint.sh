@@ -35,7 +35,7 @@ WBDEV_CCACHE_MAX_SIZE=${WBDEV_CCACHE_MAX_SIZE:-"10G"}
 WBDEV_TARGET_BOARD=${WBDEV_TARGET_BOARD:-wb6}
 WBDEV_TARGET_ARCH=${WBDEV_TARGET_ARCH:-armhf}
 WBDEV_INSTALL_DEPS=${WBDEV_INSTALL_DEPS:-no}
-WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"bullseye"}
+WBDEV_TARGET_RELEASE=${WBDEV_TARGET_RELEASE:-"trixie"}
 WBDEV_TARGET=${WBDEV_TARGET:-""}
 WBDEV_TESTING_SETS=${WBDEV_TESTING_SETS:-""}
 
@@ -55,23 +55,41 @@ esac
 # current-<arch> targets are (or should be) used by CI (jenkins)
 
 case "$WBDEV_TARGET" in
-bullseye-armhf|current-armhf)
+bullseye-armhf)
     WBDEV_TARGET_BOARD="wb6"
     WBDEV_TARGET_ARCH="armhf"
     WBDEV_TARGET_RELEASE="bullseye"
     ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig"
     ;;
-bullseye-arm64|current-arm64|wb8)
+bullseye-arm64)
     WBDEV_TARGET_BOARD="wb8"
     WBDEV_TARGET_ARCH="arm64"
     WBDEV_TARGET_RELEASE="bullseye"
     QEMU_ARCH="aarch64"
     ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
     ;;
-bullseye-host|bullseye-amd64|current-amd64)
+bullseye-host|bullseye-amd64)
     WBDEV_TARGET_BOARD="host"
     WBDEV_TARGET_ARCH="amd64"
     WBDEV_TARGET_RELEASE="bullseye"
+    ;;
+trixie-armhf|current-armhf)
+    WBDEV_TARGET_BOARD="wb6"
+    WBDEV_TARGET_ARCH="armhf"
+    WBDEV_TARGET_RELEASE="trixie"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig"
+    ;;
+trixie-arm64|current-arm64|wb8)
+    WBDEV_TARGET_BOARD="wb8"
+    WBDEV_TARGET_ARCH="arm64"
+    WBDEV_TARGET_RELEASE="trixie"
+    QEMU_ARCH="aarch64"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
+    ;;
+trixie-host|trixie-amd64|current-amd64)
+    WBDEV_TARGET_BOARD="host"
+    WBDEV_TARGET_ARCH="amd64"
+    WBDEV_TARGET_RELEASE="trixie"
     ;;
 esac
 
@@ -160,7 +178,7 @@ platform_has_suite() {
     local SUITE=$1
     local PLATFORM=$2
 
-    local URL="http://deb.wirenboard.com/$(wb_repo_path $PLATFORM)/dists/${SUITE}/Release"
+    local URL="https://deb.wirenboard.com/$(wb_repo_path $PLATFORM)/dists/${SUITE}/Release"
     local HTTP_CODE
     echo "Checking $URL..." >&2
     HTTP_CODE=`curl --silent --head --location --output /dev/null --write-out '%{http_code}\n' $URL`
@@ -197,13 +215,13 @@ get_stable_repo_spec() {
 
     if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
         echo "host target selected, using dev-tools repo as stable" >&2
-        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
+        #STABLE_REPO_SPEC="deb https://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
         if platform_has_suite "${WBDEV_TARGET_REPO_RELEASE}" "${WB_REPO_PLATFORM}"; then
             echo "Platform $WB_REPO_PLATFORM has ${WBDEV_TARGET_REPO_RELEASE} suite, add it to build" >&2
-            STABLE_REPO_SPEC="deb [arch=armhf,arm64,amd64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
+            STABLE_REPO_SPEC="deb [arch=armhf,arm64,amd64] https://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) ${WBDEV_TARGET_REPO_RELEASE} main"
         else
             echo "WARNING: Platform ${WB_REPO_PLATFORM} doesn't have ${WBDEV_TARGET_REPO_RELEASE} suite! (building for pre-production?)" >&2
         fi
@@ -213,13 +231,13 @@ get_stable_repo_spec() {
 }
 
 get_unstable_repo_spec() {
-    local UNSTABLE_REPO_SPEC=""
+    local UNSTABLE_REPO_SPEC="deb https://deb.wirenboard.com/all experimental.trixie main"
     local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
     if [ "${WBDEV_TARGET_BOARD}" != "host" ]; then
         if platform_has_suite unstable $WB_REPO_PLATFORM; then
             echo "Platform ${WB_REPO_PLATFORM} has unstable suite, add it to build" >&2
-            UNSTABLE_REPO_SPEC="deb [arch=armhf,amd64,arm64] http://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
+            UNSTABLE_REPO_SPEC="deb [arch=armhf,amd64,arm64] https://deb.wirenboard.com/$(wb_repo_path $WB_REPO_PLATFORM) unstable main"
         else
             echo "Platform ${WB_REPO_PLATFORM} doesn't have unstable suite" >&2
         fi
@@ -238,18 +256,25 @@ sbuild_buildpackage() {
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        SBUILD_ARGS+=(--extra-repository="$(get_unstable_repo_spec)")
+        unstable_repo_spec=$(get_unstable_repo_spec)
+        if [ -n "$unstable_repo_spec" ]; then
+            SBUILD_ARGS+=(--extra-repository="$unstable_repo_spec")
+        fi
     fi
-    SBUILD_ARGS+=(--extra-repository="$(get_stable_repo_spec)")
+    stable_repo_spec=$(get_stable_repo_spec)
+    if [ -n "$stable_repo_spec" ]; then
+        SBUILD_ARGS+=(--extra-repository="$stable_repo_spec")
+    fi
     if [ -n "$WBDEV_TESTING_SETS" ]; then
         IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
         for testing_set in "${testing_sets[@]}"; do
-            local TESTING_SET_REPO_SPEC="deb [arch=armhf,amd64,arm64] http://deb.wirenboard.com/all experimental.${testing_set} main"
+            local TESTING_SET_REPO_SPEC="deb [arch=armhf,amd64,arm64] https://deb.wirenboard.com/all experimental.${testing_set} main"
             SBUILD_ARGS+=(--extra-repository="$TESTING_SET_REPO_SPEC")
         done
     fi
     SBUILD_ARGS+=(--no-apt-upgrade --no-apt-distupgrade)
     SBUILD_ARGS+=(-d "${WBDEV_TARGET_RELEASE}")
+    SBUILD_ARGS+=(--no-clean-source)
     SBUILD_ARGS+=("$@")
 
     if has_arch_all; then
@@ -336,9 +361,15 @@ case "$cmd" in
     compiledb)
         print_target_info
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            unstable_repo_spec=$(get_unstable_repo_spec)
+            if [ -n "$unstable_repo_spec" ]; then
+                chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         else
-            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            stable_repo_spec=$(get_stable_repo_spec)
+            if [ -n "$stable_repo_spec" ]; then
+                chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         fi
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y -o Dpkg::Options::=--force-confdef"
@@ -370,9 +401,15 @@ case "$cmd" in
     chroot)
         print_target_info
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            unstable_repo_spec=$(get_unstable_repo_spec)
+            if [ -n "$unstable_repo_spec" ]; then
+                chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         else
-            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            stable_repo_spec=$(get_stable_repo_spec)
+            if [ -n "$stable_repo_spec" ]; then
+                chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         fi
         chr "$@"
         ;;
