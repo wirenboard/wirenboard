@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 
@@ -7,13 +7,13 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
-       /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
-    apt-get install -y --allow-unauthenticated gnupg1 ca-certificates && \
+    #echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
+    #   /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
+    #apt-get install -y --allow-unauthenticated gnupg1 ca-certificates && \
     # TODO: add llvm dependencies to our own repository \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
-       /etc/apt/sources.list.d/llvm-bullseye-15.list && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/unstable/ llvm-toolchain-20 main" > \
+       /etc/apt/sources.list.d/llvm-unstable-20.list && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
@@ -21,24 +21,24 @@ RUN apt update && apt install -y curl wget gnupg && \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
-       python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
+       python3-netaddr python3-pyparsing libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
-       clang-format clang-tidy lintian ccache \
+       clang-format clang-tidy lintian ccache #\
     # for image building \
-    fdisk u-boot-tools fit-aligner cpio \
+    #fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
-    rsync \
+    #rsync \
     # for Jenkins deployments \
-    python3-wbci s3cmd \
+    #python3-wbci s3cmd \
     # to install fpm later for simple package building \
-    ruby-rubygems && gem install fpm && \
+    #ruby-rubygems && gem install fpm && \
     # for clang-tidy checks
-    pip3 install compiledb
+    #pip3 install compiledb
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
 COPY common-deps.sh /root/
-RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -y "${KNOWN_BUILD_DEPS[@]}"'
+#RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -y "${KNOWN_BUILD_DEPS[@]}"'
 
 
 # FIXME: we should not install anything with --force-yes
@@ -60,17 +60,12 @@ COPY boards /root/boards
 COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
 COPY chr /usr/local/bin/
-COPY debootstrap-functions.diff /usr/share/debootstrap/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 
 RUN mkdir -p /var/cache/ccache && chmod 777 /var/cache/ccache
 COPY schroot/fstab /etc/schroot/sbuild/fstab
 COPY schroot/copyfiles /etc/schroot/sbuild/copyfiles
 COPY schroot/ccache-setup /usr/local/bin/ccache-setup
-
-# patch a bug in debootstrap/functions, preventing schroot from working inside Docker 
-# see https://bugs.launchpad.net/ubuntu/+source/debootstrap/+bug/1948713
-RUN patch /usr/share/debootstrap/functions < /usr/share/debootstrap/debootstrap-functions.diff
 
 RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
@@ -83,5 +78,5 @@ ENV LC_ALL en_US.UTF-8
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
-RUN npm install -g bower grunt-cli
+#RUN npm install -g bower grunt-cli
 RUN rm -rf /var/lib/apt/lists/*

@@ -1,5 +1,5 @@
 DOCKER ?= docker
-WBDEV_IMAGE ?= contactless/devenv
+WBDEV_IMAGE ?= contactless/devenv:trixie
 
 all:
 	tar -czh . | $(DOCKER) build --no-cache -t $(WBDEV_IMAGE) -
