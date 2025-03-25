@@ -109,9 +109,9 @@ Usage:
 To change target architecture you should use environment variable
 WBDEV_TARGET. Possible values:
 
-* `bullseye-armhf`, `current-armhf` build bullseye package for armhf target (default)
-* `bullseye-arm64`, `current-arm64` build bullseye package for arm64 target
-* `bullseye-host`, `bullseye-amd64`, `current-amd64` build bullseye package for amd64 target
+* `trixie-armhf`, `current-armhf` build trixie package for armhf target (default)
+* `trixie-arm64`, `current-arm64` build trixie package for arm64 target
+* `trixie-host`, `trixie-amd64`, `current-amd64` build trixie package for amd64 target
 
 Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
 

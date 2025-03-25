@@ -1,4 +1,4 @@
 #!/bin/bash
 set -u -e
-ROOTFS=${ROOTFS:-/rootfs/bullseye-armhf}
+ROOTFS=${ROOTFS:-/rootfs/trixie-armhf}
 proot -R $ROOTFS -q qemu-arm-static /bin/bash "$@"

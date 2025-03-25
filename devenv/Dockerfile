@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:trixie
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 
@@ -6,18 +6,19 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
 # ca-certificates should be installed before moving to debian-mirror.wirenboard.com
-RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
+RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list.d/debian.sources && \
     apt update && apt install -y curl wget gnupg && \
+    echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > /etc/apt/apt.conf.d/99use-gpgv && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools experimental.trixie main" > \
        /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     apt-get install -y --allow-unauthenticated gnupg1 ca-certificates && \
     # TODO: add llvm dependencies to our own repository \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
-       /etc/apt/sources.list.d/llvm-bullseye-15.list && \
-    sed -i 's#mirror.docker.ru#debian-mirror.wirenboard.com#' /etc/apt/sources.list && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/unstable/ llvm-toolchain-15 main" > \
+       /etc/apt/sources.list.d/llvm-unstable-15.list && \
+    sed -i 's#mirror.docker.ru#debian-mirror.wirenboard.com#' /etc/apt/sources.list.d/debian.sources && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
@@ -85,4 +86,4 @@ ENV LC_ALL en_US.UTF-8
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
-RUN rm -rf /var/lib/apt/lists/*
+RUN find /var/lib/apt/lists/ -type f -not -path "*/partial" -delete
