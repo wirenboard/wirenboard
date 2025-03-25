@@ -8,7 +8,7 @@ do_build() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4 WB_RELEASE=${5:-stable} ADDITIONAL_REPOS=${*:6}
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
 
-	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH WB_RELEASE=$WB_RELEASE WB_COPY_QEMU=true /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
+	time DEBIAN_RELEASE=$RELEASE DEBIAN_MIRROR=https://mirror.docker.ru ARCH=$ARCH WB_RELEASE=$WB_RELEASE WB_COPY_QEMU=true /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
 
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
@@ -22,18 +22,20 @@ do_build_sbuild_env() {
 	shift
 	local ADD_PACKAGES=("$@")
 
-	REPO="http://debian-mirror.wirenboard.com/debian"
+	REPO="https://mirror.docker.ru/debian"
 
-	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache gpgv" ${RELEASE} ${ROOTFS} ${REPO}
 	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 	touch /etc/ccache.conf  # make schroot's copyfiles happy
+
+	echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > ${ROOTFS}/etc/apt/apt.conf.d/99use-gpgv
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
 
 	#add conactless repo
-	echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
+	#echo "deb https://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
 	cp /usr/share/keyrings/contactless-keyring.gpg ${ROOTFS}/etc/apt/trusted.gpg.d/
 
 	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/wb-releases
@@ -62,10 +64,23 @@ EOF
 
 	#install multi-arch common build dependencies
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
-		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 libc-ares2:arm64 \
-		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
-		golang-1.21-go python3-jinja2 \
+		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 \
+		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf \
+		python3-jinja2 \
 		"${ADD_PACKAGES[@]}"
+
+	if [[ "$RELEASE" = "bullseye" ]]; then
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+			libglib2.0-0 \
+			libc-ares2:arm64 libc-ares2:armhf \
+			golang-1.21-go # backport from dev-tools repo
+	elif [[ "$RELEASE" = "trixie" ]]; then
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+			libglib2.0-0t64 \
+			libcares2:arm64 libcares2:armhf \
+			golang-1.24-go \
+			binutils-gold-aarch64-linux-gnu # https://github.com/golang/go/issues/22040
+	fi
 
 	#virtualization support packages
 	cp /usr/bin/qemu-{aarch64,arm}-static ${ROOTFS}/usr/bin/
@@ -92,6 +107,8 @@ EOF
 use Dpkg::Build::Info;
 \$environment_filter = [Dpkg::Build::Info::get_build_env_allowed(), $ENV_FILTER_LINES];
 \$build_env_cmnd = '/deb_build_options_wrapper.sh';
+\$chroot_mode = "schroot";
+\$schroot = "schroot";
 EOF
 	chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
 
@@ -106,10 +123,14 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build bullseye armhf 6x wb6
-do_build bullseye arm64 8x wb8
+#do_build bullseye armhf 6x wb6
+#do_build bullseye arm64 8x wb8
 
-do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
+do_build trixie armhf 6x wb6 testing https://deb.wirenboard.com/all@experimental.trixie:main
+do_build trixie arm64 8x wb8 testing https://deb.wirenboard.com/all@experimental.trixie:main
+
+#do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
+do_build_sbuild_env trixie "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash
