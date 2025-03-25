@@ -73,6 +73,24 @@ bullseye-host|bullseye-amd64|current-amd64)
     WBDEV_TARGET_ARCH="amd64"
     WBDEV_TARGET_RELEASE="bullseye"
     ;;
+trixie-armhf)
+    WBDEV_TARGET_BOARD="wb6"
+    WBDEV_TARGET_ARCH="armhf"
+    WBDEV_TARGET_RELEASE="trixie"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig"
+    ;;
+trixie-arm64)
+    WBDEV_TARGET_BOARD="wb8"
+    WBDEV_TARGET_ARCH="arm64"
+    WBDEV_TARGET_RELEASE="trixie"
+    QEMU_ARCH="aarch64"
+    ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
+    ;;
+trixie-host|trixie-amd64)
+    WBDEV_TARGET_BOARD="host"
+    WBDEV_TARGET_ARCH="amd64"
+    WBDEV_TARGET_RELEASE="trixie"
+    ;;
 esac
 
 WBDEV_TARGET_REPO_RELEASE=${WBDEV_TARGET_REPO_RELEASE:-"stable"}
@@ -237,10 +255,11 @@ sbuild_buildpackage() {
 
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
-    if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        SBUILD_ARGS+=(--extra-repository="$(get_unstable_repo_spec)")
-    fi
-    SBUILD_ARGS+=(--extra-repository="$(get_stable_repo_spec)")
+    #if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+    #    SBUILD_ARGS+=(--extra-repository="$(get_unstable_repo_spec)")
+    #fi
+    #SBUILD_ARGS+=(--extra-repository="$(get_stable_repo_spec)")
+    SBUILD_ARGS+=(--extra-repository="deb http://deb.wirenboard.com/all experimental.trixie main")
     if [ -n "$WBDEV_TESTING_SETS" ]; then
         IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
         for testing_set in "${testing_sets[@]}"; do
@@ -335,11 +354,12 @@ case "$cmd" in
         ;;
     compiledb)
         print_target_info
-        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
-        else
-            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
-        fi
+        #if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+        #    chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        #else
+        #    chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        #fi
+        chr sh -c "echo 'deb http://deb.wirenboard.com/all experimental.trixie main' > /etc/apt/sources.list.d/wirenboard.list"
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y -o Dpkg::Options::=--force-confdef"
         if [ -f CMakeLists.txt ]; then
