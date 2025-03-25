@@ -137,6 +137,7 @@ setup_additional_repos() {
     mkdir -p `dirname $ADD_REPO_FILE`
     echo > $ADD_REPO_FILE
     echo > $ADD_REPO_PIN_FILE
+    priority=1001
     for repo in "${@}"; do
         parse_repo_entry $repo
         echo "=> Setup additional repository $repo..."
@@ -154,8 +155,9 @@ setup_additional_repos() {
 
         echo "Package: *" >> ${ADD_REPO_PIN_FILE}
         echo "Pin: release o=$o,l=$l,a=$a,n=$n" >> ${ADD_REPO_PIN_FILE}
-        echo "Pin-Priority: 1001" >> ${ADD_REPO_PIN_FILE}  # allow downgrade to these versions
+        echo "Pin-Priority: ${priority}" >> ${ADD_REPO_PIN_FILE}  # allow downgrade to these versions
         echo >> ${ADD_REPO_PIN_FILE} # mandatory newline
+        ((priority--))
     done
 
     echo "Addtitional repo $ADD_REPO_FILE contents:"
@@ -228,6 +230,7 @@ else
         --verbose \
         --arch $ARCH \
         --variant=minbase \
+        --include=gpgv \
         ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
     echo "Copy qemu to rootfs"
@@ -273,19 +276,21 @@ EOM
     echo "Install primary sources.list"
     echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
-    if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
-        echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-        echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
-    fi
+    echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+    echo "deb http://debian-mirror.wirenboard.com/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
 
-    install_contactless_repo
+    echo "Reinstall ca-certificates"
+    chr_apt_update
+    chr_apt_install ca-certificates --reinstall
+
+    #install_contactless_repo
     # apt pin
     echo "Set temporary APT PIN"
     echo "Package: *" > ${APT_PIN_TMP_FNAME}
     echo "Pin: release o=wirenboard, a=$WB_RELEASE" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
 
-    board_override_repos
+    #board_override_repos
 
     # setup additional repositories
     echo "Install additional repos"
@@ -330,7 +335,7 @@ echo "Creating /mnt/data mountpoint"
 mkdir ${OUTPUT}/mnt/data
 
 echo "Install wb-essential (with wb-configs)"
-chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
+chr_apt_install -f linux-image-${KERNEL_FLAVOUR} wb-essential
 
 chr_apt_update
 # stop mosquitto on host
@@ -383,9 +388,9 @@ rm -rf $ADD_REPO_FILE
 rm -rf $ADD_REPO_PIN_FILE
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
-if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-    rm -f ${OUTPUT}/etc/apt/sources.list
-fi
+#if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
+#    rm -f ${OUTPUT}/etc/apt/sources.list
+#fi
 
 # removing SSH host keys
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
@@ -396,13 +401,13 @@ rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
 sed "/$(hostname)/d" -i "`readlink -f ${OUTPUT}/etc/hosts`"
 
 echo "remove installation time apt pinning and lists"
-rm ${APT_LIST_TMP_FNAME}
+#rm ${APT_LIST_TMP_FNAME}
 rm ${APT_PIN_TMP_FNAME}
 
-if ! $WB_TEMP_REPO; then
-    echo "regenerate default apt lists for consistency"
-    chr wb-release -r
-fi
+#if ! $WB_TEMP_REPO; then
+#    echo "regenerate default apt lists for consistency"
+#    chr wb-release -r
+#fi
 
 run_additional_script
 
@@ -412,7 +417,8 @@ fi
 
 echo "cleanup apt caches"
 chr apt-get clean
-rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
+rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/*
+find ${OUTPUT}/var/lib/apt/lists/ -type f -not -path "*/partial" -delete
 
 WB_UTILS_VERSION=$(chr dpkg -s wb-utils | grep Version | awk '{print $2}')
 

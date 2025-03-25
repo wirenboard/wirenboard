@@ -24,13 +24,13 @@ do_build_sbuild_env() {
 
 	REPO="http://debian-mirror.wirenboard.com/debian"
 
-	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache gpgv"  ${RELEASE} ${ROOTFS} ${REPO}
 	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 	touch /etc/ccache.conf  # make schroot's copyfiles happy
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -o APT::Key::gpgvcommand=/usr/bin/gpgv update
 
 	#add conactless repo
 	echo "deb http://deb.wirenboard.com/dev-tools stable main" > ${ROOTFS}/etc/apt/sources.list.d/wirenboard-dev-tools.list
@@ -67,14 +67,21 @@ Pin: release o=wirenboard
 Pin-Priority: -1
 EOF
 
-	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -o APT::Key::gpgvcommand=/usr/bin/gpgv update
 
 	#install multi-arch common build dependencies
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
-		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 libc-ares2:arm64 \
-		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
-		golang-1.21-go node-rimraf python3-jinja2 \
+		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 \
+		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf \
+		python3-jinja2 \
 		"${ADD_PACKAGES[@]}"
+
+	if [[ "$RELEASE" = "bullseye" ]]; then
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install libc-ares2:arm64 libc-ares2:armhf golang-1.21-go
+	else
+		# https://github.com/golang/go/issues/22040
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install golang-1.24-go binutils-gold-aarch64-linux-gnu
+	fi
 
 	#virtualization support packages
 	cp /usr/bin/qemu-{aarch64,arm}-static ${ROOTFS}/usr/bin/
@@ -115,10 +122,14 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build bullseye armhf 6x wb6
-do_build bullseye arm64 8x wb8
+#do_build bullseye armhf 6x wb6
+#do_build bullseye arm64 8x wb8
 
-do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
+do_build trixie armhf 6x wb6 testing http://deb.wirenboard.com/all@experimental.trixie:main http://deb.wirenboard.com/wb6/bullseye@testing:main
+do_build trixie arm64 8x wb8 testing http://deb.wirenboard.com/all@experimental.trixie:main http://deb.wirenboard.com/wb8/bullseye@testing:main
+
+#do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
+do_build_sbuild_env trixie "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash

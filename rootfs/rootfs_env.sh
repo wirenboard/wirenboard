@@ -64,7 +64,7 @@ chr_apt_install() {
 }
 
 chr_apt_update() {
-    chr apt-get update
+    chr apt-get -o APT::Key::gpgvcommand=/usr/bin/gpgv update
 }
 
 chr_apt(){
