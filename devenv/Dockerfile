@@ -1,23 +1,23 @@
-FROM debian:bullseye
+FROM debian:trixie
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
-RUN apt update && apt install -y curl wget gnupg && \
+RUN apt-get update && apt-get install -y curl wget gnupg && \
+    echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > /etc/apt/apt.conf.d/99use-gpgv && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
-       /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
+    #echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] https://deb.wirenboard.com/dev-tools stable main" > \
+    #   /etc/apt/sources.list.d/wirenboard-dev-tools.list && \
     apt-get install -y --allow-unauthenticated gnupg1 ca-certificates && \
     # TODO: add llvm dependencies to our own repository \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
-       /etc/apt/sources.list.d/llvm-bullseye-15.list && \
-    echo "deb http://debian-mirror.wirenboard.com/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
-    apt update && \
-    apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/unstable/ llvm-toolchain-15 main" > \
+       /etc/apt/sources.list.d/llvm-unstable-15.list && \
+    apt-get update && \
+    apt-get install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
        devscripts python3-virtualenv python3-pip equivs qemu-user-static binfmt-support \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
@@ -27,11 +27,11 @@ RUN apt update && apt install -y curl wget gnupg && \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
        clang-format clang-tidy lintian ccache \
     # for image building \
-    fdisk u-boot-tools fit-aligner cpio \
+    #fdisk u-boot-tools fit-aligner cpio \
     # legacy requirement for kernel building \
-    rsync \
+    #rsync \
     # for Jenkins deployments \
-    python3-wbci s3cmd \
+    #python3-wbci s3cmd \
     # to install fpm later for simple package building \
     ruby-rubygems && gem install fpm && \
     # for clang-tidy checks
@@ -41,7 +41,6 @@ RUN apt update && apt install -y curl wget gnupg && \
 # TODO: remove it after full migration to sbuild
 COPY common-deps.sh /root/
 RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -y "${KNOWN_BUILD_DEPS[@]}"'
-
 
 # FIXME: we should not install anything with --force-yes
 
@@ -80,4 +79,4 @@ ENV LC_ALL en_US.UTF-8
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
-RUN rm -rf /var/lib/apt/lists/*
+RUN find /var/lib/apt/lists/ -type f -not -path "*/partial" -delete
