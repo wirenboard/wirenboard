@@ -51,7 +51,7 @@ pipeline {
 
                         def releaseSuite = sh(returnStdout: true, script: """
                             wbdev user fdtget -d '' -t s ${fitName} / release-suite""").trim()
-                        if (releaseSuite != "stable" && releaseSuite != "testing") {
+                        if (!["stable", "testing"].contains(releaseSuite)) {
                             error('release-suite property from FIT file is not stable or testing')
                         }
 
