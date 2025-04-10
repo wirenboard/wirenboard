@@ -178,6 +178,10 @@ install_contactless_repo() {
     local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
+    echo "Reinstall ca-certificates"
+    chr_apt_update
+    chr_apt_install ca-certificates --reinstall
+
     echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
 
