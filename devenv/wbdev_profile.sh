@@ -5,7 +5,7 @@ else
 fi
 mkdir -p "$WORKSPACE_DIR"
 if [ -n "$DEV_USER" ]; then
-    chown "$DEV_USER.$DEV_USER" "$WORKSPACE_DIR"
+    chown "$DEV_USER:$DEV_USER" "$WORKSPACE_DIR"
 fi
 if [ -f /.devdir ]; then
     cd "$(cat /.devdir)"
