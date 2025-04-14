@@ -3,6 +3,7 @@ LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 
 ENV DEBIAN_FRONTEND noninteractive
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
 RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
@@ -34,7 +35,7 @@ RUN apt update && apt install -y curl wget gnupg && \
     # to install fpm later for simple package building \
     ruby-rubygems && gem install fpm && \
     # for clang-tidy checks
-    pip3 install compiledb --break-system-packages
+    pip3 install compiledb
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
