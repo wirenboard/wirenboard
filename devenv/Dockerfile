@@ -3,6 +3,7 @@ LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 
 ENV DEBIAN_FRONTEND noninteractive
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
 RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
@@ -14,14 +15,15 @@ RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
+    echo "deb http://debian-mirror.wirenboard.com/debian bullseye-backports main" > /etc/apt/sources.list.d/bullseye-backports.list && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
-       devscripts python3-virtualenv equivs qemu-user-static binfmt-support node-rimraf \
+       devscripts python3-virtualenv python3-pip equivs qemu-user-static binfmt-support node-rimraf \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
-       python3-netaddr python3-pyparsing liblircclient-dev libusb-dev libusb-1.0-0-dev jq \
+       python3-netaddr python3-pyparsing libusb-dev libusb-1.0-0-dev jq \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
        clang-format clang-tidy lintian ccache \
     # for image building \
@@ -60,17 +62,12 @@ COPY boards /root/boards
 COPY prep.sh /root/
 COPY entrypoint.sh /sbin/
 COPY chr /usr/local/bin/
-COPY debootstrap-functions.diff /usr/share/debootstrap/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 
 RUN mkdir -p /var/cache/ccache && chmod 777 /var/cache/ccache
 COPY schroot/fstab /etc/schroot/sbuild/fstab
 COPY schroot/copyfiles /etc/schroot/sbuild/copyfiles
 COPY schroot/ccache-setup /usr/local/bin/ccache-setup
-
-# patch a bug in debootstrap/functions, preventing schroot from working inside Docker 
-# see https://bugs.launchpad.net/ubuntu/+source/debootstrap/+bug/1948713
-RUN patch /usr/share/debootstrap/functions < /usr/share/debootstrap/debootstrap-functions.diff
 
 RUN echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
