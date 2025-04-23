@@ -19,7 +19,7 @@ RUN apt update && apt install -y curl wget gnupg && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
-       devscripts python3-virtualenv python3-pip equivs qemu-user-static binfmt-support node-rimraf \
+       devscripts python3-virtualenv python3-pip equivs qemu-user-static binfmt-support \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
@@ -80,5 +80,4 @@ ENV LC_ALL en_US.UTF-8
 
 COPY wbdev_profile.sh /etc/profile.d/wbdev_profile.sh
 
-RUN npm install -g bower grunt-cli
 RUN rm -rf /var/lib/apt/lists/*
