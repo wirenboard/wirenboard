@@ -49,11 +49,11 @@ pipeline {
                             error('FIT filename parsing failed')
                         }
 
-                        // def releaseSuite = sh(returnStdout: true, script: """
-                        //     wbdev user fdtget -d '' -t s ${fitName} / release-suite""").trim()
-                        // if (!["stable", "testing"].contains(releaseSuite)) {
-                        //     error('release-suite property from FIT file is not stable or testing')
-                        // }
+                        def releaseSuite = sh(returnStdout: true, script: """
+                            wbdev user fdtget -d '' -t s ${fitName} / release-suite | tail -n 1""").trim()
+                        if (!["stable", "testing"].contains(releaseSuite)) {
+                            error('release-suite property from FIT file is not stable or testing')
+                        }
 
                         // if release name is wb-XXXX, make image stable
                         def remoteSection = releaseName;
