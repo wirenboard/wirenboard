@@ -19,7 +19,6 @@ pipeline {
         string(name: 'WB_RELEASE', defaultValue: 'stable', description: 'wirenboard release (from WB repo)')
         booleanParam(name: 'CLEANUP_ROOTFS', defaultValue: false, description: 'remove saved rootfs images before build')
         string(name: 'WBDEV_IMAGE', defaultValue: 'contactless/devenv:latest', description: 'tag for wbdev')
-        string(name: 'U_BOOT_BRANCH', defaultValue: 'wb_v2017.03', description: 'from build-u-boot project')
         booleanParam(name: 'SAVE_ARTIFACTS', defaultValue: true, description: 'save image after build (may be disabled for staging checks)')
     }
     environment {
@@ -31,29 +30,6 @@ pipeline {
                 git branch: "$WIRENBOARD_BRANCH",
                     url: 'git@github.com:wirenboard/wirenboard',
                     credentialsId: 'jenkins-github-public-ssh'
-            }
-        }
-        stage('Get u-boot and zImage') {
-            // FIXME: use published binaries instead of fixed jobs and remove this step (#34164)
-            // Currently this step is copied from old build-single-image-all
-            steps {
-                copyArtifacts projectName: 'build-kernel-initramfs',
-                              filter: 'result/zImage.*',
-                              target: 'contrib/usbupdate',
-                              flatten: true,
-                              fingerprintArtifacts: true
-
-                copyArtifacts projectName: 'build-u-boot',
-                              filter: 'result/u-boot_*',
-                              target: 'contrib/u-boot',
-                              flatten: true,
-                              fingerprintArtifacts: true,
-                              parameters: "BRANCH=" + params.U_BOOT_BRANCH
-
-                dir('contrib/u-boot') {
-                    sh 'mv u-boot_*.wb6.imx u-boot.wb6.imx'
-                    sh 'mv u-boot_*.wb5.sd u-boot.wb5.sd'
-                }
             }
         }
         stage('Cleanup old rootfs') {
