@@ -273,10 +273,8 @@ EOM
     echo "Install primary sources.list"
     echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
-    if [[ ${DEBIAN_RELEASE} == "bullseye" ]]; then
-        echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-        echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
-    fi
+    echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
+    echo "deb http://debian-mirror.wirenboard.com/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
 
     install_contactless_repo
     # apt pin
@@ -306,19 +304,7 @@ EOM
     echo "Install additional packages"
     chr_apt_update
 
-    if chr apt-cache show task-wb-base-system &> /dev/null ; then
-        chr_apt_install -f task-wb-base-system
-    else
-        chr_apt_install -f netbase ifupdown \
-        iproute2 openssh-server \
-        iputils-ping wget udev net-tools ntpdate ntp vim nano less \
-        tzdata mc wireless-tools usbutils \
-        i2c-tools isc-dhcp-client wpasupplicant psmisc curl dnsmasq \
-        memtester apt-utils dialog locales \
-        python3-minimal unzip minicom iw ppp libmodbus5 \
-        ssmtp moreutils firmware-realtek logrotate libnss-mdns kmod \
-        systemd-sysv
-    fi
+    chr_apt_install -f task-wb-base-system
 
     echo "Creating $ROOTFS_BASE_TARBALL"
     pushd ${OUTPUT}
@@ -354,16 +340,7 @@ EOF
 }
 
 wb-common_install() {
-    if chr apt-cache show task-wb-common-pkgs &> /dev/null ; then
-        chr_apt_install task-wb-common-pkgs
-    else
-        chr_apt_install -f modbus-utils \
-        busybox libmosquittopp1 libmosquitto1 mosquitto mosquitto-clients \
-        openssl ca-certificates avahi-daemon pps-tools device-tree-compiler \
-        libateccssl1.1 knxd knxd-tools wb-suite netplug \
-        hostapd bluez can-utils u-boot-tools-wb \
-        cron bluez-hcidump
-    fi
+    chr_apt_install task-wb-common-pkgs
 }
 
 [[ "${#BOARD_PACKAGES}" -gt 0 ]] && chr_apt_install "${BOARD_PACKAGES[@]}"
@@ -383,9 +360,7 @@ rm -rf $ADD_REPO_FILE
 rm -rf $ADD_REPO_PIN_FILE
 
 rm -f ${OUTPUT}/etc/apt/sources.list.d/local.list
-if [[ ${DEBIAN_RELEASE} != "wheezy" ]]; then
-    rm -f ${OUTPUT}/etc/apt/sources.list
-fi
+rm -f ${OUTPUT}/etc/apt/sources.list
 
 # removing SSH host keys
 rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
