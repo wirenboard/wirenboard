@@ -364,6 +364,11 @@ case "$cmd" in
         ;;
     chroot)
         print_target_info
+        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        else
+            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+        fi
         chr "$@"
         ;;
     *)
