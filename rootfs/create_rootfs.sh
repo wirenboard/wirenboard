@@ -9,6 +9,7 @@ WB_REPO=${WB_REPO:-'http://deb.wirenboard.com/'}
 WB_REPO_PREFIX=${WB_REPO_PREFIX:-''}
 WB_TEMP_REPO=${WB_TEMP_REPO:-false}
 WB_RELEASE=${WB_RELEASE:-stable}
+WB_COPY_QEMU=${WB_COPY_QEMU:-false}
 
 DEFAULT_ADD_REPO_RELEASE=${ADD_REPO_RELEASE:-$DEBIAN_RELEASE}
 DEFAULT_ADD_REPO_COMPONENT=${ADD_REPO_COMPONENT:-"main"}
@@ -24,6 +25,7 @@ Environment variables:
     WB_RELEASE     Overrides default release (default '$WB_RELEASE')
     WB_TEMP_REPO   Set to 'true' if default repository will be unavailable after build
     DEBIAN_RELEASE Sets Debian release (default '$DEBIAN_RELEASE')
+    WB_COPY_QEMU   Set to 'true' to copy qemu binaries to rootfs (default 'false')
 
 How to use additional repos:
     $0 <BOARD> "http://localhost:8086/" [more repos...]
@@ -230,9 +232,11 @@ else
         --variant=minbase \
         ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
-    echo "Copy qemu to rootfs"
-    cp /usr/bin/qemu-{aarch64,arm}-static ${OUTPUT}/usr/bin ||
-    cp /usr/bin/qemu-{aarch64,arm} ${OUTPUT}/usr/bin
+    if $WB_COPY_QEMU; then
+        echo "Copy qemu to rootfs"
+        cp /usr/bin/qemu-{aarch64,arm}-static ${OUTPUT}/usr/bin ||
+        cp /usr/bin/qemu-{aarch64,arm} ${OUTPUT}/usr/bin
+    fi
     modprobe binfmt_misc || true
 
     # kludge to fix ssmtp configure that breaks when FQDN is unknown
