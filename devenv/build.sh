@@ -8,7 +8,7 @@ do_build() {
 	export RELEASE=$1 ARCH=$2 BOARD=$3 PLATFORM=$4 WB_RELEASE=${5:-stable} ADDITIONAL_REPOS=${*:6}
 	export ROOTFS="/rootfs/$RELEASE-$ARCH"
 
-	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH WB_RELEASE=$WB_RELEASE /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
+	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH WB_RELEASE=$WB_RELEASE WB_COPY_QEMU=true /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
 
 	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
 	/root/prep.sh
