@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'make DEB_TARGET_ARCH=amd64 GO=/usr/lib/go-1.21/bin/go wb-rules'",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run all tests",
+      "type": "shell",
+      "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'make GO=/usr/lib/go-1.21/bin/go WBGO_LOCAL_PATH=wbgo test'",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "dependsOn": [
+        "[wbgo] Build"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "[wbgo] Build",
+      "type": "shell",
+      "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'make -C wbgo TARGET_ARCH=amd64 GO=/usr/lib/go-1.21/bin/go wbgoso'",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "[wbgo] Run tests",
+      "type": "shell",
+      "command": "schroot -c bullseye-amd64-sbuild -- /bin/bash -c 'make -C wbgo TARGET_ARCH=amd64 GO=/usr/lib/go-1.21/bin/go test'",
+      "problemMatcher": []
+    }
+  ]
+}
