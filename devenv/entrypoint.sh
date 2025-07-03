@@ -163,7 +163,7 @@ platform_has_suite() {
     local URL="http://deb.wirenboard.com/$(wb_repo_path $PLATFORM)/dists/${SUITE}/Release"
     local HTTP_CODE
     echo "Checking $URL..." >&2
-    HTTP_CODE=`curl --silent --head --output /dev/null --write-out '%{http_code}\n' $URL`
+    HTTP_CODE=`curl --silent --head --location --output /dev/null --write-out '%{http_code}\n' $URL`
     local CURL_STATUS=$?
 
     if [[ "$CURL_STATUS" != "0" ]]; then
