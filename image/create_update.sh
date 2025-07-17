@@ -70,7 +70,7 @@ if [[ -d "$ROOTFS" ]]; then
 	pushd "$ROOTFS" >/dev/null
 	# to speedup FIT installing, rootfs files should be sorted (dtbs at the beginning)
 	sorted_files_list=`mktemp`
-	find . | sort > $sorted_files_list
+	find . | sort | grep -v ./var/lib/wb-image-update > $sorted_files_list
 	sudo tar czpf "$ROOTFS_TARBALL" --numeric-owner --no-recursion --files-from=$sorted_files_list || die "tarball of $ROOTFS creation failed"
 	rm $sorted_files_list
 	popd >/dev/null
