@@ -50,15 +50,6 @@ Pin: release o=wirenboard
 Pin-Priority: 991
 EOF
 
-	if [[ "$RELEASE" = "bullseye" ]]; then
-		echo "deb http://debian-mirror.wirenboard.com/debian bullseye-backports main" > ${ROOTFS}/etc/apt/sources.list.d/bullseye-backports.list
-		cat <<EOF >${ROOTFS}/etc/apt/preferences.d/bullseye-backports
-Package: libnm0 libmbim-*:any libqmi-*:any gir1.2-mbim-1.0 git1.2-qmi-1.0
-Pin: release a=bullseye-backports
-Pin-Priority: 510
-EOF
-	fi
-
 	# prevent e2fsprogs packages from being installed from wb repo, it messes up with host versions.
 	# it is only needed for actual hardware anyway
 	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/000libext2fs
