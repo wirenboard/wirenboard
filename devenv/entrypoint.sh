@@ -356,6 +356,11 @@ case "$cmd" in
             sbuild_buildpackage ${WBDEV_TARGET_ARCH} "$@"
         else
             if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
+                if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+                    chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+                else
+                    chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+                fi
                 chr apt-get update
                 chr mk-build-deps -ir -t "apt-get --force-yes -y"
             fi
