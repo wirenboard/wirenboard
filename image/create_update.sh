@@ -6,7 +6,7 @@ this=`readlink -f "$0"`
 
 usage() {
 	cat <<EOF
-USAGE: $0 <path to rootfs> <path to zImage> <path to DTB> <update file>"
+USAGE: $0 <path to rootfs> <path to zImage> <path to boot DTB> <path to target DTB> <update file>"
 rootfs can be either a directory (which will be packed to .tar.xz) 
 or just anything suitable for $(dirname $0)/install_update.sh
 EOF
@@ -76,6 +76,12 @@ if [[ -d "$ROOTFS" ]]; then
 	popd >/dev/null
 elif [[ -e "$ROOTFS" ]]; then
 	ROOTFS_TARBALL=$ROOTFS
+	ROOTFS=$TMPDIR
+	tar xvf $ROOTFS_TARBALL -C $ROOTFS \
+	    ./etc/wb-fw-version \
+	    ./usr/lib/wb-release \
+	    ./var/lib/wb-image-update/firmware-compatible \
+	    ./var/lib/wb-image-update/install_update.sh
 fi
 
 VERSION=`cat "$ROOTFS/etc/wb-fw-version"` || die "Unable to get firmware version"
