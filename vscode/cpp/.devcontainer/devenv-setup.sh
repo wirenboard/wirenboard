@@ -8,7 +8,8 @@ case ${TARGET} in
 esac
 
 DIR=$(pwd)
-CHROOT="schroot -c bullseye-amd64-sbuild --directory=${DIR} --"
+DEB_RELEASE="$(source /etc/os-release; echo $VERSION_CODENAME)"
+CHROOT="schroot -c ${DEB_RELEASE}-amd64-sbuild --directory=${DIR} --"
 
 echo "${DIR} ${DIR} none rw,bind 0 0" >> /etc/schroot/sbuild/fstab
 
@@ -22,7 +23,7 @@ for ITEM in ${LIST}; do
     DEPS+=(${ITEM})
 done
 
-${CHROOT} bash -c "echo \"deb http://deb.wirenboard.com/${TARGET}/bullseye unstable main\" > /etc/apt/sources.list.d/wirenboard-unstable.list"
+${CHROOT} bash -c "echo \"deb http://deb.wirenboard.com/${TARGET}/${DEB_RELEASE} unstable main\" > /etc/apt/sources.list.d/wirenboard-unstable.list"
 ${CHROOT} apt-get update
 ${CHROOT} apt install -y ${DEPS[@]} gdbserver:${ARCH}
 
