@@ -24,7 +24,7 @@ done
 
 ${CHROOT} bash -c "echo \"deb http://deb.wirenboard.com/${TARGET}/bullseye unstable main\" > /etc/apt/sources.list.d/wirenboard-unstable.list"
 ${CHROOT} apt-get update
-${CHROOT} apt install -y ${DEPS[@]}
+${CHROOT} apt install -y ${DEPS[@]} gdbserver:${ARCH}
 
 apt update
 apt install gdb-multiarch
