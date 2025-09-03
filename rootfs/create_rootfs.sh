@@ -4,7 +4,7 @@ set -e
 
 ROOTFS_DIR=$ROOTFS
 DEBIAN_RELEASE=${DEBIAN_RELEASE:-bullseye}
-
+DEBIAN_MIRROR=${DEBIAN_MIRROR:-'http://debian-mirror.wirenboard.com'}
 WB_REPO=${WB_REPO:-'http://deb.wirenboard.com/'}
 WB_REPO_PREFIX=${WB_REPO_PREFIX:-''}
 WB_TEMP_REPO=${WB_TEMP_REPO:-false}
@@ -131,7 +131,7 @@ ADD_REPO_PIN_FILE=$OUTPUT/etc/apt/preferences.d/00-wb-additional-tmp
 APT_LIST_TMP_FNAME=${OUTPUT}/etc/apt/sources.list.d/wb-install-tmp.list
 APT_PIN_TMP_FNAME=${OUTPUT}/etc/apt/preferences.d/01wb-install-tmp
 
-REPO="http://debian-mirror.wirenboard.com/debian"
+REPO="${DEBIAN_MIRROR}/debian"
 
 setup_additional_repos() {
     # setup additional repos
@@ -275,7 +275,7 @@ EOM
     echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
     echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-    echo "deb http://debian-mirror.wirenboard.com/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
+    echo "deb ${DEBIAN_MIRROR}/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
 
     install_contactless_repo
     # apt pin
