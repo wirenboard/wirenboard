@@ -319,6 +319,15 @@ case "$cmd" in
         devsudo make "$@"
         ;;
     root)
+        if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
+            if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+                $shell_cmd "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            else
+                $shell_cmd "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
+            $shell_cmd apt-get update
+            $shell_cmd mk-build-deps -ir -t "apt-get --force-yes -y"
+        fi
         $shell_cmd "$@"
         ;;
     chuser)
