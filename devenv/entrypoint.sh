@@ -238,9 +238,15 @@ sbuild_buildpackage() {
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        SBUILD_ARGS+=(--extra-repository="$(get_unstable_repo_spec)")
+        unstable_repo_spec=$(get_unstable_repo_spec)
+        if [ -n "$unstable_repo_spec" ]; then
+            SBUILD_ARGS+=(--extra-repository="$unstable_repo_spec")
+        fi
     fi
-    SBUILD_ARGS+=(--extra-repository="$(get_stable_repo_spec)")
+    stable_repo_spec=$(get_stable_repo_spec)
+    if [ -n "$stable_repo_spec" ]; then
+        SBUILD_ARGS+=(--extra-repository="$stable_repo_spec")
+    fi
     if [ -n "$WBDEV_TESTING_SETS" ]; then
         IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
         for testing_set in "${testing_sets[@]}"; do
@@ -336,9 +342,15 @@ case "$cmd" in
     compiledb)
         print_target_info
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            unstable_repo_spec=$(get_unstable_repo_spec)
+            if [ -n "$unstable_repo_spec" ]; then
+                chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         else
-            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            stable_repo_spec=$(get_stable_repo_spec)
+            if [ -n "$stable_repo_spec" ]; then
+                chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         fi
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y -o Dpkg::Options::=--force-confdef"
@@ -370,9 +382,15 @@ case "$cmd" in
     chroot)
         print_target_info
         if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            unstable_repo_spec=$(get_unstable_repo_spec)
+            if [ -n "$unstable_repo_spec" ]; then
+                chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         else
-            chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+            stable_repo_spec=$(get_stable_repo_spec)
+            if [ -n "$stable_repo_spec" ]; then
+                chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+            fi
         fi
         chr "$@"
         ;;
