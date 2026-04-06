@@ -238,12 +238,12 @@ sbuild_buildpackage() {
     SBUILD_ARGS=(-c "${WBDEV_TARGET_RELEASE}-amd64-sbuild")
     SBUILD_ARGS+=(--bd-uninstallable-explainer="apt")
     if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-        unstable_repo_spec=$(get_unstable_repo_spec)
+        local unstable_repo_spec=$(get_unstable_repo_spec)
         if [ -n "$unstable_repo_spec" ]; then
             SBUILD_ARGS+=(--extra-repository="$unstable_repo_spec")
         fi
     fi
-    stable_repo_spec=$(get_stable_repo_spec)
+    local stable_repo_spec=$(get_stable_repo_spec)
     if [ -n "$stable_repo_spec" ]; then
         SBUILD_ARGS+=(--extra-repository="$stable_repo_spec")
     fi
@@ -369,9 +369,15 @@ case "$cmd" in
         else
             if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
                 if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-                    chr sh -c "echo '$(get_unstable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+                    unstable_repo_spec=$(get_unstable_repo_spec)
+                    if [ -n "$unstable_repo_spec" ]; then
+                        chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+                    fi
                 else
-                    chr sh -c "echo '$(get_stable_repo_spec)' > /etc/apt/sources.list.d/wirenboard.list"
+                    stable_repo_spec=$(get_stable_repo_spec)
+                    if [ -n "$stable_repo_spec" ]; then
+                        chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+                    fi
                 fi
                 chr apt-get update
                 chr mk-build-deps -ir -t "apt-get --force-yes -y"
