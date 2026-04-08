@@ -52,7 +52,7 @@ include() {
 			$extra
 			compression = "none";
 
-			hash-1 {
+			hash@1 {
 				algo = "sha1";
 			};
 		};
