@@ -26,7 +26,7 @@ RUN apt update && apt install -y curl wget gnupg && \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
        clang-format-15 clang-tidy-15 lintian ccache \
     # for image building \
-    fdisk u-boot-tools fit-aligner cpio \
+    fdisk u-boot-tools-wb fit-aligner cpio \
     # legacy requirement for kernel building \
     rsync \
     # for Jenkins deployments \
