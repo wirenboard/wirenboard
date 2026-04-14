@@ -5,7 +5,9 @@ LABEL org.opencontainers.image.vendor="Wiren Board team"
 ENV DEBIAN_FRONTEND noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
-RUN apt update && apt install -y curl wget gnupg && \
+# ca-certificates should be installed before moving to debian-mirror.wirenboard.com
+RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
+    apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
        /usr/share/keyrings/contactless-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/contactless-keyring.gpg] http://deb.wirenboard.com/dev-tools stable main" > \
@@ -15,6 +17,7 @@ RUN apt update && apt install -y curl wget gnupg && \
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > \
        /etc/apt/sources.list.d/llvm-bullseye-15.list && \
+    sed -i 's#mirror.docker.ru#debian-mirror.wirenboard.com#' /etc/apt/sources.list && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
