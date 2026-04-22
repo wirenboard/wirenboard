@@ -2,7 +2,7 @@
 set -e
 set -x
 
-this=`readlink -f "$0"`
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 usage() {
 	cat <<EOF
@@ -39,25 +39,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-include() {
-	local name=$1
-	local fpath=$2
-	local description=$3
-	local extra=$4
 
-	cat <<EOF
-		$name {
-			description = "$description";
-			data = /incbin/("$fpath");
-			$extra
-			compression = "none";
-
-			hash@1 {
-				algo = "sha1";
-			};
-		};
-EOF
-}
 
 dtb_get_compatible() {
 	fdtget - / compatible | sed 's/ .*$//'
@@ -93,7 +75,7 @@ if [[ -e "$ROOTFS_INSTALL_SCRIPT_PATH" ]]; then
 	INSTALL_SCRIPT="$ROOTFS_INSTALL_SCRIPT_PATH"
 else
 	echo "No install script in rootfs, using default one"
-	INSTALL_SCRIPT="$(dirname "$this")/install_update.sh"
+	INSTALL_SCRIPT="$SCRIPT_DIR/install_update.sh"
 fi
 
 ROOTFS_FIRMWARE_COMPATIBLE_PATH="$ROOTFS/var/lib/wb-image-update/firmware-compatible"
@@ -146,34 +128,23 @@ else
 fi
 
 ITS=$TMPDIR/update.its
+VARS_FILE="$TMPDIR/vars.env"
 
-{
-cat <<EOF
-/dts-v1/;
+cat > "$VARS_FILE" <<EOF
+COMPATIBLE=$COMPATIBLE
+FIRMWARE_VERSION=$VERSION
+FIRMWARE_COMPATIBLE=$FIRMWARE_COMPATIBLE
+RELEASE_NAME=$RELEASE_NAME
+RELEASE_SUITE=$SUITE
+RELEASE_TARGET=$TARGET
+RELEASE_REPO_PREFIX=$REPO_PREFIX
+KERNEL_DATA=$ZIMAGE
+DTB_DATA=$BOOT_DTB
+INSTALL_DATA=$INSTALL_SCRIPT
+ROOTFS_DATA=$ROOTFS_TARBALL
+EOF
 
-/ {
-	description = "WirenBoard firmware update";
-	compatible = "$COMPATIBLE";
-	firmware-version = "$VERSION";
-	firmware-compatible = "$FIRMWARE_COMPATIBLE";
-	release-name = "$RELEASE_NAME";
-	release-suite = "$SUITE";
-	release-target = "$TARGET";
-	release-repo-prefix = "$REPO_PREFIX";
-	#address-cells = <1>;
-	images {
-EOF
-	include kernel "$ZIMAGE" "Update kernel" "type = \"kernel\"; os = \"linux\"; arch = \"arm\";"
-	include dtb "$BOOT_DTB" "Update DTB" "type = \"flat_dt\"; arch = \"arm\";"
-	include install "$INSTALL_SCRIPT" "Installation script (bash)"
-	include rootfs "$ROOTFS_TARBALL" "Root filesystem tarball"
-cat <<EOF
-	};
-	configurations {
-	};
-};
-EOF
-} > "$ITS"
+j2 --format=env "$SCRIPT_DIR/update.its.j2" "$VARS_FILE" > "$ITS"
 
 UNALIGNED_OUTPUT=$TMPDIR/unaligned.fit
 
