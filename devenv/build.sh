@@ -10,7 +10,7 @@ do_build() {
 
 	time DEBIAN_RELEASE=$RELEASE ARCH=$ARCH WB_RELEASE=$WB_RELEASE WB_COPY_QEMU=true /root/rootfs/create_rootfs.sh $BOARD $ADDITIONAL_REPOS
 
-	rm -f /root/output/rootfs_base_${ARCH}.tar.gz
+	rm -f /root/output/rootfs_base_${WB_RELEASE}_${PLATFORM}*.tar.gz
 	/root/prep.sh
 }
 
