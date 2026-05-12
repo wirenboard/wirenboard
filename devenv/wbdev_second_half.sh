@@ -73,6 +73,7 @@ $DOCKER run $DOCKER_TTY_OPTS --privileged --rm \
        $ENV_CMDLINE \
        -e DEB_BUILD_OPTIONS \
        -e DEB_BUILD_PROFILES \
+       -e GITHUB_TOKEN \
        $VOLUMES \
        $ssh_opts \
        -h wbdevenv \
