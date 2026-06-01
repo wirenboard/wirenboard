@@ -164,7 +164,6 @@ setup_additional_repos() {
     cat  $ADD_REPO_FILE
     echo "Addtitional pin $ADD_REPO_PIN_FILE contents:"
     cat  $ADD_REPO_PIN_FILE
-
 }
 
 run_additional_script() {
@@ -215,7 +214,7 @@ if [[ -e "$ROOTFS_BASE_TARBALL" ]]; then
     fi
 
     echo "Updating"
-    chr apt-get update
+    chr_apt_update
     chr apt-get -y upgrade
 
 else
@@ -320,6 +319,7 @@ echo "Install wb-essential (with wb-configs)"
 chr_apt_install linux-image-${KERNEL_FLAVOUR} wb-essential
 
 chr_apt_update
+chr apt-get -y full-upgrade
 # stop mosquitto on host
 service mosquitto stop || /bin/true
 

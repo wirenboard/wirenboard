@@ -62,10 +62,17 @@ EOF
 
 	#install multi-arch common build dependencies
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
-		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 libc-ares2:arm64 \
-		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf libc-ares2:armhf \
-		golang-1.21-go python3-jinja2 \
+		libssl-dev:arm64 linux-libc-dev:arm64 libc6-dev:arm64 \
+		libssl-dev:armhf linux-libc-dev:armhf libc6-dev:armhf \
+		python3-jinja2 \
 		"${ADD_PACKAGES[@]}"
+
+	if [[ "$RELEASE" = "bullseye" ]]; then
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+			libglib2.0-0 \
+			libc-ares2:arm64 libc-ares2:armhf \
+			golang-1.21-go # backport from dev-tools repo
+	fi
 
 	#virtualization support packages
 	cp /usr/bin/qemu-{aarch64,arm}-static ${ROOTFS}/usr/bin/
@@ -76,10 +83,6 @@ EOF
 		libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev
 
 	FILTER_OPTIONS=("PYBUILD_TEST_ARGS")
-	# sbuild from stretch overrides DEB_BUILD_OPTIONS, so fix that  
-	if dpkg --compare-versions `dpkg -s sbuild | grep  -oP "Version: \K.*$"` lt 0.78.0; then
-		FILTER_OPTIONS+=("DEB_BUILD_OPTIONS")
-	fi
 
 	WRAPPER_LINES=$( for op in ${FILTER_OPTIONS[@]}; do echo "$op=\${_$op} \"\$@\""; done )
 	ENV_FILTER_LINES=$( for op in "${FILTER_OPTIONS[@]}"; do echo -n "'_$op',"; done | sed 's/,$//')
