@@ -24,7 +24,7 @@ do_build_sbuild_env() {
 
 	REPO="http://debian-mirror.wirenboard.com/debian"
 
-	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl libglib2.0-0 pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
 	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 	touch /etc/ccache.conf  # make schroot's copyfiles happy
 
