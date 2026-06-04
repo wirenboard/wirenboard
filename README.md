@@ -111,7 +111,7 @@ WBDEV_TARGET. Possible values:
 
 * `bullseye-armhf`, `current-armhf` build bullseye package for armhf target (default)
 * `bullseye-arm64`, `current-arm64` build bullseye package for arm64 target
-* `bullseye-host`, `bullseye-amd64`, `current-amd64` build bullseye package for amd64 target
+* `bullseye-host`, `bullseye-amd64`, `current-host`, `current-amd64` build bullseye package for amd64 target
 
 Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
 

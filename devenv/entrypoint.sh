@@ -68,7 +68,7 @@ bullseye-arm64|current-arm64|wb8)
     QEMU_ARCH="aarch64"
     ROOTFS_PKG_CONFIG_PATH="/rootfs/bullseye-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
     ;;
-bullseye-host|bullseye-amd64|current-amd64)
+bullseye-host|bullseye-amd64|current-host|current-amd64)
     WBDEV_TARGET_BOARD="host"
     WBDEV_TARGET_ARCH="amd64"
     WBDEV_TARGET_RELEASE="bullseye"
