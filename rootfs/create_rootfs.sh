@@ -182,12 +182,18 @@ install_contactless_repo() {
     echo "Install initial repos"
     mkdir -p "$(dirname "${OUTPUT}${KEYRING_TMP}")"
 
-    gpg1 --no-default-keyring --keyring "${OUTPUT}${KEYRING_TMP}" --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
+    echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > ${OUTPUT}/etc/apt/apt.conf.d/99use-gpgv
+
+    chr_apt_update
+    chr_apt_install gnupg1
+
+    chr gpg1 --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
+    chr gpg1 --export AEE07869 | tee ${OUTPUT}${KEYRING_TMP}
     chmod 0644 "${OUTPUT}${KEYRING_TMP}"
     echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
 
     chr_apt_update
-    chr_apt_install gnupg1 contactless-keyring
+    chr_apt_install contactless-keyring
 
     echo "deb $FULL_REPO_URL $WB_RELEASE main" > ${APT_LIST_TMP_FNAME}
     rm -f "${OUTPUT}${KEYRING_TMP}"
@@ -225,7 +231,7 @@ else
         --verbose \
         --arch $ARCH \
         --variant=minbase \
-        --include=ca-certificates \
+        --include=ca-certificates,gpgv \
         ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
     if $WB_COPY_QEMU; then
@@ -372,8 +378,8 @@ rm -f ${OUTPUT}/etc/ssh/ssh_host_* || /bin/true
 sed "/$(hostname)/d" -i "`readlink -f ${OUTPUT}/etc/hosts`"
 
 echo "remove installation time apt pinning and lists"
-rm ${APT_LIST_TMP_FNAME}
-rm ${APT_PIN_TMP_FNAME}
+rm -f ${APT_LIST_TMP_FNAME}
+rm -f ${APT_PIN_TMP_FNAME}
 
 if ! $WB_TEMP_REPO; then
     echo "regenerate default apt lists for consistency"
@@ -388,7 +394,8 @@ fi
 
 echo "cleanup apt caches"
 chr apt-get clean
-rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/* ${OUTPUT}/var/lib/apt/lists/*
+rm -rf ${OUTPUT}/run/* ${OUTPUT}/var/cache/apt/archives/*
+find ${OUTPUT}/var/lib/apt/lists/ -type f -not -path "*/partial" -delete
 
 WB_UTILS_VERSION=$(chr dpkg -s wb-utils | grep Version | awk '{print $2}')
 

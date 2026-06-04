@@ -24,9 +24,11 @@ do_build_sbuild_env() {
 
 	REPO="http://debian-mirror.wirenboard.com/debian"
 
-	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache"  ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache gpgv" ${RELEASE} ${ROOTFS} ${REPO}
 	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 	touch /etc/ccache.conf  # make schroot's copyfiles happy
+
+	echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > ${ROOTFS}/etc/apt/apt.conf.d/99use-gpgv
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture arm64
 	schroot -c ${CHROOT_NAME} --directory=/ -- dpkg --add-architecture armhf
@@ -72,6 +74,12 @@ EOF
 			libglib2.0-0 \
 			libc-ares2:arm64 libc-ares2:armhf \
 			golang-1.21-go # backport from dev-tools repo
+	elif [[ "$RELEASE" = "trixie" ]]; then
+		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
+			libglib2.0-0t64 \
+			libcares2:arm64 libcares2:armhf \
+			golang-1.24-go \
+			binutils-gold-aarch64-linux-gnu # https://github.com/golang/go/issues/22040
 	fi
 
 	#virtualization support packages
@@ -95,6 +103,8 @@ EOF
 use Dpkg::Build::Info;
 \$environment_filter = [Dpkg::Build::Info::get_build_env_allowed(), $ENV_FILTER_LINES];
 \$build_env_cmnd = '/deb_build_options_wrapper.sh';
+\$chroot_mode = "schroot";
+\$schroot = "schroot";
 EOF
 	chmod a+x ${ROOTFS}/deb_build_options_wrapper.sh
 
@@ -109,10 +119,10 @@ EOF
 	ln -s /dev/pts/ptmx ${ROOTFS}/dev/ptmx
 }
 
-do_build bullseye armhf 6x wb6
-do_build bullseye arm64 8x wb8
+do_build trixie armhf 6x wb6 testing
+do_build trixie arm64 8x wb8 testing
 
-do_build_sbuild_env bullseye "${KNOWN_BUILD_DEPS[@]}"
+do_build_sbuild_env trixie "${KNOWN_BUILD_DEPS[@]}"
 
 # TBD: run chroot:
 # proot -R /rootfs -q qemu-arm-static -b /home/ivan4th /bin/bash
