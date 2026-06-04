@@ -1,4 +1,5 @@
 FROM debian:bullseye
+ARG PYPI_REGISTRY_URL="https://nexus.hq.wirenboard.com/repository/pypi-group/simple/"
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 
@@ -37,7 +38,7 @@ RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
     # to install fpm later for simple package building \
     ruby-rubygems && gem install fpm && \
     # for clang-tidy checks
-    pip3 install compiledb && \
+    pip3 install compiledb -i ${PYPI_REGISTRY_URL} && \
     # set as defauls
     update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100 && \
     update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-15 100
