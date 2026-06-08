@@ -66,6 +66,7 @@ trixie-arm64|current-arm64|wb8)
     WBDEV_TARGET_ARCH="arm64"
     WBDEV_TARGET_RELEASE="trixie"
     QEMU_ARCH="aarch64"
+    export QEMU_CPU="cortex-a53"
     ROOTFS_PKG_CONFIG_PATH="/rootfs/trixie-arm64/usr/lib/aarch64-linux-gnu/pkgconfig"
     ;;
 trixie-host|trixie-amd64|current-host|current-amd64)
