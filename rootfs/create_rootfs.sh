@@ -53,6 +53,10 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 . "$SCRIPT_DIR/../boards/init_board.sh"
 
+if [[ "$ARCH" = "arm64" ]]; then
+    export QEMU_CPU="cortex-a53"
+fi
+
 OUTPUT=${ROOTFS}  # FIXME: use ROOTFS var consistently in all scripts
 WB_TARGET=${WB_TARGET:-"${REPO_PLATFORM}/${DEBIAN_RELEASE}"}
 
