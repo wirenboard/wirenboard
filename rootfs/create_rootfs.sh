@@ -136,6 +136,7 @@ APT_LIST_TMP_FNAME=${OUTPUT}/etc/apt/sources.list.d/wb-install-tmp.list
 APT_PIN_TMP_FNAME=${OUTPUT}/etc/apt/preferences.d/01wb-install-tmp
 
 REPO="${DEBIAN_MIRROR}/debian"
+REPO_SECURITY="${DEBIAN_MIRROR}/debian-security"
 
 setup_additional_repos() {
     # setup additional repos
@@ -283,8 +284,11 @@ EOM
     echo "Install primary sources.list"
     echo "deb ${REPO} ${DEBIAN_RELEASE} main" >${OUTPUT}/etc/apt/sources.list
 
+    if [[ "$DEBIAN_RELEASE" = "trixie" ]]; then
+        echo "deb ${REPO} ${DEBIAN_RELEASE}-backports main" >>${OUTPUT}/etc/apt/sources.list
+    fi
     echo "deb ${REPO} ${DEBIAN_RELEASE}-updates main" >>${OUTPUT}/etc/apt/sources.list
-    echo "deb ${DEBIAN_MIRROR}/debian-security ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
+    echo "deb ${REPO_SECURITY} ${DEBIAN_RELEASE}-security main" >>${OUTPUT}/etc/apt/sources.list
 
     install_contactless_repo
     # apt pin
@@ -292,6 +296,11 @@ EOM
     echo "Package: *" > ${APT_PIN_TMP_FNAME}
     echo "Pin: release o=wirenboard, a=$WB_RELEASE" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
+    if [[ "$DEBIAN_RELEASE" = "trixie" ]]; then
+        echo "Package: curl libcurl4t64 libngtcp2-16 libnghttp3-9" >> ${APT_PIN_TMP_FNAME}
+        echo "Pin: release n=${DEBIAN_RELEASE}-backports" >> ${APT_PIN_TMP_FNAME}
+        echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
+    fi
 
     board_override_repos
 
