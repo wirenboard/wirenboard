@@ -1,4 +1,35 @@
 #!/bin/bash
+# Enter the foreign-arch rootfs with a real chroot (qemu-user emulates the
+# binaries via binfmt_misc). This replaces proot, which is unmaintained and does
+# not translate the path arguments of newer syscalls (statx, fchmodat2, ...)
+# that trixie's toolchain uses, breaking apt/dpkg/tar inside the rootfs.
 set -u -e
 ROOTFS=${ROOTFS:-/rootfs/trixie-armhf}
-proot -R $ROOTFS -q qemu-arm-static /bin/bash "$@"
+# arch is the part after the last '-' in the rootfs name (armhf -> arm)
+case "${ROOTFS##*-}" in
+    arm64|aarch64) QEMU_ARCH=aarch64 ;;
+    *)             QEMU_ARCH=arm ;;
+esac
+
+cp -f "/usr/bin/qemu-${QEMU_ARCH}-static" "$ROOTFS/usr/bin/" 2>/dev/null || true
+if [ ! -e "/proc/sys/fs/binfmt_misc/qemu-${QEMU_ARCH}" ]; then
+    mountpoint -q /proc/sys/fs/binfmt_misc || \
+        mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc 2>/dev/null || true
+    case "$QEMU_ARCH" in
+        arm)     magic='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00' ;;
+        aarch64) magic='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00' ;;
+    esac
+    if [ -w /proc/sys/fs/binfmt_misc/register ]; then
+        printf ':qemu-%s:M::%s:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-%s-static:F' \
+            "$QEMU_ARCH" "$magic" "$QEMU_ARCH" > /proc/sys/fs/binfmt_misc/register 2>/dev/null || true
+    fi
+fi
+
+for b in /proc /sys /dev /dev/pts /dev/shm /tmp /run; do
+    [ -e "$b" ] || continue
+    mkdir -p "$ROOTFS$b"
+    mountpoint -q "$ROOTFS$b" || mount --rbind "$b" "$ROOTFS$b" 2>/dev/null || true
+done
+cp -f /etc/resolv.conf "$ROOTFS/etc/resolv.conf" 2>/dev/null || true
+
+exec chroot "$ROOTFS" /bin/bash "$@"

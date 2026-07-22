@@ -133,12 +133,74 @@ devsudo () {
     sudo -E -u "$DEV_USER" env HOME="/home/$DEV_USER" PATH="$PATH" "$@"
 }
 
-chu () {
-    devsudo proot -R $ROOTFS -q qemu-${QEMU_ARCH}-static $shell_cmd "$@"
+# We used to enter the foreign-arch rootfs with proot, but proot is unmaintained
+# and its syscall table predates syscalls that trixie's toolchain relies on
+# (statx, fchmodat2, ...). proot does not translate the path arguments of the
+# syscalls it does not know, so apt/dpkg/tar fail inside the rootfs ("Splitting
+# up ... into data and signature failed", "double free or corruption",
+# "Cannot change mode: No such file or directory"). The container runs
+# --privileged, so we use a real chroot instead and let qemu-user emulate the
+# foreign binaries via binfmt_misc.
+setup_chroot () {
+    [ -d "$ROOTFS" ] || die "rootfs $ROOTFS not found"
+
+    # Make qemu available inside the rootfs and register the binfmt handler.
+    # Best-effort: on Docker Desktop the host already emulates foreign binaries,
+    # and re-registering an existing handler just fails harmlessly.
+    cp -f "/usr/bin/qemu-${QEMU_ARCH}-static" "$ROOTFS/usr/bin/" 2>/dev/null || true
+    if [ ! -e "/proc/sys/fs/binfmt_misc/qemu-${QEMU_ARCH}" ]; then
+        mountpoint -q /proc/sys/fs/binfmt_misc || \
+            mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc 2>/dev/null || true
+        local magic=""
+        case "$QEMU_ARCH" in
+            arm)     magic='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00' ;;
+            aarch64) magic='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00' ;;
+        esac
+        if [ -n "$magic" ] && [ -w /proc/sys/fs/binfmt_misc/register ]; then
+            printf ':qemu-%s:M::%s:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-%s-static:F' \
+                "$QEMU_ARCH" "$magic" "$QEMU_ARCH" > /proc/sys/fs/binfmt_misc/register 2>/dev/null || true
+        fi
+    fi
+
+    # Bind-mount the host paths proot used to expose: the kernel filesystems,
+    # /tmp, and the developer home which holds the source tree (docker volume).
+    local b
+    for b in /proc /sys /dev /dev/pts /dev/shm /tmp /run; do
+        [ -e "$b" ] || continue
+        mkdir -p "$ROOTFS$b"
+        mountpoint -q "$ROOTFS$b" || mount --rbind "$b" "$ROOTFS$b" 2>/dev/null || true
+    done
+    if [ -d "/home/$DEV_USER" ]; then
+        mkdir -p "$ROOTFS/home/$DEV_USER"
+        mountpoint -q "$ROOTFS/home/$DEV_USER" || \
+            mount --rbind "/home/$DEV_USER" "$ROOTFS/home/$DEV_USER" 2>/dev/null || true
+    fi
+    # Source dir mounted outside the home (e.g. DEV_VOLUME) needs its own bind.
+    case "$DEV_DIR" in
+        ""|/home/"$DEV_USER"|/home/"$DEV_USER"/*) ;;
+        *) if [ -d "$DEV_DIR" ]; then
+               mkdir -p "$ROOTFS$DEV_DIR"
+               mountpoint -q "$ROOTFS$DEV_DIR" || \
+                   mount --rbind "$DEV_DIR" "$ROOTFS$DEV_DIR" 2>/dev/null || true
+           fi ;;
+    esac
+    cp -f /etc/resolv.conf "$ROOTFS/etc/resolv.conf" 2>/dev/null || true
 }
 
+# chu: run as the developer user inside the rootfs (was: proot -R via devsudo).
+chu () {
+    setup_chroot
+    chroot --userspec="$DEV_UID:$DEV_GID" "$ROOTFS" /bin/sh -c \
+        'HOME="$1"; PATH="$3"; export HOME PATH; cd "$2" 2>/dev/null || cd /; shift 3; exec "$@"' \
+        sh "/home/$DEV_USER" "$PWD" "$PATH" $shell_cmd "$@"
+}
+
+# chr: run as root inside the rootfs (was: proot -S).
 chr () {
-    proot -S $ROOTFS -q qemu-${QEMU_ARCH}-static -b "/home/$DEV_USER:/home/$DEV_USER" $shell_cmd "$@"
+    setup_chroot
+    chroot "$ROOTFS" /bin/sh -c \
+        'cd "$1" 2>/dev/null || cd /; shift; exec "$@"' \
+        sh "$PWD" $shell_cmd "$@"
 }
 
 die() {

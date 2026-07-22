@@ -21,7 +21,7 @@ RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.
        /etc/apt/sources.list.d/llvm-trixie-22.list && \
     sed -i 's#ftp.ru.debian.org#debian-mirror.wirenboard.com#' /etc/apt/sources.list.d/debian.sources && \
     apt update && \
-    apt install -y --force-yes git gpg debootstrap proot build-essential pkg-config debhelper \
+    apt install -y --force-yes git gpg debootstrap build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
        devscripts python3-virtualenv python3-pip equivs qemu-user-static binfmt-support \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
