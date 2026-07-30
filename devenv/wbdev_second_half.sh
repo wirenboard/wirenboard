@@ -60,6 +60,16 @@ else
     fi
 fi
 
+if [[ -n "$DEV_GOCACHE_VOLUME" ]]; then
+    export WBDEV_GOCACHE_DIR=${WBDEV_GOCACHE_DIR:-/var/cache/go}
+    VOLUMES="$VOLUMES -v $DEV_GOCACHE_VOLUME:$WBDEV_GOCACHE_DIR"
+else
+    if [[ -n "$WBDEV_GOCACHE_DIR" ]]; then
+        echo "WBDEV_GOCACHE_DIR is set but DEV_GOCACHE_VOLUME is not"
+        exit 1
+    fi
+fi
+
 ENV_CMDLINE=""
 for var in $(env | grep -o "WBDEV_[^=]*"); do
     ENV_CMDLINE="$ENV_CMDLINE -e $var"

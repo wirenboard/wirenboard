@@ -11,3 +11,4 @@ tmpfs           /dev/shm        tmpfs   defaults        0       0
 # space on an LVM snapshot of the chroot itself.
 /var/lib/sbuild/build  /build   none    rw,bind         0       0
 /var/cache/ccache      /var/cache/ccache  none    rw,bind         0       0
+/var/cache/go          /var/cache/go      none    rw,bind         0       0

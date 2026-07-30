@@ -72,6 +72,7 @@ COPY chr /usr/local/bin/
 RUN chmod +x /root/*.sh /usr/local/bin/chr
 
 RUN mkdir -p /var/cache/ccache && chmod 777 /var/cache/ccache
+RUN mkdir -p /var/cache/go && chmod 777 /var/cache/go
 COPY schroot/fstab /etc/schroot/sbuild/fstab
 COPY schroot/copyfiles /etc/schroot/sbuild/copyfiles
 COPY schroot/ccache-setup /usr/local/bin/ccache-setup

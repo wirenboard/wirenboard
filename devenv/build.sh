@@ -111,6 +111,11 @@ EOF
 	#output everyting on screen instead of file
 	echo "\$nolog = 1;" >> /etc/sbuild/sbuild.conf
 
+	# persist Go build and module cache across builds (bind-mounted from /var/cache/go, see schroot/fstab).
+	# append keys rather than reassign $build_environment, to keep sbuild's own PATH/LD_LIBRARY_PATH defaults.
+	echo "\$build_environment->{'GOCACHE'} = '/var/cache/go/build';" >> /etc/sbuild/sbuild.conf
+	echo "\$build_environment->{'GOMODCACHE'} = '/var/cache/go/mod';" >> /etc/sbuild/sbuild.conf
+
 	# enable ccache wrapper
 	echo "command-prefix=/usr/local/bin/ccache-setup" >> "${SCHROOT_CONF}"
 
