@@ -10,13 +10,15 @@ prepare_chroot
 services_disable
 
 /bin/echo -e 'APT::Get::Assume-Yes "true";\nAPT::Get::force-yes "true";' >$ROOTFS/etc/apt/apt.conf.d/90forceyes
+# we don't need the "Translations" files, so we're just wasting time and space by downloading them
+/bin/echo -e 'Acquire::Languages "none";' > $ROOTFS/etc/apt/apt.conf.d/91no-languages
+
 chr apt-get update
 
 pkgs=(devscripts equivs build-essential \
     pkg-config bash-completion \
-    libgtest-dev google-mock cmake \
-    cdbs autoconf automake libtool \
-    git git-man gcc g++ ccache
+    cmake cdbs autoconf automake libtool \
+    git git-man ccache
 )
 
 chr_apt_install "${pkgs[@]}"
