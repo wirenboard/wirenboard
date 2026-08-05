@@ -82,13 +82,13 @@ EOF
 	# prevent e2fsprogs packages from being installed from wb repo, it messes up with host versions.
 	# it is only needed for actual hardware anyway
 	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/000libext2fs
-Package: src:e2fsprogs
+Package: src:e2fsprogs:any
 Pin: release o=wirenboard
 Pin-Priority: -1
 EOF
 
 	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/001backports
-Package: src:curl src:ngtcp2 src:nghttp3
+Package: src:curl:any src:ngtcp2:any src:nghttp3:any
 Pin: release n=trixie-backports
 Pin-Priority: 990
 EOF
