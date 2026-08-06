@@ -297,7 +297,7 @@ EOM
     echo "Pin: release o=wirenboard, a=$WB_RELEASE" >> ${APT_PIN_TMP_FNAME}
     echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
     if [[ "$DEBIAN_RELEASE" = "trixie" ]]; then
-        echo "Package: src:curl src:ngtcp2 src:nghttp3" >> ${APT_PIN_TMP_FNAME}
+        echo "Package: src:curl:any src:ngtcp2:any src:nghttp3:any" >> ${APT_PIN_TMP_FNAME}
         echo "Pin: release n=${DEBIAN_RELEASE}-backports" >> ${APT_PIN_TMP_FNAME}
         echo "Pin-Priority: 990" >> ${APT_PIN_TMP_FNAME}
     fi
