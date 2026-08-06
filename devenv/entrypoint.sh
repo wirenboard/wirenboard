@@ -208,6 +208,28 @@ die() {
     exit 1
 }
 
+target_triple() {
+    case "$WBDEV_TARGET_ARCH" in
+        armhf) echo "arm-linux-gnueabihf" ;;
+        arm64) echo "aarch64-linux-gnu" ;;
+    esac
+}
+
+add_target_to_compiledb() {
+    local db="compile_commands.json"
+    local triple
+    triple=$(target_triple)
+
+    [ -n "$triple" ] || return 0
+    [ -f "$db" ] || return 0
+
+    echo "Adding --target=$triple --sysroot=$ROOTFS to $db"
+    jq --arg target "--target=$triple" --arg sysroot "--sysroot=$ROOTFS" \
+       'map(if has("arguments") then .arguments += [$target, $sysroot]
+            else .command += " " + $target + " " + $sysroot end)' \
+       "$db" | sponge "$db"
+}
+
 wb_repo_path() {
     PLATFORM=$1
     PREFIX=${2:-$WBDEV_TARGET_REPO_PREFIX}
@@ -437,6 +459,7 @@ case "$cmd" in
         elif [ -f Makefile ]; then
             chu make -Bnwk | compiledb -o compile_commands.json
         fi
+        add_target_to_compiledb
         $shell_cmd "$@"
         ;;
     cdeb)
