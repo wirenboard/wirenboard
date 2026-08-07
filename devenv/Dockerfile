@@ -8,6 +8,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
 # ca-certificates should be installed before moving to debian-mirror.wirenboard.com
 RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.sources && \
+    sed -i 's#^Suites: trixie trixie-updates$#& trixie-backports#' /etc/apt/sources.list.d/debian.sources && \
     apt update && apt install -y curl wget gnupg && \
     echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > /etc/apt/apt.conf.d/99use-gpgv && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
@@ -24,11 +25,11 @@ RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.
     apt install -y --force-yes git gpg debootstrap build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
        devscripts python3-virtualenv python3-pip equivs qemu-user-static binfmt-support \
-       libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
-       libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
-       valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
-       python3-netaddr python3-pyparsing libusb-dev libusb-1.0-0-dev jq moreutils \
-       python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
+       debian-archive-keyring \
+       sbuild kpartx zip device-tree-compiler \
+       valgrind cmake bc lzip lzop \
+       python3-netaddr python3-pyparsing jq moreutils \
+       python3-smbus python3-setuptools bison flex kmod dh-python \
        clang-format-22 clang-tidy-22 lintian ccache \
     # for image building \
     fdisk u-boot-tools-wb fit-aligner cpio \

@@ -21,10 +21,37 @@ do_build_sbuild_env() {
 
 	shift
 	local ADD_PACKAGES=("$@")
+	local INCLUDE_PACKAGES=(
+	    crossbuild-essential-arm64
+	    crossbuild-essential-armhf
+	    build-essential
+	    libarchive-zip-perl
+	    libtimedate-perl
+	    pkg-config
+	    libfile-stripnondeterminism-perl
+	    gettext
+	    intltool-debian
+	    po-debconf
+	    dh-autoreconf
+	    dh-strip-nondeterminism
+	    debhelper
+	    cmake
+	    git
+	    ca-certificates
+	    ccache
+	    gpgv
+	    apt-utils
+	    perl-openssl-defaults
+	    lintian
+	)
 
 	REPO="http://debian-mirror.wirenboard.com/debian"
 
-	sbuild-createchroot --no-deb-src --include="crossbuild-essential-arm64 crossbuild-essential-armhf build-essential libarchive-zip-perl libtimedate-perl pkg-config libfile-stripnondeterminism-perl gettext intltool-debian po-debconf dh-autoreconf dh-strip-nondeterminism debhelper libgtest-dev cmake git ca-certificates ccache gpgv apt-utils perl-openssl-defaults lintian" ${RELEASE} ${ROOTFS} ${REPO}
+	sbuild-createchroot \
+	    --no-deb-src \
+	    --extra-repository="deb $REPO trixie-backports main" \
+	    --include="$(IFS=,; echo "${INCLUDE_PACKAGES[*]}")" \
+	    ${RELEASE} ${ROOTFS} ${REPO}
 	SCHROOT_CONF="$(find /etc/schroot/chroot.d/ -name "${CHROOT_NAME}*" -type f | head -n1)"
 	touch /etc/ccache.conf  # make schroot's copyfiles happy
 
@@ -58,6 +85,12 @@ EOF
 Package: src:e2fsprogs:any
 Pin: release o=wirenboard
 Pin-Priority: -1
+EOF
+
+	cat <<EOF >${ROOTFS}/etc/apt/preferences.d/001backports
+Package: src:curl:any src:ngtcp2:any src:nghttp3:any
+Pin: release n=trixie-backports
+Pin-Priority: 990
 EOF
 
 	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get update
