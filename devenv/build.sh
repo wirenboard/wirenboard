@@ -111,8 +111,7 @@ EOF
 		schroot -c ${CHROOT_NAME} --directory=/ -- apt-get -y install \
 			libglib2.0-0t64 \
 			libcares2:arm64 libcares2:armhf \
-			golang-1.24-go \
-			binutils-gold-aarch64-linux-gnu # https://github.com/golang/go/issues/22040
+			golang-1.26-go # from trixie-backports
 	fi
 
 	#virtualization support packages
