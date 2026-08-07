@@ -26,7 +26,7 @@ RUN sed -i 's#deb.debian.org#mirror.docker.ru#' /etc/apt/sources.list && \
        libmosquittopp-dev libmosquitto-dev pkg-config gcc g++ libmodbus-dev debian-archive-keyring \
        libcurl4-gnutls-dev libsqlite3-dev libjsoncpp-dev sbuild kpartx zip device-tree-compiler \
        valgrind libgtest-dev google-mock cmake config-package-dev libssl-dev bc lzip lzop \
-       python3-netaddr python3-pyparsing libusb-dev libusb-1.0-0-dev jq \
+       python3-netaddr python3-pyparsing libusb-dev libusb-1.0-0-dev jq moreutils \
        python3-smbus python3-setuptools liblog4cpp5-dev libpng-dev bison flex kmod dh-python \
        clang-format-15 clang-tidy-15 lintian ccache \
     # for image building \
