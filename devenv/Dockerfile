@@ -28,7 +28,7 @@ RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.
        debian-archive-keyring \
        sbuild kpartx zip device-tree-compiler \
        valgrind cmake bc lzip lzop \
-       python3-netaddr python3-pyparsing jq \
+       python3-netaddr python3-pyparsing jq moreutils \
        python3-smbus python3-setuptools bison flex kmod dh-python \
        clang-format-22 clang-tidy-22 lintian ccache \
     # for image building \
