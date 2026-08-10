@@ -28,7 +28,10 @@ RUN rm /etc/apt/sources.list.d/debian.sources && \
 # Host gcc — для юнит-тестов (Unity), python3 — для
 # check_flash_size/check_reg_overlaps/log_print_gen из libwbmcu-system,
 # gcovr — для make coverage (тесты библиотек), s3cmd + curl — для стадий
-# выгрузки карт регистров и прошивок (wbfw-s3-uploader) в pipeline-либе.
+# выгрузки карт регистров и прошивок (wbfw-s3-uploader) в pipeline-либе,
+# qemu-system-arm — прогон layout-чувствительных тестов и генераторов
+# flashfs-дампов настоящим таргет-компилятором на эмуляторе Cortex-M
+# (semihosting), одинаково на amd64- и arm64-хостах.
 # Образ публикуется multi-arch (разработчики на ARM-машинах собирают в том же
 # окружении); gcc-multilib существует только на amd64 — он нужен юнит-тестам,
 # собирающимся с -m32 (на arm64 такие тесты не гоняются).
@@ -42,7 +45,8 @@ RUN apt-get update && \
         gcovr=7.2+really-1.1 \
         s3cmd=2.4.0-3 \
         curl=8.14.1-2+deb13u4 \
-        ca-certificates=20250419 && \
+        ca-certificates=20250419 \
+        qemu-system-arm=1:10.0.11+ds-0+deb13u1 && \
     if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
         apt-get install -y gcc-multilib=4:14.2.0-1; \
     fi && \
