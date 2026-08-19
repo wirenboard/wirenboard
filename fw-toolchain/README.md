@@ -109,10 +109,12 @@ Notes:
 * On ARM machines (Apple Silicon and the like) docker picks the arm64
   variant of the image automatically — everything runs natively, without
   emulation. Firmware binaries built on amd64 and arm64 are identical.
-* Legacy unit tests that build with `gcc -m32` fail explicitly, with
-  one and the same error on both architectures (the image deliberately
-  guards against `-m32` — it has no arm64 equivalent). Migrate such
-  tests instead of relying on it.
+* The image has no 32-bit host environment, so legacy unit tests that
+  build with `gcc -m32` always fail on their first `-m32` compile: on
+  amd64 with `bits/libc-header-start.h: No such file or directory`, on
+  arm64 with `unrecognized command-line option '-m32'`. This is
+  deliberate — `-m32` has no arm64 equivalent; migrate such tests
+  instead of relying on it.
 * For library development in the project layout (a library's unit tests
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.

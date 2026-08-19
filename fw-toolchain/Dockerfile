@@ -60,10 +60,6 @@ RUN pip install --break-system-packages --require-hashes --no-deps \
     rm /tmp/gcovr-requirements.txt && \
     gcovr --version
 
-# Обёртка над host-gcc: единое явное падение сборок с -m32 на обеих
-# архитектурах (подробности — в комментарии самого скрипта).
-COPY --chmod=0755 gcc-m32-guard /usr/local/bin/gcc
-
 # Кросс-компилятор — Arm GNU Toolchain 15.3.Rel1 (GCC 15.3.1), самый свежий
 # стабильный релиз Arm; официальный тарбол с gitlab.arm.com (в Debian только 14.2).
 # Пин — версией релиза и sha256. Версия зафиксирована жёстко: flash/RAM-лимиты
