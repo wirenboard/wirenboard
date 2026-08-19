@@ -66,10 +66,13 @@ Build artifacts (`build/<MODEL>/<MODEL>.elf` / `.bin`) appear in the
 checkout on the host as usual — point your debugger at the ELF directly,
 nothing needs to be copied out of the container.
 
-A convenient alias:
+The bundled `fwmake` wrapper does the same without the boilerplate
+(standalone, like `wbdev` — can be downloaded separately):
 
 ```
-alias fwmake='docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/w -w /w registry.wirenboard.com/wirenboard/fw-toolchain:latest make'
+wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/fw-toolchain/fwmake
+chmod +x fwmake
+cd wb-mr && fwmake MODEL_MR6C_GD32E230K8
 ```
 
 Notes:
