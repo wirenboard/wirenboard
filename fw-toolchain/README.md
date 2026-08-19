@@ -20,20 +20,30 @@ All versions are pinned (see the Dockerfile):
 
 | Tool | Version | Used for |
 |------|---------|----------|
-| gcc-arm-none-eabi | 15:14.2.rel1-1 | firmware cross-compilation |
-| gcc (host), gcc-multilib on amd64 | 4:14.2.0-1 | unit tests (Unity) |
+| Arm GNU Toolchain (arm-none-eabi) | 15.3.Rel1 (GCC 15.3.1) | firmware cross-compilation |
+| gcc (host), gcc-multilib on amd64 | GCC 15.3.0 (gcc-15 from Debian forky) | unit tests (Unity) |
 | python3 | 3.13.5-1 | libwbmcu-system build scripts |
 | qemu-system-arm | 1:10.0.11+ds | layout-sensitive tests on an emulated Cortex-M |
 | gcovr | 7.2+really-1.1 | `make coverage` |
 | make, git, s3cmd, curl | pinned | build and CI upload stages |
 
 Reproducibility is fixed on three levels: the base image is pinned by
-digest, apt sources point to snapshot.debian.org at a fixed date, and
-every installed package has an explicit version. Rebuilding the image
-from the same Dockerfile yields the same tool versions.
+digest, apt sources point to snapshot.debian.org at a fixed date with
+every installed package at an explicit version, and the cross-toolchain
+tarball is pinned by release version and sha256 (both host
+architectures). Rebuilding the image from the same Dockerfile yields
+the same tool versions.
 
 The cross-compiler version is pinned deliberately: firmware flash/RAM
 limits are sensitive to it. Do not bump it casually.
+
+The base is Debian forky (testing), chosen so that the host compiler is
+the same GCC 15.3 branch as the cross-toolchain — unit tests and
+firmware see identical compiler diagnostics. The long-term goal is one
+compiler for everything: tests migrate to libwbmcu-system's
+`RUN_ON_QEMU` mode (built by the very same `arm-none-eabi-gcc`, run on
+`qemu-system-arm`), after which host gcc and gcc-multilib leave the
+image entirely.
 
 ## Using the image locally
 
@@ -93,11 +103,16 @@ make -C fw-toolchain WBDEV_IMAGE=wirenboard/fw-toolchain:latest
 
 ## Updating the environment
 
-Bump the `SNAPSHOT` date and the package versions together, in one PR:
-set the new date, drop the `=version` pins, build the image, read the
-actually installed versions back with `dpkg-query -W`, and write them
-into the Dockerfile as the new pins. A compiler bump must be verified
-against the flash/RAM limits of all firmware repos before merging.
+Debian packages: bump the `SNAPSHOT` date and the package versions
+together, in one PR — set the new date, drop the `=version` pins, build
+the image, read the actually installed versions back with
+`dpkg-query -W`, and write them into the Dockerfile as the new pins.
+
+Cross-toolchain: bump `ARM_GNU_VERSION` and both `ARM_GNU_SHA256_*`
+args (checksums are published next to the tarballs on
+[gitlab.arm.com](https://gitlab.arm.com/tooling/gnu-toolchains-for-arm)).
+A compiler bump must be verified against the flash/RAM limits of all
+firmware repos before merging.
 
 ## Publishing (maintainers)
 
