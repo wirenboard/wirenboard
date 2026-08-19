@@ -123,7 +123,7 @@ If you have no registry access, the image builds locally from this
 directory in a few minutes:
 
 ```
-make -C fw-toolchain WBDEV_IMAGE=wirenboard/fw-toolchain:latest
+make -C fw-toolchain IMAGE=wirenboard/fw-toolchain:latest
 ```
 
 ## Updating the environment
