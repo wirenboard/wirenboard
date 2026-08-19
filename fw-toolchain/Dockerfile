@@ -27,9 +27,11 @@ RUN rm /etc/apt/sources.list.d/debian.sources && \
 
 # Host gcc 15 — для юнит-тестов (Unity), python3 — для
 # check_flash_size/check_reg_overlaps/log_print_gen из libwbmcu-system,
-# gcovr — для make coverage (тесты библиотек), s3cmd + curl — для стадий
-# выгрузки карт регистров и прошивок (wbfw-s3-uploader) в CI,
-# xz-utils — распаковка тарбола Arm GNU Toolchain (ниже).
+# s3cmd + curl — для стадий выгрузки карт регистров и прошивок
+# (wbfw-s3-uploader) в CI, xz-utils — распаковка тарбола Arm GNU Toolchain
+# (ниже), python3-pyelftools — анализ ELF-артефактов сборки (func_graph),
+# python3-requests — HTTP для вспомогательных скриптов, python3-pip — для
+# установки gcovr (ниже).
 RUN apt-get update && \
     apt-get install -y \
         git=1:2.53.0-1 \
@@ -37,12 +39,26 @@ RUN apt-get update && \
         make=4.4.1-3 \
         gcc=4:15.2.0-5 \
         gcc-15=15.3.0-2 \
-        gcovr=7.2+really-2 \
         s3cmd=2.4.0-3 \
         curl=8.21.0-2 \
         ca-certificates=20260601 \
-        xz-utils=5.8.3-1 && \
+        xz-utils=5.8.3-1 \
+        python3-pyelftools=0.33-1 \
+        python3-requests=2.32.5+dfsg-2 \
+        python3-pip=26.1.2+dfsg-1 && \
     rm -rf /var/lib/apt/lists/*
+
+# gcovr — для make coverage (тесты библиотек). Ставится из PyPI:
+# пакет gcovr в Debian остановился на 7.2 (2024), апстрим живёт (8.x).
+# В gcovr-requirements.txt перечислены gcovr и все его зависимости — с
+# точными версиями и sha256 устанавливаемых файлов для обеих архитектур.
+# Ключи --require-hashes --no-deps запрещают pip ставить что-либо сверх
+# перечисленного или с несовпадающей контрольной суммой.
+COPY gcovr-requirements.txt /tmp/gcovr-requirements.txt
+RUN pip install --break-system-packages --require-hashes --no-deps \
+        -r /tmp/gcovr-requirements.txt && \
+    rm /tmp/gcovr-requirements.txt && \
+    gcovr --version
 
 # Хостовый x86-gcc сам по себе принимает -m32; глушим его обёрткой, чтобы
 # сборка с -m32 падала с одной и той же явной ошибкой на amd64- и arm64-хостах.

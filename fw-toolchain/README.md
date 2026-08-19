@@ -23,7 +23,8 @@ All versions are pinned (see the Dockerfile):
 | Arm GNU Toolchain (arm-none-eabi) | 15.3.Rel1 (GCC 15.3.1) | firmware cross-compilation |
 | gcc (host) | GCC 15.3.0 (gcc-15 from Debian forky) | unit tests (Unity) |
 | python3 | 3.14.6-1 | libwbmcu-system build scripts |
-| gcovr | 7.2+really-2 | `make coverage` |
+| gcovr | 8.6 (upstream wheel, hash-locked in `gcovr-requirements.txt`) | `make coverage` |
+| python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
 | make, git, s3cmd, curl, xz-utils | pinned | build and CI upload stages |
 
 Reproducibility is fixed on three levels: the base image is pinned by
@@ -137,6 +138,9 @@ args (checksums are published next to the tarballs on
 [gitlab.arm.com](https://gitlab.arm.com/tooling/gnu-toolchains-for-arm)).
 A compiler bump must be verified against the flash/RAM limits of all
 firmware repos before merging.
+
+gcovr: bump versions in `gcovr-requirements.txt` and regenerate the
+hashes (`pip download` for both architectures + `sha256sum`).
 
 ## Publishing (maintainers)
 
