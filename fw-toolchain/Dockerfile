@@ -4,6 +4,7 @@ LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
 LABEL org.opencontainers.image.title="fw-toolchain"
 LABEL org.opencontainers.image.description="Build environment for classic libwbmcu-based MCU firmware"
+LABEL org.opencontainers.image.version="0.0.1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -25,16 +26,11 @@ RUN rm /etc/apt/sources.list.d/debian.sources && \
 # Host gcc (мета gcc → gcc-15) — для юнит-тестов (Unity), python3 — для
 # check_flash_size/check_reg_overlaps/log_print_gen из libwbmcu-system,
 # gcovr — для make coverage (тесты библиотек), s3cmd + curl — для стадий
-# выгрузки карт регистров и прошивок (wbfw-s3-uploader) в pipeline-либе,
-# qemu-system-arm — прогон layout-чувствительных тестов и генераторов
-# flashfs-дампов настоящим таргет-компилятором на эмуляторе Cortex-M
-# (semihosting), одинаково на amd64- и arm64-хостах,
+# выгрузки карт регистров и прошивок (wbfw-s3-uploader) в CI,
 # xz-utils — распаковка тарбола Arm GNU Toolchain (ниже).
-# Образ публикуется multi-arch (разработчики на ARM-машинах собирают в том же
-# окружении); gcc-multilib существует только на amd64 — он нужен юнит-тестам,
-# собирающимся с -m32 (на arm64 такие тесты не гоняются). Целевое состояние —
-# перевод тестов на RUN_ON_QEMU (тот же arm-none-eabi-gcc + qemu), после чего
-# host gcc и multilib из образа уйдут совсем.
+# gcc-multilib намеренно НЕ ставится: тестам с legacy `-m32` положено падать
+# явно — на arm64-хостах у них эквивалента нет, окружение обязано быть
+# одинаковым на обеих архитектурах.
 RUN apt-get update && \
     apt-get install -y \
         git=1:2.53.0-1 \
@@ -46,28 +42,24 @@ RUN apt-get update && \
         s3cmd=2.4.0-3 \
         curl=8.21.0-2 \
         ca-certificates=20260601 \
-        xz-utils=5.8.3-1 \
-        qemu-system-arm=1:11.0.3+ds-2 && \
-    if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
-        apt-get install -y gcc-multilib=4:15.2.0-5 gcc-15-multilib=15.3.0-2; \
-    fi && \
+        xz-utils=5.8.3-1 && \
     rm -rf /var/lib/apt/lists/*
 
 # Кросс-компилятор — Arm GNU Toolchain 15.3.Rel1 (GCC 15.3.1), самый свежий
-# стабильный релиз Arm; официальный тарбол с gitlab.arm.com.
-# Пин — версией релиза и sha256 обоих хостовых вариантов (amd64/arm64).
-# Версия зафиксирована жёстко: flash/RAM-лимиты прошивок чувствительны к версии
-# компилятора; известные особенности gcc15 на кодовой базе libwbmcu отражены в
-# исследовании FW-1284 (research/compiler-study): гейт -fno-optimize-crc для
-# MAP-таргетов и -Werror=unterminated-string-initialization в SIG_*-INTERNAL
-# сборках — правки на стороне реп прошивок, не образа.
+# стабильный релиз Arm; официальный тарбол с gitlab.arm.com (в Debian только 14.2).
+# Пин — версией релиза и sha256. Версия зафиксирована жёстко: flash/RAM-лимиты
+# прошивок чувствительны к версии компилятора, обновление — осознанным PR с
+# прогоном сборки всех прошивок.
+# Тарбол выбирается по архитектуре хоста сборки (TARGETARCH подставляет
+# BuildKit): amd64 = любой x86-64 (Intel и AMD), arm64 = aarch64 (ARM-маки,
+# ARM-серверы). Других Linux-хостов у Arm GNU Toolchain не существует.
 ARG ARM_GNU_VERSION=15.3.rel1
-ARG ARM_GNU_SHA256_AMD64=563bebb2b97d53382b956d6ee1fe61e2cae26699901417234a37df505ef9b5fa
-ARG ARM_GNU_SHA256_ARM64=06979e0c8171de58e5dc2a2b2019330a290f30930f27728af98a83e1a7369b3a
+ARG ARM_GNU_SHA256_X86_64=563bebb2b97d53382b956d6ee1fe61e2cae26699901417234a37df505ef9b5fa
+ARG ARM_GNU_SHA256_AARCH64=06979e0c8171de58e5dc2a2b2019330a290f30930f27728af98a83e1a7369b3a
 ARG TARGETARCH
 RUN case "$TARGETARCH" in \
-        amd64) host=x86_64;  sha="$ARM_GNU_SHA256_AMD64" ;; \
-        arm64) host=aarch64; sha="$ARM_GNU_SHA256_ARM64" ;; \
+        amd64) host=x86_64;  sha="$ARM_GNU_SHA256_X86_64" ;; \
+        arm64) host=aarch64; sha="$ARM_GNU_SHA256_AARCH64" ;; \
         *) echo "unsupported TARGETARCH='$TARGETARCH'" >&2; exit 1 ;; \
     esac && \
     tarball="arm-gnu-toolchain-$ARM_GNU_VERSION-$host-arm-none-eabi.tar.xz" && \

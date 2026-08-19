@@ -21,11 +21,10 @@ All versions are pinned (see the Dockerfile):
 | Tool | Version | Used for |
 |------|---------|----------|
 | Arm GNU Toolchain (arm-none-eabi) | 15.3.Rel1 (GCC 15.3.1) | firmware cross-compilation |
-| gcc (host), gcc-multilib on amd64 | GCC 15.3.0 (gcc-15 from Debian forky) | unit tests (Unity) |
-| python3 | 3.13.5-1 | libwbmcu-system build scripts |
-| qemu-system-arm | 1:10.0.11+ds | layout-sensitive tests on an emulated Cortex-M |
-| gcovr | 7.2+really-1.1 | `make coverage` |
-| make, git, s3cmd, curl | pinned | build and CI upload stages |
+| gcc (host) | GCC 15.3.0 (gcc-15 from Debian forky) | unit tests (Unity) |
+| python3 | 3.14.6-1 | libwbmcu-system build scripts |
+| gcovr | 7.2+really-2 | `make coverage` |
+| make, git, s3cmd, curl, xz-utils | pinned | build and CI upload stages |
 
 Reproducibility is fixed on three levels: the base image is pinned by
 digest, apt sources point to snapshot.debian.org at a fixed date with
@@ -39,11 +38,7 @@ limits are sensitive to it. Do not bump it casually.
 
 The base is Debian forky (testing), chosen so that the host compiler is
 the same GCC 15.3 branch as the cross-toolchain — unit tests and
-firmware see identical compiler diagnostics. The long-term goal is one
-compiler for everything: tests migrate to libwbmcu-system's
-`RUN_ON_QEMU` mode (built by the very same `arm-none-eabi-gcc`, run on
-`qemu-system-arm`), after which host gcc and gcc-multilib leave the
-image entirely.
+firmware see identical compiler diagnostics.
 
 ## Using the image locally
 
@@ -83,11 +78,10 @@ Notes:
 * On ARM machines (Apple Silicon and the like) docker picks the arm64
   variant of the image automatically — everything runs natively, without
   emulation. Firmware binaries built on amd64 and arm64 are identical.
-* Unit tests that build with `gcc -m32` work on amd64 only
-  (`gcc-multilib` does not exist on arm64). libwbmcu-system's
-  `RUN_ON_QEMU` mode is the arch-independent replacement: it runs
-  layout-sensitive tests on `qemu-system-arm`, available in this image
-  on both architectures.
+* The image deliberately carries no `gcc-multilib`: legacy unit tests
+  that build with `gcc -m32` fail explicitly. They have no arm64
+  equivalent, and the environment must be identical on both
+  architectures — migrate such tests instead of relying on `-m32`.
 * For library development in the project layout (a library's unit tests
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
