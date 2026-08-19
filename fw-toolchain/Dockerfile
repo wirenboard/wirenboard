@@ -60,19 +60,9 @@ RUN pip install --break-system-packages --require-hashes --no-deps \
     rm /tmp/gcovr-requirements.txt && \
     gcovr --version
 
-# Хостовый x86-gcc сам по себе принимает -m32; глушим его обёрткой, чтобы
-# сборка с -m32 падала с одной и той же явной ошибкой на amd64- и arm64-хостах.
-RUN printf '%s\n' \
-        '#!/bin/sh' \
-        'for a in "$@"; do' \
-        '    if [ "$a" = "-m32" ]; then' \
-        '        echo "fw-toolchain: -m32 is not supported; the build fails identically on amd64 and arm64 hosts" >&2' \
-        '        exit 1' \
-        '    fi' \
-        'done' \
-        'exec /usr/bin/gcc "$@"' \
-        > /usr/local/bin/gcc && \
-    chmod +x /usr/local/bin/gcc
+# Обёртка над host-gcc: единое явное падение сборок с -m32 на обеих
+# архитектурах (подробности — в комментарии самого скрипта).
+COPY --chmod=0755 gcc-m32-guard /usr/local/bin/gcc
 
 # Кросс-компилятор — Arm GNU Toolchain 15.3.Rel1 (GCC 15.3.1), самый свежий
 # стабильный релиз Arm; официальный тарбол с gitlab.arm.com (в Debian только 14.2).
