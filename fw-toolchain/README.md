@@ -82,25 +82,32 @@ Build artifacts (`build/<MODEL>/<MODEL>.elf` / `.bin`) appear in the
 checkout on the host as usual — point your debugger at the ELF directly,
 nothing needs to be copied out of the container.
 
-The bundled `fwmake` wrapper does the same without the boilerplate
-(standalone, like `wbdev` — can be downloaded separately):
+The bundled `fwdev` wrapper hides the boilerplate: a docker build
+differs from a local one only by the `fwdev` prefix. Nothing is copied
+anywhere — the checkout is bind-mounted into the container, artifacts
+appear in place as usual. Standalone, like `wbdev` — can be downloaded
+separately:
 
 ```
-wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/fw-toolchain/fwmake
-chmod +x fwmake
-cd wb-mr && fwmake MODEL_MR6C_GD32E230K8
+wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/fw-toolchain/fwdev
+chmod +x fwdev
+
+cd wb-mr
+fwdev make MODEL_MR6C_GD32E230K8   # instead of: make MODEL_MR6C_GD32E230K8
+fwdev make unittests               # instead of: make unittests
+fwdev bash                         # interactive shell in the environment
 ```
 
 Notes:
 
 * Nothing accumulates over time: `docker pull` downloads the image once
   and it stays in the local docker cache indefinitely, surviving
-  reboots. `fwmake`/`docker run` never rebuild or re-download anything —
+  reboots. `fwdev`/`docker run` never rebuild or re-download anything —
   they only start a disposable container from the cached image (~100 ms
   of overhead), which lives for the duration of one `make` and removes
   itself afterwards (`--rm`). The image changes only when you explicitly
   run `docker pull` again.
-* Parallel work needs no setup: every `fwmake` invocation gets its own
+* Parallel work needs no setup: every `fwdev` invocation gets its own
   isolated container, so build firmware and run unit tests at the same
   time, in one checkout or several. Within a single checkout the usual
   make rules apply — the same as running two `make` commands side by
