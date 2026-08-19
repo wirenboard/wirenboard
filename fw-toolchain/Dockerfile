@@ -13,24 +13,23 @@ ENV DEBIAN_FRONTEND=noninteractive
 # (host gcc) и прошивки (arm-none-eabi-gcc) собираются одной версией GCC с
 # одинаковой диагностикой. В stable (trixie) host gcc только 14.2.
 #
-# Воспроизводимость: база запинена дайджестом (мульти-арх индекс forky,
-# amd64+arm64), пакеты ставятся из snapshot.debian.org на фиксированную дату
-# и с явными версиями. apt-get update видит один и тот же срез архива, поэтому
-# при пересборке образа не «прилетит» ничего нового, пока дату и версии не
-# подняли руками (вместе, одним PR).
+# Воспроизводимость: базовый образ зафиксирован контрольной суммой — sha256
+# после «@» в FROM. Docker сверяет скачанное с ней, поэтому при любой
+# пересборке берётся байт-в-байт тот же образ (одна сумма покрывает оба
+# варианта, amd64 и arm64). Пакеты ставятся из snapshot.debian.org на
+# фиксированную дату и с явными версиями: apt-get update видит один и тот же
+# срез архива, и при пересборке не «прилетит» ничего нового, пока дату и
+# версии не подняли руками (вместе, одним PR).
 ARG SNAPSHOT=20260810T000000Z
 RUN rm /etc/apt/sources.list.d/debian.sources && \
     echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$SNAPSHOT/ forky main" \
         > /etc/apt/sources.list.d/snapshot.list
 
-# Host gcc (мета gcc → gcc-15) — для юнит-тестов (Unity), python3 — для
+# Host gcc 15 — для юнит-тестов (Unity), python3 — для
 # check_flash_size/check_reg_overlaps/log_print_gen из libwbmcu-system,
 # gcovr — для make coverage (тесты библиотек), s3cmd + curl — для стадий
 # выгрузки карт регистров и прошивок (wbfw-s3-uploader) в CI,
 # xz-utils — распаковка тарбола Arm GNU Toolchain (ниже).
-# gcc-multilib намеренно НЕ ставится: тестам с legacy `-m32` положено падать
-# явно — на arm64-хостах у них эквивалента нет, окружение обязано быть
-# одинаковым на обеих архитектурах.
 RUN apt-get update && \
     apt-get install -y \
         git=1:2.53.0-1 \
@@ -44,6 +43,20 @@ RUN apt-get update && \
         ca-certificates=20260601 \
         xz-utils=5.8.3-1 && \
     rm -rf /var/lib/apt/lists/*
+
+# Хостовый x86-gcc сам по себе принимает -m32; глушим его обёрткой, чтобы
+# сборка с -m32 падала с одной и той же явной ошибкой на amd64- и arm64-хостах.
+RUN printf '%s\n' \
+        '#!/bin/sh' \
+        'for a in "$@"; do' \
+        '    if [ "$a" = "-m32" ]; then' \
+        '        echo "fw-toolchain: -m32 is not supported; the build fails identically on amd64 and arm64 hosts" >&2' \
+        '        exit 1' \
+        '    fi' \
+        'done' \
+        'exec /usr/bin/gcc "$@"' \
+        > /usr/local/bin/gcc && \
+    chmod +x /usr/local/bin/gcc
 
 # Кросс-компилятор — Arm GNU Toolchain 15.3.Rel1 (GCC 15.3.1), самый свежий
 # стабильный релиз Arm; официальный тарбол с gitlab.arm.com (в Debian только 14.2).

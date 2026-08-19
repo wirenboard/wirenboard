@@ -40,6 +40,21 @@ The base is Debian forky (testing), chosen so that the host compiler is
 the same GCC 15.3 branch as the cross-toolchain — unit tests and
 firmware see identical compiler diagnostics.
 
+## Docker setup
+
+Linux: install Docker Engine following
+[docs.docker.com/engine/install](https://docs.docker.com/engine/install/)
+(on Debian/Ubuntu `apt-get install docker.io` also works), then add
+yourself to the `docker` group and re-login:
+`sudo usermod -aG docker $USER`. Under WSL2 either use Docker Desktop
+for Windows or install the engine inside the WSL distro the same way.
+
+macOS: install
+[Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/)
+or [OrbStack](https://orbstack.dev/) (lighter). On Apple Silicon the
+image runs natively (the arm64 variant is picked automatically) — no
+emulation, no extra settings.
+
 ## Using the image locally
 
 Pull once (office network / VPN):
@@ -77,14 +92,26 @@ cd wb-mr && fwmake MODEL_MR6C_GD32E230K8
 
 Notes:
 
+* Nothing accumulates over time: `docker pull` downloads the image once
+  and it stays in the local docker cache indefinitely, surviving
+  reboots. `fwmake`/`docker run` never rebuild or re-download anything —
+  they only start a disposable container from the cached image (~100 ms
+  of overhead), which lives for the duration of one `make` and removes
+  itself afterwards (`--rm`). The image changes only when you explicitly
+  run `docker pull` again.
+* Parallel work needs no setup: every `fwmake` invocation gets its own
+  isolated container, so build firmware and run unit tests at the same
+  time, in one checkout or several. Within a single checkout the usual
+  make rules apply — the same as running two `make` commands side by
+  side without docker.
 * `-u "$(id -u):$(id -g)"` keeps build artifacts owned by you, not root.
 * On ARM machines (Apple Silicon and the like) docker picks the arm64
   variant of the image automatically — everything runs natively, without
   emulation. Firmware binaries built on amd64 and arm64 are identical.
-* The image deliberately carries no `gcc-multilib`: legacy unit tests
-  that build with `gcc -m32` fail explicitly. They have no arm64
-  equivalent, and the environment must be identical on both
-  architectures — migrate such tests instead of relying on `-m32`.
+* Legacy unit tests that build with `gcc -m32` fail explicitly, with
+  one and the same error on both architectures (the image deliberately
+  guards against `-m32` — it has no arm64 equivalent). Migrate such
+  tests instead of relying on it.
 * For library development in the project layout (a library's unit tests
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
