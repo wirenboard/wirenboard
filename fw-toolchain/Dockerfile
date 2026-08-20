@@ -31,7 +31,9 @@ RUN rm /etc/apt/sources.list.d/debian.sources && \
 # Host gcc 15 — для юнит-тестов (Unity), python3 — для
 # check_flash_size/check_reg_overlaps/log_print_gen из libwbmcu-system,
 # s3cmd + curl — для стадий выгрузки карт регистров и прошивок
-# (wbfw-s3-uploader) в CI, xz-utils — распаковка тарбола Arm GNU Toolchain
+# (wbfw-s3-uploader) в CI, 7zip (7za) — упаковка комплекта прошивок для
+# шифратора в один AES-256-архив на сборочной стадии CI, xz-utils —
+# распаковка тарбола Arm GNU Toolchain
 # (ниже), python3-pyelftools — анализ ELF-артефактов сборки (func_graph),
 # python3-requests — HTTP для вспомогательных скриптов, python3-pip — для
 # установки gcovr (ниже).
@@ -44,6 +46,7 @@ RUN apt-get update && \
         gcc-15=15.3.0-2 \
         s3cmd=2.4.0-3 \
         curl=8.21.0-2 \
+        7zip=26.02+dfsg-2 \
         ca-certificates=20260601 \
         xz-utils=5.8.3-1 \
         python3-pyelftools=0.33-1 \

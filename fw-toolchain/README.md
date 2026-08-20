@@ -25,7 +25,7 @@ All versions are pinned (see the Dockerfile):
 | python3 | 3.14.6-1 | libwbmcu-system build scripts |
 | gcovr | 8.6 (upstream wheel, hash-locked in `gcovr-requirements.txt`) | `make coverage` |
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
-| make, git, s3cmd, curl, xz-utils | pinned | build and CI upload stages |
+| make, git, s3cmd, curl, xz-utils, 7zip | pinned | build and CI stages (uploads, encryptor handoff packing) |
 
 Reproducibility is fixed on three levels: the base image is pinned by
 a dated tag plus sha256 digest (Docker pulls by the digest; the tag is
