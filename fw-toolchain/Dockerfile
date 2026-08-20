@@ -1,4 +1,4 @@
-FROM debian:forky@sha256:918ae9bd6b6afc8a5c7a7a160623c1147fca67f55b277132e6effa987d4d5d5c
+FROM debian:forky-20260803@sha256:918ae9bd6b6afc8a5c7a7a160623c1147fca67f55b277132e6effa987d4d5d5c
 
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
@@ -16,10 +16,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Воспроизводимость: базовый образ зафиксирован контрольной суммой — sha256
 # после «@» в FROM. Docker сверяет скачанное с ней, поэтому при любой
 # пересборке берётся байт-в-байт тот же образ (одна сумма покрывает оба
-# варианта, amd64 и arm64). Пакеты ставятся из snapshot.debian.org на
-# фиксированную дату и с явными версиями: apt-get update видит один и тот же
-# срез архива, и при пересборке не «прилетит» ничего нового, пока дату и
-# версии не подняли руками (вместе, одним PR).
+# варианта, amd64 и arm64). Датированный тег перед «@» — человекочитаемое имя
+# того же образа: pull идёт только по digest'у, тег — документация; при
+# обновлении базы тег и сумму меняют вместе. Пакеты ставятся из
+# snapshot.debian.org на свою фиксированную дату (совпадать с датой тега базы
+# не обязана) и с явными версиями: apt-get update видит один и тот же срез
+# архива, и при пересборке не «прилетит» ничего нового, пока дату и версии
+# не подняли руками (вместе, одним PR).
 ARG SNAPSHOT=20260810T000000Z
 RUN rm /etc/apt/sources.list.d/debian.sources && \
     echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$SNAPSHOT/ forky main" \

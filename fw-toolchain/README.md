@@ -28,11 +28,12 @@ All versions are pinned (see the Dockerfile):
 | make, git, s3cmd, curl, xz-utils | pinned | build and CI upload stages |
 
 Reproducibility is fixed on three levels: the base image is pinned by
-digest, apt sources point to snapshot.debian.org at a fixed date with
-every installed package at an explicit version, and the cross-toolchain
-tarball is pinned by release version and sha256 (both host
-architectures). Rebuilding the image from the same Dockerfile yields
-the same tool versions.
+a dated tag plus sha256 digest (Docker pulls by the digest; the tag is
+a human-readable name for the same image), apt sources point to
+snapshot.debian.org at a fixed date with every installed package at an
+explicit version, and the cross-toolchain tarball is pinned by release
+version and sha256 (both host architectures). Rebuilding the image
+from the same Dockerfile yields the same tool versions.
 
 The cross-compiler version is pinned deliberately: firmware flash/RAM
 limits are sensitive to it. Do not bump it casually.
@@ -136,6 +137,11 @@ make -C fw-toolchain IMAGE=wirenboard/fw-toolchain:latest
 ```
 
 ## Updating the environment
+
+Base image: pick a fresh dated tag of `debian:forky` on Docker Hub,
+read its manifest digest
+(`docker buildx imagetools inspect debian:forky-YYYYMMDD`), and update
+the tag and the digest in `FROM` together.
 
 Debian packages: bump the `SNAPSHOT` date and the package versions
 together, in one PR — set the new date, drop the `=version` pins, build
