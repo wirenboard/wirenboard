@@ -4,15 +4,17 @@ Docker image with the build environment for classic libwbmcu-based MCU
 firmware (WB-MR, WB-MSW, WB-MAP, …, and the bootloader): one and the same
 environment on developer machines and on CI.
 
-The image is published to the internal registry as a multi-arch image
-(linux/amd64 + linux/arm64):
+The image is published to the internal registry (a multi-arch
+linux/amd64 + linux/arm64 manifest is the goal; see *Publishing*):
 
 ```
 registry.wirenboard.com/wirenboard/fw-toolchain:latest
 ```
 
-The registry is internal: it is reachable from the office network / VPN
-and requires `docker login registry.wirenboard.com` with your account.
+The registry is reachable from the office network / VPN. The `wirenboard`
+project in Harbor is public, so **pulling needs no `docker login`** — an
+anonymous pull from inside the network just works. Credentials are only
+needed to push, and pushing happens from a Jenkins runner (see *Publishing*).
 
 ## What is inside
 
@@ -20,27 +22,43 @@ All versions are pinned (see the Dockerfile):
 
 | Tool | Version | Used for |
 |------|---------|----------|
-| Arm GNU Toolchain (arm-none-eabi) | 15.3.Rel1 (GCC 15.3.1) | firmware cross-compilation |
-| gcc (host) | GCC 15.3.0 (gcc-15 from Debian forky) | unit tests (Unity) |
-| python3 | 3.14.6-1 | libwbmcu-system build scripts |
-| gcovr | 8.6 (upstream wheel, hash-locked in `gcovr-requirements.txt`) | `make coverage` |
+| gcc-arm-none-eabi | `15:14.2.rel1-1` — Arm GNU Toolchain 14.2.Rel1, GCC 14.2.1 | firmware cross-compilation |
+| libnewlib-arm-none-eabi | 4.5.0 | cross libc (newlib, `nano.specs` / `rdimon.specs` / `nosys.specs`) |
+| gcc (host) | GCC 14.2.0 (gcc-14 from Debian trixie) | unit tests (Unity) |
+| python3 | 3.13.5-1 | libwbmcu-system build scripts |
+| libc6-dev | 2.41-12+deb13u3 | host libc headers for the unit tests |
+| gcovr | 7.2+really-1.1 | `make coverage` |
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
-| make, git, s3cmd, curl, xz-utils, 7zip | pinned | build and CI stages (uploads, encryptor handoff packing) |
+| make, git, openssh-client, s3cmd, curl, 7zip | pinned | build and CI stages (submodule fetch over ssh, uploads, encryptor handoff packing) |
+| nano, less, jq, xxd | pinned | convenience only, for a human in `fwdev bash` — the build never uses them |
 
-Reproducibility is fixed on three levels: the base image is pinned by
-a dated tag plus sha256 digest (Docker pulls by the digest; the tag is
-a human-readable name for the same image), apt sources point to
-snapshot.debian.org at a fixed date with every installed package at an
-explicit version, and the cross-toolchain tarball is pinned by release
-version and sha256 (both host architectures). Rebuilding the image
-from the same Dockerfile yields the same tool versions.
+Everything is installed with `--no-install-recommends`, so the image holds
+only what the Dockerfile names. Two packages that would otherwise arrive as
+recommendations are therefore listed explicitly: `libc6-dev` (without it the
+host gcc finds no `stdio.h` and the unit tests do not compile) and
+`openssh-client` (firmware submodules use `git@github.com:` URLs).
+
+Every tool comes from apt, `gcovr` included — the image has nothing from a
+second source, so there is nothing to maintain besides the snapshot date. That
+means gcovr `7.2+really-1.1` rather than upstream 8.x: every option
+`build_common_coverage.mk` uses is present in 7.2, `make coverage` passes on it,
+no repo sets `COVERAGE_FAIL_UNDER`, and the HTML report is the same. The one
+thing 7.2 lacks is `--markdown`, which the HTML report makes redundant.
+
+Everything, the cross-toolchain included, comes from apt — there are no
+tarballs fetched from third-party hosts. Reproducibility is fixed on two
+levels: the base image is pinned by a dated tag plus sha256 digest
+(Docker pulls by the digest; the tag is a human-readable name for the
+same image), and apt sources point to snapshot.debian.org at a fixed
+date with every installed package at an explicit version. Rebuilding
+the image from the same Dockerfile yields the same tool versions.
 
 The cross-compiler version is pinned deliberately: firmware flash/RAM
 limits are sensitive to it. Do not bump it casually.
 
-The base is Debian forky (testing), chosen so that the host compiler is
-the same GCC 15.3 branch as the cross-toolchain — unit tests and
-firmware see identical compiler diagnostics.
+The base is Debian trixie (stable). Its host compiler (gcc-14, 14.2.0)
+is the same GCC 14.2 branch as the cross-compiler (14.2.1), so unit
+tests and firmware see identical compiler diagnostics.
 
 ## Docker setup
 
@@ -138,9 +156,9 @@ make -C fw-toolchain IMAGE=wirenboard/fw-toolchain:latest
 
 ## Updating the environment
 
-Base image: pick a fresh dated tag of `debian:forky` on Docker Hub,
+Base image: pick a fresh dated tag of `debian:trixie` on Docker Hub,
 read its manifest digest
-(`docker buildx imagetools inspect debian:forky-YYYYMMDD`), and update
+(`docker buildx imagetools inspect debian:trixie-YYYYMMDD`), and update
 the tag and the digest in `FROM` together.
 
 Debian packages: bump the `SNAPSHOT` date and the package versions
@@ -148,25 +166,39 @@ together, in one PR — set the new date, drop the `=version` pins, build
 the image, read the actually installed versions back with
 `dpkg-query -W`, and write them into the Dockerfile as the new pins.
 
-Cross-toolchain: bump `ARM_GNU_VERSION` and both `ARM_GNU_SHA256_*`
-args (checksums are published next to the tarballs on
-[gitlab.arm.com](https://gitlab.arm.com/tooling/gnu-toolchains-for-arm)).
-A compiler bump must be verified against the flash/RAM limits of all
-firmware repos before merging.
+Cross-toolchain: it is an apt package like the rest, so it moves with
+the snapshot date — bump `gcc-arm-none-eabi` and
+`libnewlib-arm-none-eabi` the same way. `binutils-arm-none-eabi` is
+left unpinned on purpose: its binNMU revision differs per architecture
+(`+b1` on amd64, `+b2` on arm64 at the current snapshot), and a single
+`pkg=version` has to satisfy both halves of a multi-arch build; the
+snapshot date still determines it unambiguously. A compiler bump must
+be verified against the flash/RAM limits of all firmware repos before
+merging.
 
-gcovr: bump versions in `gcovr-requirements.txt` and regenerate the
-hashes (`pip download` for both architectures + `sha256sum`).
+gcovr: an apt package like the rest — it moves with the snapshot date.
 
 ## Publishing (maintainers)
 
-Until the `docker-image-build` Jenkins job learns to build this
-directory (a `MAKE_DIR` parameter in jenkins-pipeline-lib is planned),
-the multi-arch image is published manually:
+The image is published **only from a Jenkins runner** — the registry push
+credentials (`registry-wirenboard-robot-push-account`) live there, not on
+developer machines. There is no supported way to push this image by hand.
 
-```
-docker buildx create --name multiarch --use   # once per machine
-docker login registry.wirenboard.com
-docker buildx build --platform linux/amd64,linux/arm64 \
-    -t registry.wirenboard.com/wirenboard/fw-toolchain:latest \
-    --push fw-toolchain/
-```
+The job is `docker-image-build` (`docker/buildImage.groovy` in
+jenkins-pipeline-lib): it checks out this repo on the `devenv-image-builder`
+node, runs `make` in a directory of the repo and pushes the result to
+`registry.wirenboard.com`. Two things are still missing before it can publish
+`fw-toolchain`:
+
+* the job hardcodes `make -C devenv`, so it needs the `MAKE_DIR` parameter
+  (prepared in jenkins-pipeline-lib, not merged yet);
+* multi-arch is not available yet. The node has no buildx — its build log
+  carries Docker's legacy-builder notice, *"Install the buildx component to
+  build images with BuildKit"* — and Jenkins has no arm64 agent at all (no
+  such label on any node). So the job can only publish the architecture of
+  `build-powerhouse-vm`, i.e. amd64. Getting an amd64+arm64 manifest needs
+  either buildx plus qemu binfmt on that node, or a second arm64 node and a
+  `docker manifest` step. Both are infra changes outside this repo.
+
+Until then the image can be built locally for your own use (see *Building the
+image yourself*), but not published.

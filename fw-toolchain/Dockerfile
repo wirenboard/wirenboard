@@ -1,4 +1,4 @@
-FROM debian:forky-20260803@sha256:918ae9bd6b6afc8a5c7a7a160623c1147fca67f55b277132e6effa987d4d5d5c
+FROM debian:trixie-20260803@sha256:34cd9e9fd437c0a095ec39cb2e73422c9f30821b0d0848ed74fd0d43bae4d958
 
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
@@ -8,87 +8,37 @@ LABEL org.opencontainers.image.version="0.0.1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# База — Debian forky (testing): выбрана ради host-компилятора GCC 15.3 —
-# той же ветки, что и кросс-тулчейн Arm GNU 15.3.Rel1 ниже. Так юнит-тесты
-# (host gcc) и прошивки (arm-none-eabi-gcc) собираются одной версией GCC с
-# одинаковой диагностикой. В stable (trixie) host gcc только 14.2.
-#
-# Воспроизводимость: базовый образ зафиксирован контрольной суммой — sha256
-# после «@» в FROM. Docker сверяет скачанное с ней, поэтому при любой
-# пересборке берётся байт-в-байт тот же образ (одна сумма покрывает оба
-# варианта, amd64 и arm64). Датированный тег перед «@» — человекочитаемое имя
-# того же образа: pull идёт только по digest'у, тег — документация; при
-# обновлении базы тег и сумму меняют вместе. Пакеты ставятся из
-# snapshot.debian.org на свою фиксированную дату (совпадать с датой тега базы
-# не обязана) и с явными версиями: apt-get update видит один и тот же срез
-# архива, и при пересборке не «прилетит» ничего нового, пока дату и версии
-# не подняли руками (вместе, одним PR).
 ARG SNAPSHOT=20260810T000000Z
 RUN rm /etc/apt/sources.list.d/debian.sources && \
-    echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$SNAPSHOT/ forky main" \
+    echo "deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/$SNAPSHOT/ trixie main" \
         > /etc/apt/sources.list.d/snapshot.list
 
-# Host gcc 15 — для юнит-тестов (Unity), python3 — для
-# check_flash_size/check_reg_overlaps/log_print_gen из libwbmcu-system,
-# s3cmd + curl — для стадий выгрузки карт регистров и прошивок
-# (wbfw-s3-uploader) в CI, 7zip (7za) — упаковка комплекта прошивок для
-# шифратора в один AES-256-архив на сборочной стадии CI, xz-utils —
-# распаковка тарбола Arm GNU Toolchain
-# (ниже), python3-pyelftools — анализ ELF-артефактов сборки (func_graph),
-# python3-requests — HTTP для вспомогательных скриптов, python3-pip — для
-# установки gcovr (ниже).
 RUN apt-get update && \
-    apt-get install -y \
-        git=1:2.53.0-1 \
-        python3=3.14.6-1 \
-        make=4.4.1-3 \
-        gcc=4:15.2.0-5 \
-        gcc-15=15.3.0-2 \
-        s3cmd=2.4.0-3 \
-        curl=8.21.0-2 \
-        7zip=26.02+dfsg-2 \
-        ca-certificates=20260601 \
-        xz-utils=5.8.3-1 \
-        python3-pyelftools=0.33-1 \
-        python3-requests=2.32.5+dfsg-2 \
-        python3-pip=26.1.2+dfsg-1 && \
+    apt-get install -y --no-install-recommends \
+# Кросс-компилятор прошивок и его libc
+        gcc-arm-none-eabi=15:14.2.rel1-1         `# дебиановская сборка Arm GNU Toolchain 14.2.Rel1` \
+        libnewlib-arm-none-eabi=4.5.0.20241231-1 `# newlib + nano/rdimon/nosys specs` \
+# Host-компилятор и заголовки его libc — юнит-тесты Unity
+        gcc=4:14.2.0-1                           `# та же ветка GCC 14.2, что и кросс` \
+        gcc-14=14.2.0-19                         `# пин конкретной версии под метапакетом` \
+        libc6-dev=2.41-12+deb13u3                `# без него нет stdio.h и тесты не собрать` \
+# Сборка
+        make=4.4.1-2                             `# сборка` \
+        python3=3.13.5-1                         `# скрипты сборки libwbmcu-system` \
+        git=1:2.47.3-0+deb13u1                   `# hash и ветка в имя артефакта, сабмодули` \
+        openssh-client=1:10.0p1-7+deb13u4        `# сабмодули по git@github.com` \
+# Анализ артефактов и отчёты
+        python3-pyelftools=0.32-1                `# разбор ELF для func_graph` \
+        gcovr=7.2+really-1.1                     `# отчёт покрытия, make coverage` \
+# Стадии CI
+        s3cmd=2.4.0-3                            `# выгрузка карт регистров и прошивок в S3` \
+        curl=8.14.1-2+deb13u4                    `# HTTP в стадиях CI` \
+        python3-requests=2.32.3+dfsg-5+deb13u1   `# HTTP во вспомогательных скриптах` \
+        ca-certificates=20250419                 `# корневые сертификаты для https` \
+        7zip=25.01+dfsg-1~deb13u2                `# AES-256 архив комплекта для шифратора` \
+# Дополнительное для удобства ручной работы в образе:
+        nano=8.4-1+deb13u1                       `# правка файлов на месте` \
+        less=668-1                               `# пейджер для git log и diff` \
+        jq=1.7.1-6+deb13u2                       `# смотреть targets_memory_report.json` \
+        xxd=2:9.1.1230-2                         `# смотреть bin глазами` && \
     rm -rf /var/lib/apt/lists/*
-
-# gcovr — для make coverage (тесты библиотек). Ставится из PyPI:
-# пакет gcovr в Debian остановился на 7.2 (2024), апстрим живёт (8.x).
-# В gcovr-requirements.txt перечислены gcovr и все его зависимости — с
-# точными версиями и sha256 устанавливаемых файлов для обеих архитектур.
-# Ключи --require-hashes --no-deps запрещают pip ставить что-либо сверх
-# перечисленного или с несовпадающей контрольной суммой.
-COPY gcovr-requirements.txt /tmp/gcovr-requirements.txt
-RUN pip install --break-system-packages --require-hashes --no-deps \
-        -r /tmp/gcovr-requirements.txt && \
-    rm /tmp/gcovr-requirements.txt && \
-    gcovr --version
-
-# Кросс-компилятор — Arm GNU Toolchain 15.3.Rel1 (GCC 15.3.1), самый свежий
-# стабильный релиз Arm; официальный тарбол с gitlab.arm.com (в Debian только 14.2).
-# Пин — версией релиза и sha256. Версия зафиксирована жёстко: flash/RAM-лимиты
-# прошивок чувствительны к версии компилятора, обновление — осознанным PR с
-# прогоном сборки всех прошивок.
-# Тарбол выбирается по архитектуре хоста сборки (TARGETARCH подставляет
-# BuildKit): amd64 = любой x86-64 (Intel и AMD), arm64 = aarch64 (ARM-маки,
-# ARM-серверы). Других Linux-хостов у Arm GNU Toolchain не существует.
-ARG ARM_GNU_VERSION=15.3.rel1
-ARG ARM_GNU_SHA256_X86_64=563bebb2b97d53382b956d6ee1fe61e2cae26699901417234a37df505ef9b5fa
-ARG ARM_GNU_SHA256_AARCH64=06979e0c8171de58e5dc2a2b2019330a290f30930f27728af98a83e1a7369b3a
-ARG TARGETARCH
-RUN case "$TARGETARCH" in \
-        amd64) host=x86_64;  sha="$ARM_GNU_SHA256_X86_64" ;; \
-        arm64) host=aarch64; sha="$ARM_GNU_SHA256_AARCH64" ;; \
-        *) echo "unsupported TARGETARCH='$TARGETARCH'" >&2; exit 1 ;; \
-    esac && \
-    tarball="arm-gnu-toolchain-$ARM_GNU_VERSION-$host-arm-none-eabi.tar.xz" && \
-    curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -o "/tmp/$tarball" \
-        "https://gitlab.arm.com/api/v4/projects/tooling%2Fgnu-toolchains-for-arm/packages/generic/gnu-toolchain/$ARM_GNU_VERSION/$tarball" && \
-    echo "$sha  /tmp/$tarball" | sha256sum -c - && \
-    mkdir -p /opt/arm-gnu-toolchain && \
-    tar -C /opt/arm-gnu-toolchain --strip-components=1 -xJf "/tmp/$tarball" && \
-    rm "/tmp/$tarball" && \
-    rm -rf /opt/arm-gnu-toolchain/share/doc /opt/arm-gnu-toolchain/share/man && \
-    ln -s /opt/arm-gnu-toolchain/bin/arm-none-eabi-* /usr/local/bin/
