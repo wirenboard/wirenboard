@@ -1,4 +1,8 @@
-FROM debian:trixie-20260803@sha256:34cd9e9fd437c0a095ec39cb2e73422c9f30821b0d0848ed74fd0d43bae4d958
+# По умолчанию — digest индекса: Docker сам берёт из него манифест архитектуры,
+# на которой идёт сборка. Собрать под чужую архитектуру можно, подставив сюда
+# digest конкретного манифеста, — см. ARCH в Makefile.
+ARG BASE=debian:trixie-20260803@sha256:34cd9e9fd437c0a095ec39cb2e73422c9f30821b0d0848ed74fd0d43bae4d958
+FROM ${BASE}
 
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"

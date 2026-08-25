@@ -154,12 +154,28 @@ directory in a few minutes:
 make -C fw-toolchain IMAGE=wirenboard/fw-toolchain:latest
 ```
 
+To build for the other architecture, add `ARCH=amd64` or `ARCH=arm64`.
+That needs qemu binfmt registered on the host (`docker run --privileged
+--rm tonistiigi/binfmt --install arm64`), and it is slow — emulated apt
+takes minutes, not seconds. Note that `docker build --platform` does
+**not** do this: the legacy builder ignores the flag without a word, so
+the Makefile selects the platform through the base image digest instead.
+
 ## Updating the environment
 
 Base image: pick a fresh dated tag of `debian:trixie` on Docker Hub,
 read its manifest digest
-(`docker buildx imagetools inspect debian:trixie-YYYYMMDD`), and update
-the tag and the digest in `FROM` together.
+(`docker manifest inspect debian:trixie-YYYYMMDD`), and update the tag
+and the digest in `ARG BASE` together. That digest is the **index**, out
+of which docker takes the right architecture on its own. `ARCH=` builds
+need the digest of a single architecture instead, so the same index is
+also spelled out per architecture in the Makefile (`BASE_amd64`,
+`BASE_arm64`) — update those two at the same time. `make check-base`
+verifies both are members of the index pinned in the Dockerfile, and an
+`ARCH=` build runs it first: a stale one would silently build the halves
+of a single image from two different bases. With buildx none of this
+would exist — one `--platform` flag replaces the three digests and the
+check.
 
 Debian packages: bump the `SNAPSHOT` date and the package versions
 together, in one PR — set the new date, drop the `=version` pins, build
@@ -192,13 +208,17 @@ node, runs `make` in a directory of the repo and pushes the result to
 
 * the job hardcodes `make -C devenv`, so it needs the `MAKE_DIR` parameter
   (prepared in jenkins-pipeline-lib, not merged yet);
-* multi-arch is not available yet. The node has no buildx — its build log
-  carries Docker's legacy-builder notice, *"Install the buildx component to
-  build images with BuildKit"* — and Jenkins has no arm64 agent at all (no
-  such label on any node). So the job can only publish the architecture of
-  `build-powerhouse-vm`, i.e. amd64. Getting an amd64+arm64 manifest needs
-  either buildx plus qemu binfmt on that node, or a second arm64 node and a
-  `docker manifest` step. Both are infra changes outside this repo.
+* multi-arch has no first-class support on the node. There is no buildx —
+  the build log carries Docker's legacy-builder notice, *"Install the buildx
+  component to build images with BuildKit"* — and Jenkins has no arm64 agent
+  at all (no such label on any node), so a native second half is not an
+  option either. The `ARCHES` parameter prepared in jenkins-pipeline-lib
+  works around it: one emulated build per architecture, each pushed under a
+  `:<tag>-<arch>` tag, then `docker manifest create` and `push`. It relies on
+  the qemu binfmt already installed on that node by the `wb_buildagent` role.
+  A single `docker-buildx-plugin` package would replace the whole workaround
+  with one `--platform` flag; that is an infra decision, and the workaround
+  exists so the image can ship either way.
 
-Until then the image can be built locally for your own use (see *Building the
-image yourself*), but not published.
+Until both are merged the image can be built locally for your own use (see
+*Building the image yourself*), but not published.
