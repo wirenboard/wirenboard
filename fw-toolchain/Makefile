@@ -1,6 +1,8 @@
-# Сборка образа джобой или вручную: make -C fw-toolchain IMAGE=<тег>.
+# Сборка образа джобой или вручную: make -C fw-toolchain WBDEV_IMAGE=<тег>.
+# Имя переменной для образа прошивок неточное, зато джоба docker-image-build
+# передаёт тег всем каталогам образов одинаково, без разбора кто есть кто.
 DOCKER ?= docker
-IMAGE ?= wirenboard/fw-toolchain
+WBDEV_IMAGE ?= wirenboard/fw-toolchain
 
 # ARCH=amd64|arm64 — собрать под указанную архитектуру, а не под архитектуру
 # машины. Обычный сборщик Docker молча игнорирует --platform, поэтому платформу
@@ -27,7 +29,7 @@ endif
 .PHONY: all check-base
 
 all:
-	$(DOCKER) build $(BUILD_ARGS) -t $(IMAGE) .
+	$(DOCKER) build $(BUILD_ARGS) -t $(WBDEV_IMAGE) .
 
 check-base:
 	@index=$$(sed -n 's/^ARG BASE=//p' Dockerfile); \
