@@ -1,0 +1,33 @@
+#!/bin/bash
+# fwdev — run any command inside the fw-toolchain container as if the
+# host had the toolchain installed. The current directory is bind-mounted
+# into the container (no copying): the command reads your checkout and
+# writes build artifacts straight back into it, owned by you. A docker
+# build differs from a local one only by the `fwdev` prefix.
+#
+# Standalone, like wbdev — can be downloaded separately:
+#
+#   wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/fw-toolchain/fwdev
+#
+# Usage (from a firmware repo checkout):
+#   fwdev make                        # build all models
+#   fwdev make MODEL_MR6C_GD32E230K8  # one model
+#   fwdev make unittests
+#   fwdev bash                        # interactive shell (same as no args)
+#
+# FWDEV_IMAGE overrides the image (e.g. a pinned digest), DOCKER — the
+# docker binary.
+set -u -e
+
+FWDEV_IMAGE="${FWDEV_IMAGE:-registry.wirenboard.com/wirenboard/fw-toolchain:latest}"
+DOCKER="${DOCKER:-docker}"
+
+tty_flags=""
+[ -t 0 ] && [ -t 1 ] && tty_flags="-it"
+
+[ $# -eq 0 ] && set -- bash
+
+exec "$DOCKER" run --rm $tty_flags \
+    -u "$(id -u):$(id -g)" -e HOME=/tmp \
+    -v "$PWD":/w -w /w \
+    "$FWDEV_IMAGE" "$@"
