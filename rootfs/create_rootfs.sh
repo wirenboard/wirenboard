@@ -181,7 +181,7 @@ run_additional_script() {
 }
 
 install_contactless_repo() {
-    local KEYRING_TMP=/etc/apt/keyrings/contactless-keyring-tmp.gpg
+    local KEYRING_TMP=/etc/apt/trusted.gpg.d/contactless-keyring-tmp.gpg
     rm -f ${APT_LIST_TMP_FNAME}
 
     echo "Install initial repos"
@@ -189,13 +189,11 @@ install_contactless_repo() {
 
     echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > ${OUTPUT}/etc/apt/apt.conf.d/99use-gpgv
 
-    chr_apt_update
-    chr_apt_install gnupg1
-
-    chr gpg1 --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869
-    chr gpg1 --export AEE07869 | tee ${OUTPUT}${KEYRING_TMP}
+    chr gpg1 --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AEE07869 AA549AA8
+    chr gpg1 --export AEE07869 AA549AA8 > ${OUTPUT}${KEYRING_TMP}
+    chr gpg1 --no-default-keyring --keyring ${KEYRING_TMP} --list-keys
     chmod 0644 "${OUTPUT}${KEYRING_TMP}"
-    echo "deb [signed-by=$KEYRING_TMP] $FULL_REPO_URL $WB_RELEASE main" >  ${APT_LIST_TMP_FNAME}
+    echo "deb $FULL_REPO_URL $WB_RELEASE main" > ${APT_LIST_TMP_FNAME}
 
     chr_apt_update
     chr_apt_install contactless-keyring
@@ -236,7 +234,7 @@ else
         --verbose \
         --arch $ARCH \
         --variant=minbase \
-        --include=ca-certificates,gpgv \
+        --include=ca-certificates,gpgv,gnupg1 \
         ${DEBIAN_RELEASE} ${OUTPUT} ${REPO}
 
     if $WB_COPY_QEMU; then
