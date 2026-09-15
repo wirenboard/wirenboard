@@ -115,8 +115,20 @@ WBDEV_TARGET. Possible values:
 
 Set `WBDEV_BUILD_METHOD=qemuchroot` to use legacy qemu virtualized builds.
 
-Set nonzero value to `WBDEV_USE_EXPERIMENTAL_DEPS` or `WBDEV_USE_UNSTABLE_DEPS` to
-add experimental or unstable Wiren Board Debian repositories respectively.
+Set nonzero value to `WBDEV_USE_UNSTABLE_DEPS` to add unstable Wiren Board Debian
+repository.
+
+Set `WBDEV_TESTING_SETS` to a comma-separated list of testing set names
+(e.g. `WBDEV_TESTING_SETS=foo,bar`) to add their `experimental.<name>` suites from
+`http://deb.wirenboard.com/all`. A name without such a suite stops the command.
+
+* `wbdev cdeb` and `wbdev ndeb` with sbuild pass the suites to sbuild as extra
+  repositories.
+* `wbdev chroot`, `wbdev compiledb` and `wbdev cdeb` with `WBDEV_BUILD_METHOD=qemuchroot`
+  write them to `/etc/apt/sources.list.d/wirenboard-testing-sets.list` in the rootfs;
+  run `apt-get update` there before installing. The rootfs pins `experimental.*`
+  suites at priority 991, above the testing (990) and unstable (500) ones, so a
+  package from a testing set wins.
 
 If required, another Docker image could be set via
 environment variable WBDEV_IMAGE.
