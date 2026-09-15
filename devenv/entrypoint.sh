@@ -81,6 +81,10 @@ WBDEV_TARGET_REPO_PREFIX=${WBDEV_TARGET_REPO_PREFIX:-""}
 
 ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 
+# apt sources written into the rootfs by write_rootfs_apt_sources
+ROOTFS_WB_REPO_LIST=/etc/apt/sources.list.d/wirenboard.list
+ROOTFS_TESTING_SETS_LIST=/etc/apt/sources.list.d/wirenboard-testing-sets.list
+
 if [ -n "$WBDEV_CCACHE_DIR" ]; then
     cat <<EOF >/etc/ccache.conf
 cache_dir = $WBDEV_CCACHE_DIR
@@ -352,14 +356,14 @@ write_rootfs_apt_sources() {
         repo_spec=$(get_stable_repo_spec)
     fi
     if [ -n "$repo_spec" ]; then
-        chr sh -c "echo '$repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+        chr sh -c "echo '$repo_spec' > $ROOTFS_WB_REPO_LIST"
     fi
 
     # Nothing to remove when no sets are given: every wbdev call starts from the rootfs in the image
     local testing_sets_specs
     testing_sets_specs=$(get_testing_sets_repo_specs)
     if [ -n "$testing_sets_specs" ]; then
-        chr sh -c "echo '$testing_sets_specs' > /etc/apt/sources.list.d/wirenboard-testing-sets.list"
+        chr sh -c "echo '$testing_sets_specs' > $ROOTFS_TESTING_SETS_LIST"
     fi
 }
 
