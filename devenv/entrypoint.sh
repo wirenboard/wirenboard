@@ -313,6 +313,56 @@ get_unstable_repo_spec() {
     echo "$UNSTABLE_REPO_SPEC"
 }
 
+# Apt line of one testing set: the experimental.<name> suite of the "all" repository.
+# Unlike stable and unstable, a missing suite stops the command: the set was asked for by name.
+get_testing_set_repo_spec() {
+    local name=$1
+    local repo_url="http://deb.wirenboard.com/all"
+
+    # The name goes into a URL for curl, which expands {} and [], and into an apt line
+    if [[ ! "$name" =~ ^[A-Za-z0-9._-]+$ ]]; then
+        die "Testing set '${name}' from WBDEV_TESTING_SETS: only letters, digits, '.', '_' and '-' are allowed"
+    fi
+
+    # platform_has_suite prepends WBDEV_TARGET_REPO_PREFIX; the "all" repository has none
+    if ! WBDEV_TARGET_REPO_PREFIX="" platform_has_suite "experimental.${name}" all; then
+        die "Testing set '${name}' from WBDEV_TESTING_SETS not found: no experimental.${name} suite at ${repo_url}"
+    fi
+    echo "deb [arch=armhf,amd64,arm64] ${repo_url} experimental.${name} main"
+}
+
+# WBDEV_TESTING_SETS="foo, bar" -> an apt line per set; spaces and empty items are skipped
+get_testing_sets_repo_specs() {
+    local name
+    local -a names
+    IFS=',' read -ra names <<< "$WBDEV_TESTING_SETS"
+    for name in "${names[@]}"; do
+        name=${name// /}
+        [ -n "$name" ] || continue
+        get_testing_set_repo_spec "$name"
+    done
+}
+
+# apt sources of the rootfs for commands that run apt inside the chroot rather than in sbuild
+write_rootfs_apt_sources() {
+    local repo_spec
+    if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
+        repo_spec=$(get_unstable_repo_spec)
+    else
+        repo_spec=$(get_stable_repo_spec)
+    fi
+    if [ -n "$repo_spec" ]; then
+        chr sh -c "echo '$repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
+    fi
+
+    # Nothing to remove when no sets are given: every wbdev call starts from the rootfs in the image
+    local testing_sets_specs
+    testing_sets_specs=$(get_testing_sets_repo_specs)
+    if [ -n "$testing_sets_specs" ]; then
+        chr sh -c "echo '$testing_sets_specs' > /etc/apt/sources.list.d/wirenboard-testing-sets.list"
+    fi
+}
+
 sbuild_buildpackage() {
     local ARCH=$1
     shift
@@ -340,12 +390,13 @@ sbuild_buildpackage() {
     if [ -n "$stable_repo_spec" ]; then
         SBUILD_ARGS+=(--extra-repository="$stable_repo_spec")
     fi
-    if [ -n "$WBDEV_TESTING_SETS" ]; then
-        IFS=',' read -ra testing_sets <<< "$WBDEV_TESTING_SETS"
-        for testing_set in "${testing_sets[@]}"; do
-            local TESTING_SET_REPO_SPEC="deb [arch=armhf,amd64,arm64] http://deb.wirenboard.com/all experimental.${testing_set} main"
-            SBUILD_ARGS+=(--extra-repository="$TESTING_SET_REPO_SPEC")
-        done
+    local testing_sets_specs
+    local testing_set_spec
+    testing_sets_specs=$(get_testing_sets_repo_specs)
+    if [ -n "$testing_sets_specs" ]; then
+        while IFS= read -r testing_set_spec; do
+            SBUILD_ARGS+=(--extra-repository="$testing_set_spec")
+        done <<< "$testing_sets_specs"
     fi
     SBUILD_ARGS+=(--no-apt-upgrade --no-apt-distupgrade)
     SBUILD_ARGS+=(-d "${WBDEV_TARGET_RELEASE}")
@@ -440,17 +491,7 @@ case "$cmd" in
         ;;
     compiledb)
         print_target_info
-        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            unstable_repo_spec=$(get_unstable_repo_spec)
-            if [ -n "$unstable_repo_spec" ]; then
-                chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
-            fi
-        else
-            stable_repo_spec=$(get_stable_repo_spec)
-            if [ -n "$stable_repo_spec" ]; then
-                chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
-            fi
-        fi
+        write_rootfs_apt_sources
         chr apt-get update
         chr mk-build-deps -ir -t "apt-get --force-yes -y -o Dpkg::Options::=--force-confdef"
         if [ -f CMakeLists.txt ]; then
@@ -468,17 +509,7 @@ case "$cmd" in
             sbuild_buildpackage ${WBDEV_TARGET_ARCH} "$@"
         else
             if [ "$WBDEV_INSTALL_DEPS" = "yes" ]; then
-                if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-                    unstable_repo_spec=$(get_unstable_repo_spec)
-                    if [ -n "$unstable_repo_spec" ]; then
-                        chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
-                    fi
-                else
-                    stable_repo_spec=$(get_stable_repo_spec)
-                    if [ -n "$stable_repo_spec" ]; then
-                        chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
-                    fi
-                fi
+                write_rootfs_apt_sources
                 chr apt-get update
                 chr mk-build-deps -ir -t "apt-get --force-yes -y"
             fi
@@ -487,17 +518,7 @@ case "$cmd" in
         ;;
     chroot)
         print_target_info
-        if [ -n "$WBDEV_USE_UNSTABLE_DEPS" ]; then
-            unstable_repo_spec=$(get_unstable_repo_spec)
-            if [ -n "$unstable_repo_spec" ]; then
-                chr sh -c "echo '$unstable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
-            fi
-        else
-            stable_repo_spec=$(get_stable_repo_spec)
-            if [ -n "$stable_repo_spec" ]; then
-                chr sh -c "echo '$stable_repo_spec' > /etc/apt/sources.list.d/wirenboard.list"
-            fi
-        fi
+        write_rootfs_apt_sources
         chr "$@"
         ;;
     *)
