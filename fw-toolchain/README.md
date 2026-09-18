@@ -89,6 +89,8 @@ Build all firmware models in a firmware repo checkout (clone with
 ```
 cd wb-mr    # any classic libwbmcu firmware repo
 docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+    -e GIT_CONFIG_COUNT=1 \
+    -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/w \
     -v "$PWD":/w -w /w \
     registry.wirenboard.com/wirenboard/fw-toolchain:latest make
 ```
@@ -132,6 +134,13 @@ Notes:
   make rules apply — the same as running two `make` commands side by
   side without docker.
 * `-u "$(id -u):$(id -g)"` keeps build artifacts owned by you, not root.
+* `GIT_CONFIG_*` marks the mounted checkout as a directory git may
+  trust. Docker presents the bind-mount root itself as owned by root
+  while everything inside it carries your uid; git checks the owner of
+  the worktree root and otherwise refuses the repository ("detected
+  dubious ownership in repository at `/w`"). Without it `$(shell git
+  ...)` in a Makefile silently returns an empty string and artifact
+  names and the firmware lose their branch and commit.
 * On ARM machines (Apple Silicon and the like) docker picks the arm64
   variant of the image automatically — everything runs natively, without
   emulation. Firmware binaries built on amd64 and arm64 are identical.

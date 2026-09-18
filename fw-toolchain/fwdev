@@ -27,7 +27,16 @@ tty_flags=""
 
 [ $# -eq 0 ] && set -- bash
 
+# GIT_CONFIG_*: docker presents the bind-mount root itself as owned by
+# root, while everything inside it carries your uid. git checks the
+# ownership of the worktree root, refuses the repository ("detected
+# dubious ownership in repository at '/w'"), and $(shell git ...) in a
+# Makefile silently yields an empty string — artifact names and the
+# firmware end up with no branch/commit. Trusting /w restores it; the
+# env form needs no writable git config inside the container.
 exec "$DOCKER" run --rm $tty_flags \
     -u "$(id -u):$(id -g)" -e HOME=/tmp \
+    -e GIT_CONFIG_COUNT=1 \
+    -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/w \
     -v "$PWD":/w -w /w \
     "$FWDEV_IMAGE" "$@"
