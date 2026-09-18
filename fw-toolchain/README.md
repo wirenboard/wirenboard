@@ -89,6 +89,8 @@ Build all firmware models in a firmware repo checkout (clone with
 ```
 cd wb-mr    # any classic libwbmcu firmware repo
 docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+    -e GIT_CONFIG_COUNT=1 \
+    -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/w \
     -v "$PWD":/w -w /w \
     registry.wirenboard.com/wirenboard/fw-toolchain:latest make
 ```
