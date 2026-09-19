@@ -1,4 +1,4 @@
-FROM debian:trixie
+FROM debian:trixie-slim
 ARG PYPI_REGISTRY_URL="https://nexus.hq.wirenboard.com/repository/pypi-group/simple/"
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
@@ -38,18 +38,21 @@ RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.
     # for Jenkins deployments \
     python3-wbci s3cmd \
     # to install fpm later for simple package building \
-    ruby-rubygems && gem install fpm && \
+    ruby-rubygems && gem install --no-document fpm && \
     # for clang-tidy checks
     pip3 install compiledb -i ${PYPI_REGISTRY_URL} && \
     # set as defauls
     update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-22 100 && \
-    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-22 100
+    update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-22 100 && \
+    apt clean
 
 # install common build-dependencies
 # TODO: remove it after full migration to sbuild
 COPY common-deps.sh /root/
-RUN bash -e -c 'source /root/common-deps.sh; apt-get update && apt-get install -y "${KNOWN_BUILD_DEPS[@]}"'
-
+RUN bash -e -c 'source /root/common-deps.sh; \
+    apt-get update && \
+    apt-get install -y "${KNOWN_BUILD_DEPS[@]}" && \
+    apt clean'
 
 # FIXME: we should not install anything with --force-yes
 
