@@ -122,6 +122,9 @@ EOF
 		libgtest-dev:arm64 libgtest-dev:armhf libgtest-dev \
 		libgmock-dev:arm64 libgmock-dev:armhf libgmock-dev
 
+	schroot -c ${CHROOT_NAME} --directory=/ -- apt-get clean
+	schroot -c ${CHROOT_NAME} --directory=/ -- find /var/lib/apt/lists/ -type f -not -path "*/partial" -delete
+
 	FILTER_OPTIONS=("PYBUILD_TEST_ARGS")
 
 	WRAPPER_LINES=$( for op in ${FILTER_OPTIONS[@]}; do echo "$op=\${_$op} \"\$@\""; done )
