@@ -90,10 +90,14 @@ Build all firmware models in a firmware repo checkout (clone with
 cd wb-mr    # any classic libwbmcu firmware repo
 docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
     -e GIT_CONFIG_COUNT=1 \
-    -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/w \
-    -v "$PWD":/w -w /w \
+    -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0="$PWD" \
+    -v "$PWD":"$PWD" -w "$PWD" \
     registry.wirenboard.com/wirenboard/fw-toolchain:latest make
 ```
+
+The checkout is mounted at the same path as on the host, so the paths
+the build prints (e.g. the `file://` links of the coverage reports) are
+valid on the host too.
 
 The same way run any other make target: one model
 (`make MODEL_MR6C_GD32E230K8`), unit tests (`make unittests`),
