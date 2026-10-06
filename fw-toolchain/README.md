@@ -260,25 +260,45 @@ The image is published **only from a Jenkins runner** — the registry push
 credentials (`registry-wirenboard-robot-push-account`) live there, not on
 developer machines. There is no supported way to push this image by hand.
 
-The job is `docker-image-build` (`docker/buildImage.groovy` in
-jenkins-pipeline-lib): it checks out this repo on the `devenv-image-builder`
-node, runs `make` in a directory of the repo and pushes the result to
-`registry.wirenboard.com`. Two things are still missing before it can publish
-`fw-toolchain`:
+The job is
+[`docker-image-build`](https://jenkins.wirenboard.com/job/docker-image-build/)
+(`docker/buildImage.groovy` in jenkins-pipeline-lib). It checks out this repo
+on the `devenv-image-builder` node, runs `make` in the `MAKE_DIR` directory
+once per architecture of `ARCHES` (`ARCH=amd64`, then `ARCH=arm64`), pushes
+each half as `<tag>-<arch>` and joins them into one multi-arch manifest under
+`<tag>`.
 
-* the job hardcodes `make -C devenv`, so it needs the `MAKE_DIR` parameter
-  (prepared in jenkins-pipeline-lib, not merged yet);
-* multi-arch has no first-class support on the node. There is no buildx —
-  the build log carries Docker's legacy-builder notice, *"Install the buildx
-  component to build images with BuildKit"* — and Jenkins has no arm64 agent
-  at all (no such label on any node), so a native second half is not an
-  option either. The `ARCHES` parameter prepared in jenkins-pipeline-lib
-  works around it: one emulated build per architecture, each pushed under a
-  `:<tag>-<arch>` tag, then `docker manifest create` and `push`. It relies on
-  the qemu binfmt already installed on that node by the `wb_buildagent` role.
-  A single `docker-buildx-plugin` package would replace the whole workaround
-  with one `--platform` flag; that is an infra decision, and the workaround
-  exists so the image can ship either way.
+To publish, after the PR is merged run it with «Build with Parameters»:
 
-Until both are merged the image can be built locally for your own use (see
-*Building the image yourself*), but not published.
+```
+MAKE_DIR    fw-toolchain
+IMAGE_TAG   wirenboard/fw-toolchain:latest
+ARCHES      amd64_arm64
+```
+
+The rest stays at the defaults: `GIT_BRANCH` = `master`,
+`INTERNAL_REGISTRY` = `registry.wirenboard.com`, `PULL_IMAGES` on — the job
+also pulls the new image onto the build nodes. Then check that both halves
+are there:
+
+```
+docker manifest inspect registry.wirenboard.com/wirenboard/fw-toolchain:latest
+```
+
+lists `linux/amd64` and `linux/arm64`. `:latest` is the only tag, so every
+`docker pull` gets the new environment — tell the team. The registry drops a
+superseded image after about a day; to stay on the previous environment,
+build it locally from its commit.
+
+A trial run before merging is the same job with `GIT_BRANCH` set to the PR
+branch, a test `IMAGE_TAG` that nothing uses (e.g.
+`wirenboard/fw-toolchain_test:latest`) and `PULL_IMAGES` off: `:latest` and
+the build nodes stay untouched.
+
+Multi-arch has no first-class support on the node. There is no buildx — the
+build log carries Docker's legacy-builder notice, *"Install the buildx
+component to build images with BuildKit"* — and Jenkins has no arm64 agent at
+all, so the arm64 half is built under qemu emulation (the binfmt is installed
+on the node by the `wb_buildagent` role) and is the slower one. A single
+`docker-buildx-plugin` package would replace the per-architecture builds and
+the manifest step with one `--platform` flag; that is an infra decision.
