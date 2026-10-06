@@ -31,6 +31,7 @@ All versions are pinned (see the Dockerfile):
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
 | make, git, openssh-client, s3cmd, curl, 7zip | pinned | build and CI stages (submodule fetch over ssh, uploads, encryptor handoff packing) |
 | nano, less, jq, xxd | pinned | convenience only, for a human in `fwdev bash` — the build never uses them |
+| `/opt/gcov-flag/cc1` | built in the image from `gcc-arm-none-eabi-source` of the same version + `gcov-flag/` patches | on-device coverage builds only, see *Coverage on hardware* |
 
 Everything is installed with `--no-install-recommends`, so the image holds
 only what the Dockerfile names. Two packages that would otherwise arrive as
@@ -46,8 +47,10 @@ no repo sets `COVERAGE_FAIL_UNDER`, and the HTML report is the same. The one
 thing 7.2 lacks is `--markdown`, which the HTML report makes redundant.
 
 Everything, the cross-toolchain included, comes from apt — there are no
-tarballs fetched from third-party hosts. Reproducibility is fixed on two
-levels: the base image is pinned by a dated tag plus sha256 digest
+tarballs fetched from third-party hosts. The one binary built in the image,
+the coverage `cc1`, is compiled from the apt source package
+`gcc-arm-none-eabi-source`, so it follows the same rule. Reproducibility
+is fixed on two levels: the base image is pinned by a dated tag plus sha256 digest
 (Docker pulls by the digest; the tag is a human-readable name for the
 same image), and apt sources point to snapshot.debian.org at a fixed
 date with every installed package at an explicit version. Rebuilding
@@ -158,10 +161,49 @@ Notes:
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
 
+## Coverage on hardware (gcov flag mode)
+
+Coverage of firmware by the hardware tests is measured on the
+device itself with the patched GCC from
+[wirenboard/gcov-embedded](https://github.com/wirenboard/gcov-embedded):
+instead of 64-bit gcov counters every CFG edge gets a one-byte "taken" flag
+(a single `strb`), so the flags fit in MCU RAM and are read off the running
+device over Modbus. The image carries that compiler as one extra file,
+`/opt/gcov-flag/cc1`:
+
+* it is built in the `gcov-flag-cc1` stage of the Dockerfile from
+  `gcc-arm-none-eabi-source` — the source of exactly the installed
+  `gcc-arm-none-eabi` (one `ARM_GCC_VERSION` pins both), configured with the
+  flags of its `debian/rules` — plus the three patches in `gcov-flag/`, taken
+  from gcov-embedded `66e6131`;
+* the patches are gated at run time by the environment variable
+  `GCOV_FLAG_MODE`: without it the patched `cc1` emits the same code as the
+  stock one;
+* the stock `cc1` is not replaced. The patched one is used only on request,
+  through `-B` of the stock driver, so headers, multilibs, newlib and the
+  linker stay the stock ones:
+
+```
+GCOV_FLAG_MODE=1 arm-none-eabi-gcc -B/opt/gcov-flag/ --coverage -DCOVERAGE ...
+```
+
+Objects it compiles say `(15:14.2.rel1-1+gcov-flag)` in `.comment`, so a
+coverage build is recognisable by its ELF.
+
+The image build checks the compiler: a probe compiled by the patched `cc1`
+without `GCOV_FLAG_MODE` must give the same assembly as the stock one, with
+and without `--coverage`, and with `GCOV_FLAG_MODE=1` the counters must be
+byte flags. A mismatch fails the build.
+
+The firmware side (the flag region exposed as Modbus registers) and the host
+tools that turn a flag dump into an lcov report live in gcov-embedded and
+`libwbmcu-system`.
+
 ## Building the image yourself
 
 If you have no registry access, the image builds locally from this
-directory in a few minutes:
+directory in a few minutes (most of it is compiling the coverage `cc1`,
+about 3.5 min natively on 8 cores):
 
 ```
 make -C fw-toolchain WBDEV_IMAGE=wirenboard/fw-toolchain:latest
@@ -170,7 +212,8 @@ make -C fw-toolchain WBDEV_IMAGE=wirenboard/fw-toolchain:latest
 To build for the other architecture, add `ARCH=amd64` or `ARCH=arm64`.
 That needs qemu binfmt registered on the host (`docker run --privileged
 --rm tonistiigi/binfmt --install arm64`), and it is slow — emulated apt
-takes minutes, not seconds. Note that `docker build --platform` does
+takes minutes, not seconds, and compiling the coverage `cc1` under
+emulation takes many times longer than natively. Note that `docker build --platform` does
 **not** do this: the legacy builder ignores the flag without a word, so
 the Makefile selects the platform through the base image digest instead.
 
@@ -196,12 +239,16 @@ the image, read the actually installed versions back with
 `dpkg-query -W`, and write them into the Dockerfile as the new pins.
 
 Cross-toolchain: it is an apt package like the rest, so it moves with
-the snapshot date — bump `gcc-arm-none-eabi` and
-`libnewlib-arm-none-eabi` the same way. `binutils-arm-none-eabi` is
-left unpinned on purpose: its binNMU revision differs per architecture
-(`+b1` on amd64, `+b2` on arm64 at the current snapshot), and a single
-`pkg=version` has to satisfy both halves of a multi-arch build; the
-snapshot date still determines it unambiguously. A compiler bump must
+the snapshot date — bump `ARM_GCC_VERSION` (it pins `gcc-arm-none-eabi`
+and the source of the coverage `cc1` together) and
+`libnewlib-arm-none-eabi` the same way. If the `gcov-flag/` patches no
+longer apply to the new source, or the coverage self-test fails, the image
+build stops: update the patches together with the compiler.
+`binutils-arm-none-eabi` is left unpinned on purpose: its binNMU revision
+differs per architecture (`+b1` on amd64, `+b2` on arm64 at the current
+snapshot), and a single `pkg=version` has to satisfy both halves of a
+multi-arch build; the snapshot date still determines it unambiguously.
+`gawk` in the coverage `cc1` stage is left unpinned for the same reason. A compiler bump must
 be verified against the flash/RAM limits of all firmware repos before
 merging.
 
@@ -213,25 +260,45 @@ The image is published **only from a Jenkins runner** — the registry push
 credentials (`registry-wirenboard-robot-push-account`) live there, not on
 developer machines. There is no supported way to push this image by hand.
 
-The job is `docker-image-build` (`docker/buildImage.groovy` in
-jenkins-pipeline-lib): it checks out this repo on the `devenv-image-builder`
-node, runs `make` in a directory of the repo and pushes the result to
-`registry.wirenboard.com`. Two things are still missing before it can publish
-`fw-toolchain`:
+The job is
+[`docker-image-build`](https://jenkins.wirenboard.com/job/docker-image-build/)
+(`docker/buildImage.groovy` in jenkins-pipeline-lib). It checks out this repo
+on the `devenv-image-builder` node, runs `make` in the `MAKE_DIR` directory
+once per architecture of `ARCHES` (`ARCH=amd64`, then `ARCH=arm64`), pushes
+each half as `<tag>-<arch>` and joins them into one multi-arch manifest under
+`<tag>`.
 
-* the job hardcodes `make -C devenv`, so it needs the `MAKE_DIR` parameter
-  (prepared in jenkins-pipeline-lib, not merged yet);
-* multi-arch has no first-class support on the node. There is no buildx —
-  the build log carries Docker's legacy-builder notice, *"Install the buildx
-  component to build images with BuildKit"* — and Jenkins has no arm64 agent
-  at all (no such label on any node), so a native second half is not an
-  option either. The `ARCHES` parameter prepared in jenkins-pipeline-lib
-  works around it: one emulated build per architecture, each pushed under a
-  `:<tag>-<arch>` tag, then `docker manifest create` and `push`. It relies on
-  the qemu binfmt already installed on that node by the `wb_buildagent` role.
-  A single `docker-buildx-plugin` package would replace the whole workaround
-  with one `--platform` flag; that is an infra decision, and the workaround
-  exists so the image can ship either way.
+To publish, after the PR is merged run it with «Build with Parameters»:
 
-Until both are merged the image can be built locally for your own use (see
-*Building the image yourself*), but not published.
+```
+MAKE_DIR    fw-toolchain
+IMAGE_TAG   wirenboard/fw-toolchain:latest
+ARCHES      amd64_arm64
+```
+
+The rest stays at the defaults: `GIT_BRANCH` = `master`,
+`INTERNAL_REGISTRY` = `registry.wirenboard.com`, `PULL_IMAGES` on — the job
+also pulls the new image onto the build nodes. Then check that both halves
+are there:
+
+```
+docker manifest inspect registry.wirenboard.com/wirenboard/fw-toolchain:latest
+```
+
+lists `linux/amd64` and `linux/arm64`. `:latest` is the only tag, so every
+`docker pull` gets the new environment — tell the team. The registry drops a
+superseded image after about a day; to stay on the previous environment,
+build it locally from its commit.
+
+A trial run before merging is the same job with `GIT_BRANCH` set to the PR
+branch, a test `IMAGE_TAG` that nothing uses (e.g.
+`wirenboard/fw-toolchain_test:latest`) and `PULL_IMAGES` off: `:latest` and
+the build nodes stay untouched.
+
+Multi-arch has no first-class support on the node. There is no buildx — the
+build log carries Docker's legacy-builder notice, *"Install the buildx
+component to build images with BuildKit"* — and Jenkins has no arm64 agent at
+all, so the arm64 half is built under qemu emulation (the binfmt is installed
+on the node by the `wb_buildagent` role) and is the slower one. A single
+`docker-buildx-plugin` package would replace the per-architecture builds and
+the manifest step with one `--platform` flag; that is an infra decision.
