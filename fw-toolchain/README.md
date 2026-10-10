@@ -31,6 +31,7 @@ All versions are pinned (see the Dockerfile):
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
 | make, git, openssh-client, s3cmd, curl, 7zip | pinned | build and CI stages (submodule fetch over ssh, uploads, encryptor handoff packing) |
 | nano, less, jq, xxd | pinned | convenience only, for a human in `fwdev bash` — the build never uses them |
+| gcc-arm-none-eabi-7-2018-q2-update (amd64 only) | Arm tarball, GCC 7.3.1 + binutils 2.30 + newlib 3.0.0 | the old compiler of the previous build machine, opt-in — see *Old compiler* |
 
 Everything is installed with `--no-install-recommends`, so the image holds
 only what the Dockerfile names. Two packages that would otherwise arrive as
@@ -38,15 +39,16 @@ recommendations are therefore listed explicitly: `libc6-dev` (without it the
 host gcc finds no `stdio.h` and the unit tests do not compile) and
 `openssh-client` (firmware submodules use `git@github.com:` URLs).
 
-Every tool comes from apt, `gcovr` included — the image has nothing from a
-second source, so there is nothing to maintain besides the snapshot date. That
+Every tool comes from apt, `gcovr` included — besides the opt-in old compiler
+(see *Old compiler*) the image has nothing from a second source, so there is
+nothing to maintain besides the snapshot date. That
 means gcovr `7.2+really-1.1` rather than upstream 8.x: every option
 `build_common_coverage.mk` uses is present in 7.2, `make coverage` passes on it,
 no repo sets `COVERAGE_FAIL_UNDER`, and the HTML report is the same. The one
 thing 7.2 lacks is `--markdown`, which the HTML report makes redundant.
 
-Everything, the cross-toolchain included, comes from apt — there are no
-tarballs fetched from third-party hosts. Reproducibility is fixed on two
+Everything, the cross-toolchain included, comes from apt; the only tarball
+is the old compiler, pinned by sha256. Reproducibility is fixed on two
 levels: the base image is pinned by a dated tag plus sha256 digest
 (Docker pulls by the digest; the tag is a human-readable name for the
 same image), and apt sources point to snapshot.debian.org at a fixed
@@ -157,6 +159,27 @@ Notes:
 * For library development in the project layout (a library's unit tests
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
+
+## Old compiler (GCC 7.3.1)
+
+The amd64 image also carries the compiler of the previous build machine:
+Arm GNU Toolchain 7-2018-q2-update (GCC 7.3.1 20180622, binutils 2.30,
+newlib 3.0.0) in `/opt/gcc-arm-none-eabi-7` — the same sources and the
+same Arm build scripts the old machine was built with. It is not on
+`PATH`; select it with the `GCC_DIR` variable of `build_common.mk`, which
+works for firmware and the bootloader alike:
+
+```
+fwdev make GCC_DIR=/opt/gcc-arm-none-eabi-7/bin/ MODEL_MR6C_GD32E230K8
+```
+
+Use it to reproduce a build of the old machine or to compare a firmware
+between the two compilers; regular builds stay on 14.2.1.
+
+Arm released this version for x86_64 hosts only, so the arm64 image does
+not have it. On an ARM machine run the amd64 image under emulation:
+`docker run --platform linux/amd64 …` (Docker Desktop and OrbStack on
+Apple Silicon do this out of the box).
 
 ## Building the image yourself
 

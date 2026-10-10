@@ -41,9 +41,24 @@ RUN apt-get update && \
         ca-certificates=20250419                 `# корневые сертификаты для https` \
         7zip=25.01+dfsg-1~deb13u2                `# AES-256 архив комплекта для шифратора` \
         python3-ruamel.yaml=0.18.10+ds-1         `# чтение реестра ключей резолвером; дубликат ключа в yaml — ошибка` \
+        bzip2=1.0.8-6                            `# распаковка архива старого компилятора` \
 # Дополнительное для удобства ручной работы в образе:
         nano=8.4-1+deb13u1                       `# правка файлов на месте` \
         less=668-1                               `# пейджер для git log и diff` \
         jq=1.7.1-6+deb13u2                       `# смотреть targets_memory_report.json` \
         xxd=2:9.1.1230-2                         `# смотреть bin глазами` && \
     rm -rf /var/lib/apt/lists/*
+
+# Старый компилятор, как на прежнем сборочном ноуте: Arm 7-2018-q2-update,
+# GCC 7.3.1 + binutils 2.30 + newlib 3.0.0. Включается переменной сборки:
+# make GCC_DIR=/opt/gcc-arm-none-eabi-7/bin/ ...
+# Arm выпускал его только под x86_64, поэтому в arm64-образе его нет.
+ARG GCC7_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+ARG GCC7_SHA256=bb17109f0ee697254a5d4ae6e5e01440e3ea8f0277f2e8169bf95d07c7d5fe69
+RUN if [ "$(dpkg --print-architecture)" = amd64 ]; then \
+        curl -fsSL -o /tmp/gcc7.tar.bz2 "$GCC7_URL" && \
+        echo "$GCC7_SHA256  /tmp/gcc7.tar.bz2" | sha256sum -c - && \
+        mkdir /opt/gcc-arm-none-eabi-7 && \
+        tar -xjf /tmp/gcc7.tar.bz2 -C /opt/gcc-arm-none-eabi-7 --strip-components=1 && \
+        rm -rf /tmp/gcc7.tar.bz2 /opt/gcc-arm-none-eabi-7/share; \
+    fi
