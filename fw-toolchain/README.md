@@ -160,8 +160,8 @@ Notes:
 
 ## Old compiler
 
-The gcc 7.3.1 of the previous build machine lives in a separate image,
-`fw-toolchain-legacy`, built on top of this one; see
+The build environment of the previous build machine (stretch, gcc 7.3.1,
+make 4.1) is a separate image, `fw-toolchain-legacy`; see
 [../fw-toolchain-legacy/README.md](../fw-toolchain-legacy/README.md).
 
 ## Building the image yourself
