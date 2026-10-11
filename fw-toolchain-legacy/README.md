@@ -15,12 +15,23 @@ or to compare a build between the two compilers. Regular builds stay on
 
 ## Usage
 
-The same as `fw-toolchain`, only the image differs:
+The same as `fw-toolchain`, only the image differs. `fwdev-legacy` is
+`fwdev` with this image:
 
 ```
-FWDEV_IMAGE=registry.wirenboard.com/wirenboard/fw-toolchain-legacy:latest \
-    fwdev make MODEL_MR6C_GD32E230K8
+fwdev-legacy make MODEL_MR6C_GD32E230K8
 ```
+
+It runs the `fwdev` lying next to it, in the sibling `fw-toolchain/`
+directory (the repository layout) or on `PATH`, so install both:
+
+```
+wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/fw-toolchain/fwdev
+wget https://raw.githubusercontent.com/wirenboard/wirenboard/master/fw-toolchain-legacy/fwdev-legacy
+chmod +x fwdev fwdev-legacy
+```
+
+`FWDEV_IMAGE` still overrides the image, e.g. to pin a digest.
 
 On CI: `buildFirmware(image: 'registry.wirenboard.com/wirenboard/fw-toolchain-legacy:latest')`.
 
