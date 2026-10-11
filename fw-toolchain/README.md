@@ -31,7 +31,6 @@ All versions are pinned (see the Dockerfile):
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
 | make, git, openssh-client, s3cmd, curl, 7zip | pinned | build and CI stages (submodule fetch over ssh, uploads, encryptor handoff packing) |
 | nano, less, jq, xxd | pinned | convenience only, for a human in `fwdev bash` — the build never uses them |
-| Arm GNU Toolchain 7-2018-q2-update | GCC 7.3.1 + binutils 2.30 + newlib 3.0.0, built from Arm sources | the old compiler of the previous build machine, opt-in — see *Old compiler* |
 
 Everything is installed with `--no-install-recommends`, so the image holds
 only what the Dockerfile names. Two packages that would otherwise arrive as
@@ -39,17 +38,15 @@ recommendations are therefore listed explicitly: `libc6-dev` (without it the
 host gcc finds no `stdio.h` and the unit tests do not compile) and
 `openssh-client` (firmware submodules use `git@github.com:` URLs).
 
-Every tool comes from apt, `gcovr` included — besides the opt-in old compiler
-(see *Old compiler*) the image has nothing from a second source, so there is
-nothing to maintain besides the snapshot date. That
+Every tool comes from apt, `gcovr` included — the image has nothing from a
+second source, so there is nothing to maintain besides the snapshot date. That
 means gcovr `7.2+really-1.1` rather than upstream 8.x: every option
 `build_common_coverage.mk` uses is present in 7.2, `make coverage` passes on it,
 no repo sets `COVERAGE_FAIL_UNDER`, and the HTML report is the same. The one
 thing 7.2 lacks is `--markdown`, which the HTML report makes redundant.
 
-Everything, the cross-toolchain included, comes from apt; the only
-exception is the old compiler, built from source tarballs pinned by
-sha256. Reproducibility is fixed on two
+Everything, the cross-toolchain included, comes from apt — there are no
+tarballs fetched from third-party hosts. Reproducibility is fixed on two
 levels: the base image is pinned by a dated tag plus sha256 digest
 (Docker pulls by the digest; the tag is a human-readable name for the
 same image), and apt sources point to snapshot.debian.org at a fixed
@@ -161,45 +158,11 @@ Notes:
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
 
-## Old compiler (GCC 7.3.1)
+## Old compiler
 
-The image also carries the compiler of the previous build machine, built
-the same way it was built there: Arm's source package 7-2018-q2-update
-(GCC 7.3.1 20180622, binutils 2.30, newlib 3.0.0) compiled by Arm's own
-`install-sources.sh` / `build-prerequisites.sh` / `build-toolchain.sh` on
-Debian stretch, the OS of that machine. This happens in a separate
-Dockerfile stage on each architecture, so amd64 and arm64 get the same
-compiler; Arm never released a prebuilt aarch64 one. The version string
-is pinned to the one of the old machine, `7-2018-q4-major` (the script
-derives it from the build date).
-
-It lives in `/opt/gcc-arm-none-eabi-7`, the same path as on the old
-machine, and is not on `PATH`. Select it with the `GCC_DIR` variable of
-`build_common.mk`, which works for firmware and the bootloader alike:
-
-```
-fwdev make GCC_DIR=/opt/gcc-arm-none-eabi-7/bin/ MODEL_MR6C_GD32E230K8
-```
-
-Use it to reproduce a build of the old machine or to compare a firmware
-between the two compilers; regular builds stay on 14.2.1.
-
-To get a byte-identical binary of the old machine the compiler is not
-enough: the object files must also be linked in the same order. make 4.1
-there returns `$(wildcard src/*.c)` in directory order, while make 4.4 in
-this image sorts it, and the layout shifts by a few bytes. The old order
-is the one in the link line of the old machine's build log; pass it as
-`OBJECTS=...`.
-
-The Debian package of the same GCC (`gcc-arm-none-eabi 15:7-2018-q2-6` in
-buster) is not a substitute: it compiles to the same object code, but ships
-binutils 2.31 and newlib 3.1, so the linked `.bin` differs from the old
-machine's.
-
-The source tarballs `install-sources.sh` would fetch itself are downloaded
-beforehand from live mirrors and checked by sha256 — several of its URLs
-are dead. libelf 0.8.13 no longer has a live upstream and comes from the
-Internet Archive copy of its original site.
+The gcc 7.3.1 of the previous build machine lives in a separate image,
+`fw-toolchain-legacy`, built on top of this one; see
+[../fw-toolchain-legacy/README.md](../fw-toolchain-legacy/README.md).
 
 ## Building the image yourself
 
