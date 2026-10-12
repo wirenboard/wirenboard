@@ -89,6 +89,13 @@ the wrapper changes nothing and make 4.1 uses the order of the disk the
 checkout lives on. The programs make runs see the same order, as they did
 on the old machine.
 
+The real make 4.1 stays at `/usr/bin/make`; the wrapper is only
+`/usr/local/bin/make`, earlier on `PATH`. To build without the replacement —
+for example on a checkout that lives on a real ext4 mounted from outside
+with the old machine's seed — call `/usr/bin/make` directly or empty the
+seed: `EXT4_DIR_HASH_SEED= make …`. Either way make takes the order from
+the filesystem the checkout is on.
+
 Checked against the old machine itself: the order matches its `ls -U` of
 the source directories of a firmware checkout, and the firmware binaries
 built here from the same commit are byte-identical to the ones it built.
