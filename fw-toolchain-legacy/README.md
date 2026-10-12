@@ -11,6 +11,7 @@ a container gets:
 | python3 | 3.5.3 |
 | git | 2.11.0 |
 | host gcc (unit tests) | 6.3.0 |
+| locale | en_US.UTF-8 |
 | directory order | that of the old machine's ext4 (see below) |
 
 ```
@@ -79,14 +80,18 @@ returns directory entries in that order, computed from the old machine's
 parameters:
 
 * `EXT4_DIR_HASH_SEED` — "Directory Hash Seed" of the filesystem the old
-  machine builds on, baked in at image build time (`LAPTOP_DIR_HASH_SEED`);
-* `EXT4_DIR_BLOCK_SIZE` — its block size (4096);
-* `EXT4_DIR_CSUM` — 1 if it has `metadata_csum`.
+  machine builds on (`/home`), the default of `LAPTOP_DIR_HASH_SEED`;
+* `EXT4_DIR_BLOCK_SIZE` — its block size, 4096;
+* `EXT4_DIR_CSUM` — 1: it has `metadata_csum`.
 
-All three come from `dumpe2fs -h` of that filesystem. Without a seed the
-wrapper changes nothing and make 4.1 uses the order of the disk the
+All three come from `dumpe2fs -h` of that filesystem. With an empty seed
+the wrapper changes nothing and make 4.1 uses the order of the disk the
 checkout lives on. The programs make runs see the same order, as they did
 on the old machine.
+
+Checked against the old machine itself: the order matches its `ls -U` of
+the source directories of a firmware checkout, and the firmware binaries
+built here from the same commit are byte-identical to the ones it built.
 
 ## Building and publishing
 

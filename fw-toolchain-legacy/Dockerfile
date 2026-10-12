@@ -87,24 +87,28 @@ RUN apt-get update && \
         python3=3.5.3-1                      `# скрипты сборки libwbmcu-system` \
         git=1:2.11.0-3+deb9u7                `# hash и ветка в имя артефакта, сабмодули` \
         openssh-client=1:7.4p1-10+deb9u7     `# сабмодули по git@github.com` \
-        ca-certificates=20200601~deb9u2 && \
-    rm -rf /var/lib/apt/lists/*
+        ca-certificates=20200601~deb9u2 \
+        locales=2.24-11+deb9u4               `# локаль ноута en_US.UTF-8` && \
+    rm -rf /var/lib/apt/lists/* && \
+    sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
 
 COPY --from=gcc7 /opt/gcc-arm-none-eabi-7 /opt/gcc-arm-none-eabi-7
 
 # Порядок файлов в каталогах как на диске ноута: make 4.1 раскладывает
 # $(wildcard ...) в порядке readdir, а от него зависит раскладка прошивки.
-# Подмена подключается только к make; без EXT4_DIR_HASH_SEED она ничего не
-# меняет. Параметры — из dumpe2fs раздела ноута.
+# Подмена подключается через make и действует на запущенные им программы; без
+# EXT4_DIR_HASH_SEED она ничего не меняет. Параметры — из dumpe2fs раздела, на
+# котором собирает ноут.
 COPY ext4_dir_order.c make-ext4-order /tmp/
 RUN gcc -O2 -shared -fPIC -o /usr/local/lib/ext4_dir_order.so /tmp/ext4_dir_order.c -ldl -lpthread && \
     install -m 755 /tmp/make-ext4-order /usr/local/bin/make && \
     rm /tmp/ext4_dir_order.c /tmp/make-ext4-order
-ARG LAPTOP_DIR_HASH_SEED=
+ARG LAPTOP_DIR_HASH_SEED=279a686f-dc41-4cb3-9ea5-a387b9e6338b
 ENV EXT4_DIR_HASH_SEED=${LAPTOP_DIR_HASH_SEED} \
     EXT4_DIR_BLOCK_SIZE=4096 \
     EXT4_DIR_CSUM=1
 
-# Скрипты сборки печатают не-ASCII: Python 3.5 под локалью POSIX на этом падает
-ENV LANG=C.UTF-8
+# Локаль ноута. Под POSIX Python 3.5 падает на не-ASCII в выводе скриптов сборки
+ENV LANG=en_US.UTF-8
 ENV PATH=/opt/gcc-arm-none-eabi-7/bin:$PATH
