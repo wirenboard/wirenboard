@@ -90,6 +90,7 @@ RUN apt-get update && \
         openssh-client=1:7.4p1-10+deb9u7     `# сабмодули по git@github.com` \
         ca-certificates=20200601~deb9u2 \
         locales=2.24-11+deb9u4               `# локаль ноута en_US.UTF-8` \
+        curl=7.52.1-5+deb9u16                `# версия загрузчика коробки по каналам` \
         jq=1.5+dfsg-1.3                      `# манифест шифратору в джобе коробок` \
         p7zip-full=16.02+dfsg-3+deb9u1       `# комплект шифратору и его ответ` \
         python3-dateutil=2.5.3-2 && \
