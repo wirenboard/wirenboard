@@ -158,6 +158,12 @@ Notes:
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
 
+## Old compiler
+
+The build environment of the previous build machine (stretch, gcc 7.3.1,
+make 4.1) is a separate image, `fw-toolchain-legacy`; see
+[../fw-toolchain-legacy/README.md](../fw-toolchain-legacy/README.md).
+
 ## Building the image yourself
 
 If you have no registry access, the image builds locally from this

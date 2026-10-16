@@ -1,0 +1,10 @@
+#!/bin/sh
+# make с порядком файлов в каталогах как на диске старого сборочного ноута
+# (см. ext4_dir_order.c). Подмена действует и на запущенные из make программы —
+# на ноуте они тоже видели этот порядок.
+SHIM=/usr/local/lib/ext4_dir_order.so
+case ":${LD_PRELOAD:-}:" in
+    *":$SHIM:"*) ;;
+    *) LD_PRELOAD="$SHIM${LD_PRELOAD:+:$LD_PRELOAD}"; export LD_PRELOAD ;;
+esac
+exec /usr/bin/make "$@"
