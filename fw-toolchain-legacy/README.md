@@ -9,6 +9,7 @@ a container gets:
 | `arm-none-eabi-gcc` | 7.3.1 20180622 (Arm 7-2018-q2-update), binutils 2.30, newlib 3.0.0 |
 | make | 4.1 |
 | python3 | 3.5.3 |
+| python | 2.7.13 |
 | git | 2.11.0 |
 | host gcc (unit tests) | 6.3.0 |
 | locale | en_US.UTF-8 |
@@ -24,8 +25,8 @@ builds stay on `fw-toolchain`; in CI the image builds the bootloader
 releases made before the new CI for the assembly benches. The image does
 not depend on `fw-toolchain`.
 
-For that job's steps after the build the image also carries jq and 7za;
-make does not use them.
+For that job's steps after the build the image also carries jq, 7za and
+python3-dateutil; make does not use them.
 
 ## Usage
 
