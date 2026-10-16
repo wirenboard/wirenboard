@@ -88,7 +88,9 @@ RUN apt-get update && \
         git=1:2.11.0-3+deb9u7                `# hash и ветка в имя артефакта, сабмодули` \
         openssh-client=1:7.4p1-10+deb9u7     `# сабмодули по git@github.com` \
         ca-certificates=20200601~deb9u2 \
-        locales=2.24-11+deb9u4               `# локаль ноута en_US.UTF-8` && \
+        locales=2.24-11+deb9u4               `# локаль ноута en_US.UTF-8` \
+        jq=1.5+dfsg-1.3                      `# манифест шифратору в джобе коробок` \
+        p7zip-full=16.02+dfsg-3+deb9u1       `# комплект шифратору и его ответ` && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen

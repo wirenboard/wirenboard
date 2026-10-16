@@ -20,8 +20,12 @@ registry.wirenboard.com/wirenboard/fw-toolchain-legacy:latest
 
 Use it to build a firmware or the bootloader the way the old machine does,
 or to compare a build between the old and the new environment. Regular
-builds stay on `fw-toolchain`. The image does not depend on `fw-toolchain`
-and does not carry its CI tools (s3cmd, 7zip, …): it is for building.
+builds stay on `fw-toolchain`; in CI the image builds the bootloader
+releases made before the new CI for the assembly benches. The image does
+not depend on `fw-toolchain`.
+
+For that job's steps after the build the image also carries jq and 7za;
+make does not use them.
 
 ## Usage
 
