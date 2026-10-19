@@ -21,7 +21,8 @@ WORKDIR /src
 # developer.arm.com перенаправляет в хранилище Arm; оно же — запасной адрес, если имя
 # developer.arm.com не резолвится
 RUN { curl -fsSLO --retry 5 --retry-all-errors https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-src.tar.bz2 || \
-      curl -fsSLO --retry 5 --retry-all-errors https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-src.tar.bz2; } && \
+      { echo "developer.arm.com is unavailable, downloading from Arm's storage armkeil.blob.core.windows.net" && \
+        curl -fsSLO --retry 5 --retry-all-errors https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-src.tar.bz2; }; } && \
     curl -fsSLO --retry 5 --retry-all-errors https://gcc.gnu.org/pub/gcc/infrastructure/gmp-6.1.0.tar.bz2 && \
     curl -fsSLO --retry 5 --retry-all-errors https://gcc.gnu.org/pub/gcc/infrastructure/mpfr-3.1.4.tar.bz2 && \
     curl -fsSLO --retry 5 --retry-all-errors https://gcc.gnu.org/pub/gcc/infrastructure/mpc-1.0.3.tar.gz && \
