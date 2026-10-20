@@ -1,4 +1,5 @@
 FROM debian:trixie-slim
+ARG NEXUS_REPOSITORY="https://nexus.hq.wirenboard.com/repository/deb"
 ARG PYPI_REGISTRY_URL="https://nexus.hq.wirenboard.com/repository/pypi-group/simple/"
 LABEL org.opencontainers.image.authors="info@wirenboard.com"
 LABEL org.opencontainers.image.vendor="Wiren Board team"
@@ -6,9 +7,9 @@ LABEL org.opencontainers.image.vendor="Wiren Board team"
 ENV DEBIAN_FRONTEND noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
-# ca-certificates should be installed before moving to debian-mirror.wirenboard.com
-RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.sources && \
+RUN sed -i "s#http://deb.debian.org#${NEXUS_REPOSITORY}#" /etc/apt/sources.list.d/debian.sources && \
     sed -i 's#^Suites: trixie trixie-updates$#& trixie-backports#' /etc/apt/sources.list.d/debian.sources && \
+    echo "Acquire { https::Verify-Peer false }" > /etc/apt/apt.conf.d/99verify-peer.conf && \
     apt update && apt install -y curl wget gnupg && \
     echo 'APT::Key::gpgvcommand "/usr/bin/gpgv";' > /etc/apt/apt.conf.d/99use-gpgv && \
     curl -fsSL https://deb.wirenboard.com/wirenboard-keyring.gpg > \
@@ -20,7 +21,6 @@ RUN sed -i 's#deb.debian.org#ftp.ru.debian.org#' /etc/apt/sources.list.d/debian.
     curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/apt.llvm.org.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/apt.llvm.org.gpg] http://apt.llvm.org/trixie/ llvm-toolchain-trixie-22 main" > \
        /etc/apt/sources.list.d/llvm-trixie-22.list && \
-    sed -i 's#ftp.ru.debian.org#debian-mirror.wirenboard.com#' /etc/apt/sources.list.d/debian.sources && \
     apt update && \
     apt install -y --force-yes git gpg debootstrap build-essential pkg-config debhelper \
        nodejs bash-completion nano gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu sudo locales \
