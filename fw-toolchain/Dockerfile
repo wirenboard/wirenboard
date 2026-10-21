@@ -46,5 +46,6 @@ RUN apt-get update && \
         nano=8.4-1+deb13u1                       `# правка файлов на месте` \
         less=668-1                               `# пейджер для git log и diff` \
         jq=1.7.1-6+deb13u2                       `# смотреть targets_memory_report.json` \
+        gdb=16.3-1                               `# отладка юнит-тестов` \
         xxd=2:9.1.1230-2                         `# смотреть bin глазами` && \
     rm -rf /var/lib/apt/lists/*
