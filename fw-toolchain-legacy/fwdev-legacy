@@ -1,0 +1,17 @@
+#!/bin/bash
+# fwdev-legacy — тот же fwdev, но в образе fw-toolchain-legacy: сборка
+# компилятором старого сборочного ноута (gcc 7.3.1).
+#
+#   fwdev-legacy make MODEL_MR6C_GD32E230K8
+#
+# Нужен fwdev: рядом с этим файлом, в соседнем каталоге fw-toolchain/ (так
+# лежит в репозитории) или в PATH. FWDEV_IMAGE по-прежнему переопределяет образ.
+set -u -e
+
+export FWDEV_IMAGE="${FWDEV_IMAGE:-registry.wirenboard.com/wirenboard/fw-toolchain-legacy:latest}"
+
+here=$(dirname "$(readlink -f "$0")")
+for fwdev in "$here/fwdev" "$here/../fw-toolchain/fwdev"; do
+    [ -x "$fwdev" ] && exec "$fwdev" "$@"
+done
+exec fwdev "$@"

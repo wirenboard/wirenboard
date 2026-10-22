@@ -22,7 +22,10 @@ set -u -e
 FWDEV_IMAGE="${FWDEV_IMAGE:-registry.wirenboard.com/wirenboard/fw-toolchain:latest}"
 DOCKER="${DOCKER:-docker}"
 
-tty_flags=""
+# stdin always goes to the container: piped input reaches the command
+# (VSCode talks to gdb over pipes). Like ssh without -n, fwdev then reads
+# the caller's stdin — inside a `while read` loop add </dev/null.
+tty_flags="-i"
 [ -t 0 ] && [ -t 1 ] && tty_flags="-it"
 
 [ $# -eq 0 ] && set -- bash

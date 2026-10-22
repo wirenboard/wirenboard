@@ -27,8 +27,10 @@ All versions are pinned (see the Dockerfile):
 | gcc (host) | GCC 14.2.0 (gcc-14 from Debian trixie) | unit tests (Unity) |
 | python3 | 3.13.5-1 | libwbmcu-system build scripts |
 | libc6-dev | 2.41-12+deb13u3 | host libc headers for the unit tests |
+| gdb | 16.3-1 | debugging unit tests: `fwdev gdb …`, VSCode via `pipeTransport` |
 | gcovr | 7.2+really-1.1 | `make coverage` |
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
+| python3-ruamel.yaml, python3-jsonschema | pinned | key registry: resolver input and its JSON Schema check |
 | make, git, openssh-client, s3cmd, curl, 7zip | pinned | build and CI stages (submodule fetch over ssh, uploads, encryptor handoff packing) |
 | nano, less, jq, xxd | pinned | convenience only, for a human in `fwdev bash` — the build never uses them |
 | `/opt/gcov-flag/cc1` | built in the image from `gcc-arm-none-eabi-source` of the same version + `gcov-flag/` patches | on-device coverage builds only, see *Coverage on hardware* |
@@ -165,9 +167,23 @@ Notes:
   arm64 with `unrecognized command-line option '-m32'`. This is
   deliberate — `-m32` has no arm64 equivalent; migrate such tests
   instead of relying on it.
+* `fwdev` passes its stdin to the container, so a command can read piped
+  input — VSCode talks to gdb in the image over pipes. Like `ssh` without
+  `-n`, it then also reads the caller's stdin: inside a `while read` loop
+  call it as `fwdev … </dev/null`.
+* gdb in the container prints `warning: Error disabling address space
+  randomization: Operation not permitted` when it starts a program: the
+  docker seccomp profile does not allow turning ASLR off. The warning is
+  harmless; `set disable-randomization off` silences it.
 * For library development in the project layout (a library's unit tests
   reference sibling repos), mount the workspace root instead of the
   library checkout and set `-w` to the library directory.
+
+## Old compiler
+
+The build environment of the previous build machine (stretch, gcc 7.3.1,
+make 4.1) is a separate image, `fw-toolchain-legacy`; see
+[../fw-toolchain-legacy/README.md](../fw-toolchain-legacy/README.md).
 
 ## Coverage on hardware (gcov flag mode)
 

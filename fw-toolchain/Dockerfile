@@ -85,10 +85,11 @@ RUN apt-get update && \
 # Кросс-компилятор прошивок и его libc
         gcc-arm-none-eabi=$ARM_GCC_VERSION       `# дебиановская сборка Arm GNU Toolchain 14.2.Rel1` \
         libnewlib-arm-none-eabi=4.5.0.20241231-1 `# newlib + nano/rdimon/nosys specs` \
-# Host-компилятор и заголовки его libc — юнит-тесты Unity
+# Host-компилятор, заголовки его libc и отладчик — юнит-тесты Unity
         gcc=4:14.2.0-1                           `# та же ветка GCC 14.2, что и кросс` \
         gcc-14=14.2.0-19                         `# пин конкретной версии под метапакетом` \
         libc6-dev=2.41-12+deb13u3                `# без него нет stdio.h и тесты не собрать` \
+        gdb=16.3-1                               `# отладка юнит-тестов: fwdev gdb и VSCode (pipeTransport)` \
 # Сборка
         make=4.4.1-2                             `# сборка` \
         python3=3.13.5-1                         `# скрипты сборки libwbmcu-system` \
@@ -104,6 +105,7 @@ RUN apt-get update && \
         ca-certificates=20250419                 `# корневые сертификаты для https` \
         7zip=25.01+dfsg-1~deb13u2                `# AES-256 архив комплекта для шифратора` \
         python3-ruamel.yaml=0.18.10+ds-1         `# чтение реестра ключей резолвером; дубликат ключа в yaml — ошибка` \
+        python3-jsonschema=4.19.2-6              `# проверка реестра ключей и его среза по JSON Schema` \
 # Дополнительное для удобства ручной работы в образе:
         nano=8.4-1+deb13u1                       `# правка файлов на месте` \
         less=668-1                               `# пейджер для git log и diff` \
