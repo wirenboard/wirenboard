@@ -91,7 +91,7 @@ Build all firmware models in a firmware repo checkout (clone with
 
 ```
 cd wb-mr    # any classic libwbmcu firmware repo
-docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp \
+docker run --rm --init -u "$(id -u):$(id -g)" -e HOME=/tmp \
     -e GIT_CONFIG_COUNT=1 \
     -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0="$PWD" \
     -v "$PWD":"$PWD" -w "$PWD" \
@@ -148,6 +148,14 @@ Notes:
   dubious ownership in repository at `/w`"). Without it `$(shell git
   ...)` in a Makefile silently returns an empty string and artifact
   names and the firmware lose their branch and commit.
+* `--init` makes docker's tiny init (tini) PID 1 and runs the command as
+  its child. Without it the command itself is PID 1, which the kernel
+  treats specially: no default signal actions, and the orphans are its
+  to reap. make does not cope with that. When the terminal of a running
+  build goes away (a VSCode task restarted or closed), the rest of the
+  build stops, but make stays, spinning at 100% CPU. With `--init` the
+  container exits. Containers left spinning by an older `fwdev` show up
+  in `docker ps`; stop them with `docker kill`.
 * On ARM machines (Apple Silicon and the like) docker picks the arm64
   variant of the image automatically — everything runs natively, without
   emulation. Firmware binaries built on amd64 and arm64 are identical.

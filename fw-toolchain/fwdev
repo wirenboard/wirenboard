@@ -39,7 +39,15 @@ tty_flags=""
 # in a Makefile silently yields an empty string — artifact names and the
 # firmware end up with no branch/commit. Trusting the checkout restores
 # it; the env form needs no writable git config inside the container.
-exec "$DOCKER" run --rm $tty_flags \
+#
+# --init: PID 1 in the container is docker's tiny init (tini), the
+# command runs as its child. The kernel applies no default signal
+# actions to PID 1 and hands it the orphans to reap, which make is not
+# built for: when the terminal of a running build goes away (a VSCode
+# task restarted or closed), the rest of the build stops, but make, as
+# PID 1, stays and spins at 100% CPU. tini forwards signals, reaps
+# zombies and exits with the command's status.
+exec "$DOCKER" run --rm --init $tty_flags \
     -u "$(id -u):$(id -g)" -e HOME=/tmp \
     -e GIT_CONFIG_COUNT=1 \
     -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0="$PWD" \
