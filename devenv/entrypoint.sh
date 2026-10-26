@@ -285,8 +285,10 @@ get_stable_repo_spec() {
     local STABLE_REPO_SPEC=""
 
     if [ "${WBDEV_TARGET_BOARD}" == "host" ]; then
-        echo "host target selected, using dev-tools repo as stable" >&2
-        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools ${WBDEV_TARGET_REPO_RELEASE} main"
+        # dev-tools is not split by WB releases: it has only the stable suite,
+        # so WBDEV_TARGET_REPO_RELEASE (testing, wb-XXXX) does not apply to it
+        echo "host target selected, using dev-tools stable repo" >&2
+        STABLE_REPO_SPEC="deb http://deb.wirenboard.com/dev-tools stable main"
     else
         local WB_REPO_PLATFORM="${WBDEV_TARGET_BOARD}/${WBDEV_TARGET_RELEASE}"
 
