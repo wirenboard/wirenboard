@@ -38,6 +38,7 @@ RUN apt-get update && \
 # Стадии CI
         s3cmd=2.4.0-3                            `# выгрузка карт регистров и прошивок в S3` \
         curl=8.14.1-2+deb13u4                    `# HTTP в стадиях CI` \
+        gh=2.46.0-3                              `# комментарий покрытия в PR из reportCoverage` \
         python3-requests=2.32.3+dfsg-5+deb13u1   `# HTTP во вспомогательных скриптах` \
         ca-certificates=20250419                 `# корневые сертификаты для https` \
         7zip=25.01+dfsg-1~deb13u2                `# AES-256 архив комплекта для шифратора` \
