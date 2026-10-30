@@ -98,7 +98,8 @@ RUN apt-get update && \
         jq=1.5+dfsg-1.3                      `# манифест шифратору в джобе коробок` \
         p7zip-full=16.02+dfsg-3+deb9u1       `# комплект шифратору и его ответ` \
         python3-dateutil=2.5.3-2 \
-        python3-pyelftools=0.24-3            `# build_images.py загрузчика: смещения ключа из elf` && \
+        python3-pyelftools=0.24-3            `# build_images.py загрузчика: смещения ключа из elf` \
+        python3-jsonschema=2.5.1-6           `# helpers.py тестового демона шифратора, версия ноута с ключами` && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen

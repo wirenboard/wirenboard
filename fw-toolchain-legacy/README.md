@@ -29,6 +29,10 @@ For that job's steps after the build the image also carries curl and jq
 (the old machine's versions), 7za and python3-dateutil; make does not use
 them.
 
+The test encryptor daemon of `secure-builder-env` runs in this image as
+well: python3-jsonschema (the old machine's version) is there for its
+`helpers.py`.
+
 ## Usage
 
 `fwdev-legacy` is `fwdev` with this image:
