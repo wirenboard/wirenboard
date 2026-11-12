@@ -84,6 +84,8 @@ ROOTFS="/rootfs/${WBDEV_TARGET_RELEASE}-${WBDEV_TARGET_ARCH}"
 # apt sources written into the rootfs by write_rootfs_apt_sources
 ROOTFS_WB_REPO_LIST=/etc/apt/sources.list.d/wirenboard.list
 ROOTFS_TESTING_SETS_LIST=/etc/apt/sources.list.d/wirenboard-testing-sets.list
+# Must sort before the rootfs' own wb pins (20wb-release, 40wb-experimental): the first matching pin wins
+ROOTFS_WB_REPO_PREF=/etc/apt/preferences.d/05wbdev-target-release
 
 if [ -n "$WBDEV_CCACHE_DIR" ]; then
     cat <<EOF >/etc/ccache.conf
@@ -359,6 +361,22 @@ write_rootfs_apt_sources() {
     fi
     if [ -n "$repo_spec" ]; then
         chr sh -c "echo '$repo_spec' > $ROOTFS_WB_REPO_LIST"
+    fi
+
+    # The rootfs is built from WB testing with WB packages installed (libwbmqtt1-5 and others),
+    # so stable or wb-XXXX may have older versions of them. A -dev package depending on its
+    # runtime library by exact version then can't be installed: apt does not downgrade by itself.
+    # Pin priority above 1000 lets it downgrade to the target release; testing sets still win.
+    if [ -n "$repo_spec" ] && [ -z "$WBDEV_USE_UNSTABLE_DEPS" ] && [ "$WBDEV_TARGET_BOARD" != "host" ]; then
+        cat > "${ROOTFS}${ROOTFS_WB_REPO_PREF}" <<EOF
+Package: *
+Pin: release o=wirenboard, a=experimental.*
+Pin-Priority: 1002
+
+Package: *
+Pin: release o=wirenboard, a=${WBDEV_TARGET_REPO_RELEASE}
+Pin-Priority: 1001
+EOF
     fi
 
     # Nothing to remove when no sets are given: every wbdev call starts from the rootfs in the image
