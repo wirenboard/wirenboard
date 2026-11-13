@@ -1,0 +1,14 @@
+Patch 3 - ALL-EDGE: skip loop 2 of find_spanning_tree (normal edges) so every non-fake edge is instrumented & off-tree -> exact branch coverage. RUNTIME-gated on env GCOV_FLAG_MODE (else stock minimal spanning tree). Loop 1 (abnormal/fake) untouched so instrument_edges' !EDGE_ABNORMAL assert holds. Applied by REBUILD.sh via perl. Validate with verify_alledge.py.
+
+--- a/gcc/profile.cc
++++ b/gcc/profile.cc
+@@ -1703,7 +1703,8 @@
+   for (i = 0; i < num_edges; i++)
+     {
+       edge e = INDEX_EDGE (el, i);
+-      if (!EDGE_INFO (e)->ignore
++      if (!getenv ("GCOV_FLAG_MODE")  /* all-edge: skip normal edges when flag mode */
++	  && !EDGE_INFO (e)->ignore
+ 	  && find_group (e->src) != find_group (e->dest))
+ 	{
+ 	  if (dump_file)
