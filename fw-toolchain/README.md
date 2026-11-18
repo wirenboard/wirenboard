@@ -31,6 +31,7 @@ All versions are pinned (see the Dockerfile):
 | gcovr | 7.2+really-1.1 | `make coverage` |
 | python3-pyelftools, python3-requests | pinned | ELF artifact analysis, scripting |
 | python3-ruamel.yaml, python3-jsonschema | pinned | key registry: resolver input and its JSON Schema check |
+| python3-markdown, python3-pytest, python3-yaml, python3-serial, python3-paho-mqtt, python3-smbus | pinned | wbfw_tests on the stand agent: the fuzz report and `pytest --collect-only` of the suite without a stand |
 | make, git, openssh-client, s3cmd, curl, 7zip | pinned | build and CI stages (submodule fetch over ssh, uploads, encryptor handoff packing) |
 | nano, less, jq, xxd | pinned | convenience only, for a human in `fwdev bash` — the build never uses them |
 
