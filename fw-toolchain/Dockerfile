@@ -44,6 +44,13 @@ RUN apt-get update && \
         7zip=25.01+dfsg-1~deb13u2                `# AES-256 архив комплекта для шифратора` \
         python3-ruamel.yaml=0.18.10+ds-1         `# чтение реестра ключей резолвером; дубликат ключа в yaml — ошибка` \
         python3-jsonschema=4.19.2-6              `# проверка реестра ключей и его среза по JSON Schema` \
+# Интеграционные тесты wbfw_tests на агенте стендов: отчёт фаззинга и сбор тестов без стенда
+        python3-markdown=3.7-2+deb13u1           `# отчёт фаззинга wbfw_tests в HTML` \
+        python3-pytest=8.3.5-2                   `# pytest --collect-only: какие тесты есть у таргета` \
+        python3-yaml=6.0.2-1+b2                  `# bench-конфиги wbfw_tests` \
+        python3-serial=3.5-2                     `# импорты набора wbfw_tests при сборе тестов` \
+        python3-paho-mqtt=2.1.0-1                `# импорты набора wbfw_tests при сборе тестов` \
+        python3-smbus=4.4-2                      `# импорты набора wbfw_tests при сборе тестов` \
 # Дополнительное для удобства ручной работы в образе:
         nano=8.4-1+deb13u1                       `# правка файлов на месте` \
         less=668-1                               `# пейджер для git log и diff` \
