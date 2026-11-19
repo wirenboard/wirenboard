@@ -1,0 +1,15 @@
+Patch 2 - per-block store-1 flag instead of increment, RUNTIME-gated on env GCOV_FLAG_MODE (else stock increment). The dead load is DCE'd in flag mode. Applied by REBUILD.sh via perl.
+
+--- a/gcc/tree-profile.cc
++++ b/gcc/tree-profile.cc
+@@ -1420,7 +1420,9 @@
+       gassign *assign1 = gimple_build_assign (tmp1, counter);
+       gsi_insert_after (gsi, assign1, GSI_NEW_STMT);
+       tree tmp2 = make_temp_ssa_name (type, NULL, name);
+-      gassign *assign2 = gimple_build_assign (tmp2, PLUS_EXPR, tmp1, one);
++      gassign *assign2 = getenv ("GCOV_FLAG_MODE")
++	? gimple_build_assign (tmp2, one)
++	: gimple_build_assign (tmp2, PLUS_EXPR, tmp1, one);
+       gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
+       gassign *assign3 = gimple_build_assign (unshare_expr (counter), tmp2);
+       gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
